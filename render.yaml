@@ -1,4 +1,5 @@
 services:
+  # ---------- FastAPI backend ----------
   - type: web
     name: nvda-api
     env: python
@@ -8,10 +9,14 @@ services:
     healthCheckPath: /health
     envVars:
       - key: MODEL_DIR
-        value: src/models
+        value: src/models          # resolves to api/src/models in your code
       - key: LOG_LEVEL
         value: INFO
+      # (optional) lock CORS after first deploy:
+      # - key: ALLOW_ORIGINS
+      #   value: https://nvda-frontend.onrender.com
 
+  # ---------- Streamlit frontend ----------
   - type: web
     name: nvda-frontend
     env: python
@@ -19,5 +24,6 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
+      # Set this AFTER the API is live (use the API External URL)
       - key: API_BASE_URL
         value: https://nvda-api.onrender.com

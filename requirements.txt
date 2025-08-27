@@ -1,12 +1,7 @@
-# --- API stack ---
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 python-dotenv==1.0.1
-
-# --- ML runtime (for loading your pickled model + scaler) ---
-numpy==1.26.4           # safe with most ML wheels; avoids NumPy 2.x issues
-scikit-learn==1.4.2     # match to the version used to pickle your y_scaler if you know it
+numpy==1.26.4
+scikit-learn==1.4.2
 lightgbm==4.3.0
-
-# --- Optional (if you choose gunicorn start command) ---
 gunicorn==22.0.0

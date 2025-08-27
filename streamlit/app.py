@@ -1,27 +1,23 @@
 # streamlit/app.py
-import os
-import json
+import pickle
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import requests
-import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit as st
 
 # -----------------------------
 # Config & constants
 # -----------------------------
 st.set_page_config(page_title="NVDA Forecast", page_icon="📈", layout="wide")
 
-# Prefer Streamlit secrets, then env var, then localhost
-API_BASE = st.secrets.get("API_BASE_URL") or os.environ.get("API_BASE_URL", "http://localhost:8000")
-
 BRAND_BG = "#0b1220"
 CARD_BG  = "#0f1a2b"
 TEXT     = "#e6f0ff"
 ACCENT   = "#4c7fff"
 MUTED    = "#8aa1c7"
-ORANGE   = "#ff9955"
 
 st.markdown(
     f"""
@@ -50,6 +46,28 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# -----------------------------
+# Load artifacts (cached)
+# -----------------------------
+@st.cache_resource
+def load_artifacts():
+    model_dir = Path(__file__).parent / "models"
+    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
+    scaler_path = model_dir / "y_scaler.pkl"
+
+    if not reg_path.exists():
+        raise FileNotFoundError(f"Missing model file: {reg_path}")
+
+    with reg_path.open("rb") as f:
+        reg = pickle.load(f)
+
+    y_scaler = None
+    if scaler_path.exists():
+        with scaler_path.open("rb") as f:
+            y_scaler = pickle.load(f)
+
+    return reg, y_scaler, str(model_dir)
 
 # -----------------------------
 # Helpers
@@ -81,52 +99,27 @@ def features_from_series(df: pd.DataFrame, company: str) -> list[list[float]]:
     ]
     return [feats]  # shape [1,4]
 
-@st.cache_resource
-def http() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({"User-Agent": "nvda-frontend/1.0"})
-    return s
-
-def call_api_predict(X: list[list[float]]) -> float:
-    payload = {"X": X}
-    try:
-        r = http().post(f"{API_BASE}/predict/regression", json=payload, timeout=(5, 25))
-        r.raise_for_status()
-        return float(r.json().get("y_pred"))
-    except requests.exceptions.RequestException as e:
-        if getattr(e, "response", None) is not None:
-            raise RuntimeError(f"{e.response.status_code}: {e.response.text}")
-        raise RuntimeError(str(e))
-
-def readiness() -> tuple[bool, str]:
-    try:
-        r = http().get(f"{API_BASE}/ready", timeout=(5, 10))
-        if r.ok and r.json().get("ok"):
-            return True, r.json().get("model_dir", "")
-        return False, r.text
-    except requests.RequestException as e:
-        return False, str(e)
+def inverse_y_if_possible(y_scaled: float, scaler) -> tuple[float, bool]:
+    if scaler is None:
+        return float(y_scaled), True   # still in scaled space
+    arr = np.array([[y_scaled]], dtype=np.float32)
+    return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # -----------------------------
-# Top row: input + Predict
+# UI: input + Predict
 # -----------------------------
 left, btncol = st.columns([4, 1])
 with left:
-    company = st.text_input("Affiliated Company:", "TSMC", key="company", help="e.g., TSMC, ASML, Cadence, Synopsys")
+    company = st.text_input("Affiliated Company:", "TSMC", key="company",
+                            help="e.g., TSMC, ASML, Cadence, Synopsys")
     company_norm = company.strip().title()
     if company_norm not in COMPANIES:
         company_norm = "TSMC"
 
-ok, info = readiness()
 with btncol:
     st.markdown('<div class="predict-btn">', unsafe_allow_html=True)
-    do_predict = st.button("Predict", type="primary", use_container_width=True, disabled=not ok)
+    do_predict = st.button("Predict", type="primary", use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
-
-if not ok:
-    st.warning("Backend not ready. Predictions will fail until the API loads the model.")
-    with st.expander("Readiness details"):
-        st.code(str(info))
 
 # Prepare series for charts (independent of prediction)
 series = demo_series(periods=100)
@@ -138,9 +131,15 @@ corr = series[COMPANIES].corr()
 pred_value = None
 if do_predict:
     try:
+        reg, y_scaler, model_dir = load_artifacts()
         X = features_from_series(series, company_norm)
-        pred_value = call_api_predict(X)
+        X_last = np.asarray(X, dtype=np.float32)  # [1,F]
+        y_scaled = float(reg.predict(X_last)[0])
+        y_pred, scaled_flag = inverse_y_if_possible(y_scaled, y_scaler)
+        pred_value = y_pred
         st.session_state["last_pred"] = pred_value
+        if scaled_flag:
+            st.info("Returned in scaled space; y_scaler.pkl missing.")
     except Exception as e:
         st.error(f"Prediction failed: {e}")
 
@@ -211,9 +210,5 @@ with m2:
     st.markdown('<div class="metric">0.91</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.caption(
-    f"API: {API_BASE} • "
-    f"[Health]({API_BASE}/health) • "
-    f"[Ready]({API_BASE}/ready) • "
-    f"[Docs]({API_BASE}/docs)"
-)
+reg, y_scaler, model_dir = load_artifacts()
+st.caption(f"Local model dir: {model_dir}")

@@ -1,34 +1,22 @@
-from typing import List, Literal, Optional
+# api/src/schemas.py
+from typing import List, Optional, Literal
 from pydantic import BaseModel, Field
 
-# ---- Health ----
-class HealthResponse(BaseModel):
-    status: Literal["ok"] = "ok"
+Tag = Literal["A"]
+Framework = Literal["lgbm"]
 
-# ---- Regression ----
+class HealthResponse(BaseModel):
+    status: str = "ok"
+
 class RegressionRequest(BaseModel):
-    tag: Literal["A", "B", "AFF"] = Field(default="B")
-    framework: Literal["lgbm"] = Field(default="lgbm")
-    # 2D array [T, F] or [1, F]
     X: List[List[float]]
+    # kept but defaulted; they’re ignored server-side anyway
+    tag: Tag = Field("A")
+    framework: Framework = Field("lgbm")
 
 class RegressionResponse(BaseModel):
-    tag: str
-    framework: str
+    tag: Tag
+    framework: Framework
     y_pred: float
-    # True means value is still in scaled space because y_scaler was not found
     scaled: bool = False
     note: Optional[str] = None
-
-# ---- Classification (optional, only if cls models are present) ----
-class ClassificationRequest(BaseModel):
-    tag: Literal["A", "B", "AFF"] = Field(default="B")
-    framework: Literal["lgbm"] = Field(default="lgbm")
-    X: List[List[float]]
-
-class ClassificationResponse(BaseModel):
-    tag: str
-    framework: str
-    p_up: float
-    label: int
-    threshold: float

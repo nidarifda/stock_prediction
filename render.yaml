@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: nvda-api
+    env: python
+    plan: free
+    rootDir: api
+    buildCommand: pip install --upgrade pip wheel setuptools && pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MODEL_DIR
+        value: models
+      - key: DEFAULT_TAG
+        value: B
+      - key: DEFAULT_FRAMEWORK
+        value: lgbm
+      - key: THRESHOLD_UP
+        value: "0.5"

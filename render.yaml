@@ -2,18 +2,22 @@ services:
   - type: web
     name: nvda-api
     env: python
-    plan: free
-    rootDir: api
-    buildCommand: pip install --upgrade pip wheel setuptools && pip install -r requirements.txt
-    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.src.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
       - key: MODEL_DIR
-        value: models
-      - key: DEFAULT_TAG
-        value: B
-      - key: DEFAULT_FRAMEWORK
-        value: lgbm
-      - key: THRESHOLD_UP
-        value: "0.5"
+        value: src/models
+      - key: LOG_LEVEL
+        value: INFO
+
+  - type: web
+    name: nvda-frontend
+    env: python
+    rootDir: streamlit
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: API_BASE_URL
+        value: https://nvda-api.onrender.com

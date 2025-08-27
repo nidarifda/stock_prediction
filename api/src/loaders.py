@@ -1,65 +1,22 @@
-import pickle
+# api/src/loaders.py
 from pathlib import Path
-from typing import Any, Dict
-import joblib
+import pickle
 
-# File name patterns we look for inside MODEL_DIR
-REG_NAMES = {
-    "A":   "nvda_A_reg_lgb.pkl",
-    "B":   "nvda_B_reg_lgb.pkl",
-    "AFF": "nvda_AFF_reg_lgb.pkl",
-}
-CLS_NAMES = {
-    "A":   "nvda_A_cls_lgb.pkl",
-    "B":   "nvda_B_cls_lgb.pkl",
-    "AFF": "nvda_AFF_cls_lgb.pkl",
-}
-SCALER_NAME = "y_scaler.pkl"
-
-def _safe_load(path: Path):
-    """Load with joblib first, then pickle fallback."""
-    try:
-        return joblib.load(path)
-    except Exception:
-        with path.open("rb") as f:
-            return pickle.load(f)
-
-def load_all_models(model_dir: Path) -> Dict[str, Any]:
-    """
-    Load LightGBM sklearn-wrapped models and optional y_scaler from MODEL_DIR.
-    Structure:
-      {
-        "lgbm": {
-          "A":   {"reg": ..., "cls": optional},
-          "B":   {"reg": ..., "cls": optional},
-          "AFF": {"reg": ..., "cls": optional},
-        },
-        "y_scaler": optional
-      }
-    """
+def load_all_models(model_dir: Path):
     model_dir = Path(model_dir)
-    if not model_dir.exists():
-        raise FileNotFoundError(f"MODEL_DIR does not exist: {model_dir.resolve()}")
+    models = {"lgbm": {"A": {"reg": None}}, "y_scaler": None}
 
-    out: Dict[str, Any] = {"lgbm": {"A": {}, "B": {}, "AFF": {}}}
+    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
+    if not reg_path.exists():
+        raise FileNotFoundError(f"Missing model file: {reg_path}")
 
-    # Load regressors (required)
-    for tag, fname in REG_NAMES.items():
-        p = model_dir / fname
-        if not p.exists():
-            raise FileNotFoundError(f"Missing regressor for {tag}: {p.name}")
-        out["lgbm"][tag]["reg"] = _safe_load(p)
+    with open(reg_path, "rb") as f:
+        models["lgbm"]["A"]["reg"] = pickle.load(f)
 
-    # Load classifiers if present (optional)
-    for tag, fname in CLS_NAMES.items():
-        p = model_dir / fname
-        if p.exists():
-            out["lgbm"][tag]["cls"] = _safe_load(p)
+    scaler_path = model_dir / "y_scaler.pkl"
+    if scaler_path.exists():
+        with open(scaler_path, "rb") as f:
+            models["y_scaler"] = pickle.load(f)
 
-    # Optional scaler
-    p_scaler = model_dir / SCALER_NAME
-    if p_scaler.exists():
-        out["y_scaler"] = _safe_load(p_scaler)
-
-    print("✅ Models loaded.")
-    return out
+    print("✅ Loaded: lgbm/A/reg", " + y_scaler" if models["y_scaler"] is not None else "")
+    return models

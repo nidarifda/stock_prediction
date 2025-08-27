@@ -1,0 +1,55 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+._*
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.pytype/
+.pyre/
+.ipynb_checkpoints/
+.cache/
+logs/
+*.log
+
+# Local env (never commit secrets)
+.env
+.env.*
+
+# Build / coverage
+build/
+dist/
+htmlcov/
+.coverage*
+coverage.xml
+
+# Node (if you keep any frontend here)
+node_modules/
+npm-debug.log*
+yarn-*.log
+pnpm-*.log
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Models & data
+# NOTE: We WANT to commit pickles for Render to load, so DO NOT ignore /models.
+# If you decide not to commit models, uncomment the lines below.
+# models/
+# *.pkl
+# *.txt

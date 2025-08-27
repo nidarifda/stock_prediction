@@ -1,7 +1,6 @@
 # streamlit/app.py
 import os
 import json
-import time
 import numpy as np
 import pandas as pd
 import requests
@@ -13,7 +12,9 @@ import plotly.graph_objects as go
 # Config & constants
 # -----------------------------
 st.set_page_config(page_title="NVDA Forecast", page_icon="📈", layout="wide")
-API_BASE = os.environ.get("API_BASE_URL", "http://localhost:8000")
+
+# Prefer Streamlit secrets, then env var, then localhost
+API_BASE = st.secrets.get("API_BASE_URL") or os.environ.get("API_BASE_URL", "http://localhost:8000")
 
 BRAND_BG = "#0b1220"
 CARD_BG  = "#0f1a2b"
@@ -22,17 +23,10 @@ ACCENT   = "#4c7fff"
 MUTED    = "#8aa1c7"
 ORANGE   = "#ff9955"
 
-# -----------------------------
-# Minimal styling to match mock
-# -----------------------------
 st.markdown(
     f"""
     <style>
-      .app {{
-        background: {BRAND_BG};
-        color: {TEXT};
-      }}
-      .stApp {{ background: {BRAND_BG} !important; }}
+      .stApp {{ background: {BRAND_BG} !important; color: {TEXT}; }}
       .block-container {{ padding-top: 1.5rem; padding-bottom: 2rem; }}
       .card {{
         background: {CARD_BG};
@@ -40,40 +34,17 @@ st.markdown(
         padding: 18px 20px;
         border: 1px solid rgba(255,255,255,0.06);
       }}
-      .big .value {{
-        font-size: 42px;
-        font-weight: 700;
-        letter-spacing: 0.3px;
-        color: {TEXT};
-      }}
-      .big .label {{
-        font-size: 16px;
-        color: {MUTED};
-        margin-bottom: 8px;
-      }}
-      .metric {{
-        font-size: 22px;
-        font-weight: 600;
-        color: {TEXT};
-      }}
-      .metric-label {{
-        color: {MUTED};
-        font-size: 14px;
-      }}
+      .big .value {{ font-size: 42px; font-weight: 700; letter-spacing: 0.3px; color: {TEXT}; }}
+      .big .label {{ font-size: 16px; color: {MUTED}; margin-bottom: 8px; }}
+      .metric {{ font-size: 22px; font-weight: 600; color: {TEXT}; }}
+      .metric-label {{ color: {MUTED}; font-size: 14px; }}
       .predict-btn button {{
-        width: 100%;
-        height: 48px;
-        border-radius: 10px;
-        background: {ACCENT};
-        color: white;
-        font-weight: 600;
-        border: 0;
+        width: 100%; height: 48px; border-radius: 10px; background: {ACCENT}; color: white;
+        font-weight: 600; border: 0;
       }}
       .input > div > div > input {{
-        background: {CARD_BG} !important;
-        color: {TEXT} !important;
-        border-radius: 10px !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
+        background: {CARD_BG} !important; color: {TEXT} !important;
+        border-radius: 10px !important; border: 1px solid rgba(255,255,255,0.08) !important;
       }}
     </style>
     """,
@@ -85,8 +56,8 @@ st.markdown(
 # -----------------------------
 COMPANIES = ["NVIDIA", "TSMC", "ASML", "Cadence", "Synopsys"]
 
+@st.cache_data
 def demo_series(seed: int = 7, periods: int = 80) -> pd.DataFrame:
-    """Generate smooth demo price series for the 5 tickers (for charts only)."""
     rng = np.random.default_rng(seed)
     base = np.cumsum(rng.normal(0.2, 0.8, size=periods)) + np.linspace(0, 15, periods)
     df = pd.DataFrame({"NVIDIA": base})
@@ -98,10 +69,6 @@ def demo_series(seed: int = 7, periods: int = 80) -> pd.DataFrame:
     return df
 
 def features_from_series(df: pd.DataFrame, company: str) -> list[list[float]]:
-    """
-    Derive a simple 4-feature vector from the last points of the selected company’s series,
-    just to drive the model. Replace with your real feature logic if you have one.
-    """
     s = df[company].astype(float)
     returns = s.pct_change().dropna()
     if len(returns) < 6:
@@ -114,16 +81,26 @@ def features_from_series(df: pd.DataFrame, company: str) -> list[list[float]]:
     ]
     return [feats]  # shape [1,4]
 
+@st.cache_resource
+def http() -> requests.Session:
+    s = requests.Session()
+    s.headers.update({"User-Agent": "nvda-frontend/1.0"})
+    return s
+
 def call_api_predict(X: list[list[float]]) -> float:
     payload = {"X": X}
-    r = requests.post(f"{API_BASE}/predict/regression", json=payload, timeout=25)
-    r.raise_for_status()
-    data = r.json()
-    return float(data.get("y_pred"))
+    try:
+        r = http().post(f"{API_BASE}/predict/regression", json=payload, timeout=(5, 25))
+        r.raise_for_status()
+        return float(r.json().get("y_pred"))
+    except requests.exceptions.RequestException as e:
+        if getattr(e, "response", None) is not None:
+            raise RuntimeError(f"{e.response.status_code}: {e.response.text}")
+        raise RuntimeError(str(e))
 
 def readiness() -> tuple[bool, str]:
     try:
-        r = requests.get(f"{API_BASE}/ready", timeout=10)
+        r = http().get(f"{API_BASE}/ready", timeout=(5, 10))
         if r.ok and r.json().get("ok"):
             return True, r.json().get("model_dir", "")
         return False, r.text
@@ -136,14 +113,18 @@ def readiness() -> tuple[bool, str]:
 left, btncol = st.columns([4, 1])
 with left:
     company = st.text_input("Affiliated Company:", "TSMC", key="company", help="e.g., TSMC, ASML, Cadence, Synopsys")
-with btncol:
-    st.markdown('<div class="predict-btn">', unsafe_allow_html=True)
-    do_predict = st.button("Predict", type="primary", use_container_width=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    company_norm = company.strip().title()
+    if company_norm not in COMPANIES:
+        company_norm = "TSMC"
 
 ok, info = readiness()
+with btncol:
+    st.markdown('<div class="predict-btn">', unsafe_allow_html=True)
+    do_predict = st.button("Predict", type="primary", use_container_width=True, disabled=not ok)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 if not ok:
-    st.warning("Backend not ready yet. Predictions will fail until the API loads the model.")
+    st.warning("Backend not ready. Predictions will fail until the API loads the model.")
     with st.expander("Readiness details"):
         st.code(str(info))
 
@@ -157,7 +138,7 @@ corr = series[COMPANIES].corr()
 pred_value = None
 if do_predict:
     try:
-        X = features_from_series(series, company if company in COMPANIES else "TSMC")
+        X = features_from_series(series, company_norm)
         pred_value = call_api_predict(X)
         st.session_state["last_pred"] = pred_value
     except Exception as e:
@@ -174,7 +155,7 @@ st.markdown(
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("")  # small spacer
+st.write("")  # spacer
 
 # -----------------------------
 # Middle row: Line chart + Heatmap
@@ -191,8 +172,7 @@ with c1:
         template="plotly_dark"
     )
     fig.update_layout(
-        height=340,
-        margin=dict(l=10, r=10, t=10, b=10),
+        height=340, margin=dict(l=10, r=10, t=10, b=10),
         legend=dict(orientation="h", y=-0.2),
         paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
     )
@@ -204,17 +184,12 @@ with c2:
     st.subheader("Correlation Heatmap", divider=False)
     heat = go.Figure(
         data=go.Heatmap(
-            z=corr.values,
-            x=corr.columns,
-            y=corr.index,
-            colorscale="Oranges",
-            zmin=0, zmax=1,
-            colorbar=dict(title="")
+            z=corr.values, x=corr.columns, y=corr.index,
+            colorscale="Oranges", zmin=0, zmax=1, colorbar=dict(title="")
         )
     )
     heat.update_layout(
-        height=340,
-        margin=dict(l=10, r=10, t=10, b=10),
+        height=340, margin=dict(l=10, r=10, t=10, b=10),
         paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
         xaxis=dict(showgrid=False), yaxis=dict(showgrid=False),
     )

@@ -1,0 +1,69 @@
+import json
+import requests
+import streamlit as st
+
+# Hard-coded API (no secrets)
+API_BASE = "https://nvda-api.onrender.com"
+
+st.set_page_config(page_title="NVDA Forecast", page_icon="📈")
+st.title("NVDA Forecast — Streamlit (Regression only)")
+
+# Fixed framework = lgbm, choose tag
+framework = "lgbm"
+tag = st.selectbox("Tag / View", ["A", "B", "AFF"], index=1)
+
+mode = st.radio("Input mode", ["Auto", "Sequence [T,F]", "Last step [1,F]"], index=0, horizontal=True)
+
+default_matrix = """0.12,0.03,0.45,0.20
+0.10,0.04,0.44,0.18
+0.08,0.05,0.46,0.22"""
+raw = st.text_area("Paste CSV rows or JSON [[...],[...]]", default_matrix, height=150)
+
+def parse_matrix(text: str):
+    t = text.strip()
+    # JSON 2D array?
+    if t.startswith("["):
+        return json.loads(t)
+    # CSV lines
+    rows = []
+    for line in t.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        rows.append([float(v) for v in line.split(",") if v.strip()])
+    if not rows or not isinstance(rows[0], list):
+        raise ValueError("Provide a 2D matrix: CSV rows or JSON [[...],[...]].")
+    return rows
+
+cols = st.columns(2)
+
+with cols[0]:
+    if st.button("Health check"):
+        try:
+            r = requests.get(f"{API_BASE}/health", timeout=15)
+            r.raise_for_status()
+            st.success(r.json())
+        except Exception as e:
+            st.error(f"Health failed: {e}")
+
+with cols[1]:
+    if st.button("Predict (Regression)"):
+        try:
+            X = parse_matrix(raw)
+            # LightGBM uses last row by default
+            if mode == "Last step [1,F]" or (mode == "Auto" and framework == "lgbm"):
+                X = [X[-1]]
+
+            payload = {"tag": tag, "framework": framework, "X": X}
+            res = requests.post(f"{API_BASE}/predict/regression", json=payload, timeout=60)
+            if not res.ok:
+                st.error(f"{res.status_code} {res.reason}\n{res.text}")
+            else:
+                data = res.json()
+                st.code(json.dumps(data, indent=2), language="json")
+                if isinstance(data, dict) and "y_pred" in data:
+                    st.metric("Prediction", data["y_pred"])
+        except Exception as e:
+            st.exception(e)
+
+st.caption("LightGBM uses the last row of your matrix. LSTM/BiLSTM not used here.")

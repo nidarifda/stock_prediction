@@ -297,30 +297,74 @@ def inverse_if_scaled(y_scaled: float, scaler):
 # ────────────────────────────────────────────────────────────────────────────────
 # Header, controls, and data
 # ────────────────────────────────────────────────────────────────────────────────
-st.markdown("<div class='titlebar'><h1>Stock Prediction Expert</h1></div>", unsafe_allow_html=True)
+# ─────────────────────────────────────────────────────────────
+# Title + control row (enhanced) + data load + 3-column layout
+# Drop-in replacement for your current snippet
+# ─────────────────────────────────────────────────────────────
 
-TICKERS = DISPLAY_ORDER
-ticker_labels = [PRETTY.get(t, t) for t in TICKERS]
+# 1) Styled title (keeps it white and slightly lower on the page)
+st.markdown(
+    """
+    <style>
+      .block-container{ padding-top:1.2rem; }
+      .app-header{
+        display:flex; align-items:center; gap:.6rem;
+        margin:2px 0 12px 0;
+      }
+      .app-header .title{
+        color:#E6F0FF; font-size:28px; font-weight:800; letter-spacing:.2px;
+      }
+      /* hide link/anchor icon that Streamlit injects in H1s */
+      [data-testid="stMarkdownContainer"] h1 a{ display:none !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
-ctrl = st.container()
-with ctrl:
-    c1, c2, c3, c4 = st.columns([1.2, 1.0, 1.0, 0.9])
+# 2) Controls (sticky state, pretty labels → tickers, clean layout)
+TICKERS = DISPLAY_ORDER                              # e.g. ["NVDA","TSMC","ASML","CDNS","SNPS","005930.KS"]
+label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
+ticker_labels   = list(label_to_ticker.keys())
+
+# sensible default that survives reruns
+_default_label = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
+if _default_label not in ticker_labels:
+    _default_label = ticker_labels[0]
+_default_idx = ticker_labels.index(_default_label)
+
+with st.container():
+    c1, c2, c3, c4 = st.columns([1.4, 1.0, 1.0, 0.9])
     with c1:
-        sel_idx = 0
-        label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-        sel_label = st.selectbox("Ticker", ticker_labels, index=sel_idx)
+        sel_label = st.selectbox(
+            "Ticker", ticker_labels, index=_default_idx, key="ticker_select",
+            help="Pick the primary symbol to forecast."
+        )
         ticker = label_to_ticker[sel_label]
+        st.session_state["ticker_label"] = sel_label
+
     with c2:
-        horizon = st.radio("Horizon", ["1D","1W","1M"], horizontal=True, index=0)
+        horizon = st.radio(
+            "Horizon", ["1D", "1W", "1M"], horizontal=True, key="horizon",
+            help="Change the forecast horizon."
+        )
+
     with c3:
-        model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0)
+        model_name = st.selectbox(
+            "Model", ["LightGBM", "RandomForest", "XGBoost"], index=0, key="model_name",
+            help="Which trained model to use for prediction."
+        )
+
     with c4:
-        do_predict = st.button("Predict", use_container_width=True, type="primary")
+        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 
-prices = load_prices_from_root_last_5y(ALIASES)
+# 3) Load price history (5y only). Your helper returns a tidy DataFrame.
+with st.spinner("Loading price history…"):
+    prices = load_prices_from_root_last_5y(ALIASES)   # expects {'NVDA':'NVDA_daily_data.csv', ...}
 
-# Layout
+# 4) Main page grid
 LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # LEFT — Watchlist (enhanced) + Toggles
@@ -432,6 +476,7 @@ with LEFT:
     st.toggle("Macro layer", value=False)
     st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
+     st.markdown("</div>", value=False)
 
 
 # ────────────────────────────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+# streamlit/app.py
 from pathlib import Path
 import pickle
 import numpy as np
@@ -105,7 +106,7 @@ def inverse_y_if_possible(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Demo data & simple features (replace with your real pipeline if you want)
+# Demo data & feature engineering (quick unblock)
 # ────────────────────────────────────────────────────────────────────────────────
 COMPANIES = ["NVIDIA", "TSMC", "ASML", "Cadence", "Synopsys"]
 
@@ -121,13 +122,54 @@ def demo_series(seed: int = 7, periods: int = 100) -> pd.DataFrame:
     df.index = pd.RangeIndex(1, periods + 1, name="t")
     return df
 
-def features_from_series(df: pd.DataFrame, company: str) -> list[list[float]]:
-    s = df[company].astype(float)
+def _feat_block_from_series(s: pd.Series) -> list[float]:
+    """6 features from a single price series."""
+    s = s.astype(float)
     r = s.pct_change().dropna()
-    if len(r) < 6:  # safety
-        r = pd.Series([0.0, 0.0, 0.0, 0.0])
-    feats = [float(r.iloc[-1]), float(r.iloc[-2]), float(r.iloc[-3]), float(r.tail(5).mean())]
-    return [feats]  # [1, F]
+    last  = float(r.iloc[-1]) if len(r) >= 1 else 0.0
+    prev  = float(r.iloc[-2]) if len(r) >= 2 else 0.0
+    mean5 = float(r.tail(5).mean()) if len(r) >= 1 else 0.0
+    std5  = float(r.tail(5).std(ddof=0)) if len(r) >= 2 else 0.0
+    if not np.isfinite(std5):
+        std5 = 0.0
+    mom5  = float(s.iloc[-1] - s.tail(5).mean()) if len(s) >= 5 else 0.0
+    level = float(s.iloc[-1]) if len(s) >= 1 else 0.0
+    return [last, prev, mean5, std5, mom5, level]  # 6 features
+
+def _expected_n_features(model) -> int | None:
+    """Try to read how many inputs the loaded model expects."""
+    if hasattr(model, "n_features_in_"):         # scikit-learn API
+        return int(model.n_features_in_)
+    try:
+        return int(model.booster_.num_feature())  # LightGBM booster (if available)
+    except Exception:
+        return None
+
+def build_features(df: pd.DataFrame, selected: str, n_expected: int | None) -> tuple[np.ndarray, str | None]:
+    """
+    Build a single row of features from all 5 tickers (6 each = 30) + 1 bias = 31.
+    Order puts the selected company first. If model expects a different length,
+    pad with zeros or truncate.
+    """
+    order = [selected] + [t for t in COMPANIES if t != selected]
+    feats = []
+    for t in order:
+        feats.extend(_feat_block_from_series(df[t]))
+    feats.append(1.0)  # bias -> 31
+
+    note = None
+    if n_expected is not None and len(feats) != n_expected:
+        if len(feats) < n_expected:
+            base_len = len(feats)
+            feats = feats + [0.0] * (n_expected - base_len)
+            note = f"Padded features from {base_len} to {n_expected}."
+        else:
+            base_len = len(feats)
+            feats = feats[:n_expected]
+            note = f"Truncated features from {base_len} to {n_expected}."
+
+    X = np.asarray([feats], dtype=np.float32)  # (1, F)
+    return X, note
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Top row: input + Predict
@@ -139,7 +181,6 @@ with left:
     company_norm = company.strip().title()
     if company_norm not in COMPANIES:
         company_norm = "TSMC"
-
 with btncol:
     st.markdown('<div class="predict-btn">', unsafe_allow_html=True)
     do_predict = st.button("Predict", use_container_width=True, type="primary")
@@ -154,14 +195,21 @@ pred_value = st.session_state.get("last_pred", None)
 if do_predict:
     try:
         reg, y_scaler, _ = load_artifacts()
-        X = features_from_series(series, company_norm)
-        X = np.asarray(X, dtype=np.float32)  # [1,F]
+        n_expected = _expected_n_features(reg) or 31
+        X, shape_note = build_features(series, company_norm, n_expected)
+
+        if X.shape[1] != n_expected:
+            raise RuntimeError(f"Built {X.shape[1]} features but model expects {n_expected}")
+
         y_scaled = float(reg.predict(X)[0])
         y_pred, scaled_flag = inverse_y_if_possible(y_scaled, y_scaler)
         pred_value = y_pred
         st.session_state["last_pred"] = pred_value
+
         if scaled_flag:
             st.info("Returned in scaled space; y_scaler.pkl missing.")
+        if shape_note:
+            st.caption(f"⚠️ {shape_note}")
     except Exception as e:
         st.error(f"Prediction failed: {e}")
 
@@ -188,7 +236,7 @@ with c1:
     fig = px.line(
         long, x="t", y="price", color="ticker",
         labels={"t": "", "price": "", "ticker": ""},
-        color_discrete_sequence=["#70B3FF", "#5F8BFF", "#4BB3FD", "#3F6AE0", "#6ED0FF"],  # cool blues
+        color_discrete_sequence=["#70B3FF", "#5F8BFF", "#4BB3FD", "#3F6AE0", "#6ED0FF"],
         template="plotly_dark"
     )
     fig.update_layout(

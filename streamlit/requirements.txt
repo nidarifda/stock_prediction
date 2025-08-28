@@ -1,8 +1,14 @@
-streamlit==1.38.0
+# Large, complex packages with many dependencies (install first)
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.4.2
+
+# Medium complexity
 matplotlib==3.8.0
-yfinance==0.2.37
 plotly==5.18.0
---only-binary :all:  # Critical: forces pip to only use pre-compiled wheels
+
+# Simpler packages
+streamlit==1.38.0
+yfinance==0.2.37
+
+--only-binary :all:

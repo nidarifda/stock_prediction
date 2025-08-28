@@ -295,35 +295,32 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Header, controls, and data
+# Header, controls, and data (drop-in)
 # ────────────────────────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────
-# Title + control row (enhanced) + data load + 3-column layout
-# Drop-in replacement for your current snippet
-# ─────────────────────────────────────────────────────────────
 
-# 1) Styled title (keeps it white and slightly lower on the page)
+# 1) Styled title (lower on the page + white)
 st.markdown(
     """
     <style>
-      .block-container{ padding-top:1.2rem; }
-      .app-header{
-        display:flex; align-items:center; gap:.6rem;
-        margin:2px 0 12px 0;
+      .block-container { padding-top: 1.2rem; }
+      .app-header {
+        display: flex; align-items: center; gap: .6rem;
+        margin: 2px 0 12px 0;
       }
-      .app-header .title{
-        color:#E6F0FF; font-size:28px; font-weight:800; letter-spacing:.2px;
+      .app-header .title {
+        color: #E6F0FF; font-size: 28px; font-weight: 800; letter-spacing: .2px;
       }
-      /* hide link/anchor icon that Streamlit injects in H1s */
-      [data-testid="stMarkdownContainer"] h1 a{ display:none !important; }
     </style>
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+    unsafe_allow_html=True,
+)
 
-# 2) Controls (sticky state, pretty labels → tickers, clean layout)
-TICKERS = DISPLAY_ORDER                              # e.g. ["NVDA","TSMC","ASML","CDNS","SNPS","005930.KS"]
+# 2) Controls (pretty labels ↔ tickers, sticky defaults)
+TICKERS = DISPLAY_ORDER  # e.g. ["NVDA","TSMC","ASML","CDNS","SNPS","005930.KS"]
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
 
@@ -335,35 +332,51 @@ _default_idx = ticker_labels.index(_default_label)
 
 with st.container():
     c1, c2, c3, c4 = st.columns([1.4, 1.0, 1.0, 0.9])
+
     with c1:
         sel_label = st.selectbox(
-            "Ticker", ticker_labels, index=_default_idx, key="ticker_select",
-            help="Pick the primary symbol to forecast."
+            "Ticker",
+            ticker_labels,
+            index=_default_idx,
+            key="ticker_select",
+            help="Pick the primary symbol to forecast.",
         )
         ticker = label_to_ticker[sel_label]
+        # remember the chosen label for next rerun
         st.session_state["ticker_label"] = sel_label
 
     with c2:
         horizon = st.radio(
-            "Horizon", ["1D", "1W", "1M"], horizontal=True, key="horizon",
-            help="Change the forecast horizon."
+            "Horizon", ["1D", "1W", "1M"],
+            horizontal=True,
+            key="horizon",
+            help="Change the forecast horizon.",
         )
 
     with c3:
         model_name = st.selectbox(
-            "Model", ["LightGBM", "RandomForest", "XGBoost"], index=0, key="model_name",
-            help="Which trained model to use for prediction."
+            "Model",
+            ["LightGBM", "RandomForest", "XGBoost"],
+            index=0,
+            key="model_name",
+            help="Which trained model to use for prediction.",
         )
 
     with c4:
-        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+        do_predict = st.button(
+            "Predict",
+            use_container_width=True,
+            type="primary",
+            key="predict_btn",
+        )
 
-# 3) Load price history (5y only). Your helper returns a tidy DataFrame.
+# 3) Load price history (last 5y only)
 with st.spinner("Loading price history…"):
-    prices = load_prices_from_root_last_5y(ALIASES)   # expects {'NVDA':'NVDA_daily_data.csv', ...}
+    prices = load_prices_from_root_last_5y(ALIASES)  # expects e.g. {"NVDA":"NVDA_daily_data.csv", ...}
 
-# 4) Main page grid
+# 4) Main grid
 LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
+
 
 
 # ────────────────────────────────────────────────────────────────────────────────

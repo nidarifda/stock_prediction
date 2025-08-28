@@ -72,17 +72,37 @@ st.markdown(
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* Footer status bar */
-      .statusbar {{
+      /* ===== Segmented sticky footer ===== */
+      .footer-wrap{{ position:sticky; bottom:6px; z-index:50; }}
+      .statusbar{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.06);
-        border-radius:16px;
-        padding:12px 16px;
-        display:flex; gap:16px; justify-content:space-between; align-items:center;
-        margin-top:10px;
+        border-radius:22px;
+        box-shadow:0 10px 28px rgba(0,0,0,.35);
+        display:grid;
+        grid-auto-flow:column;
+        grid-auto-columns:max-content;
+        align-items:center;
+        gap:0;
+        padding:10px 0;
+        overflow-x:auto;
+        white-space:nowrap;
+        scrollbar-width:none;
       }}
-      .statusbar .muted {{ color:{MUTED}; font-size:12px; }}
-      .ok {{ color:{GREEN}; }}
+      .statusbar::-webkit-scrollbar{{ display:none; }}
+      .status-item{{
+        display:flex; align-items:center; gap:8px;
+        padding:8px 18px;
+        font-size:14px; color:{MUTED};
+        border-right:1px solid rgba(255,255,255,.08);
+      }}
+      .status-item:last-child{{ border-right:0; }}
+      .status-label{{ opacity:.95; }}
+      .status-value{{ color:var(--text); font-weight:700; margin-left:6px; }}
+      .dot{{ width:9px; height:9px; border-radius:50%; background:{GREEN};
+             box-shadow:0 0 0 2px rgba(92,242,184,.22); }}
+      .dot.warn{{ background:#FFCE6B; box-shadow:0 0 0 2px rgba(255,206,107,.22); }}
+      .dot.bad{{ background:#FF7A7A; box-shadow:0 0 0 2px rgba(255,122,122,.22); }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -141,15 +161,26 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
 # ────────────────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
-    model_dir = Path(__file__).parent / "models"
+    try:
+        model_dir = Path(__file__).parent / "models"
+    except NameError:
+        model_dir = Path("models")
     reg_path = model_dir / "nvda_A_reg_lgb.pkl"
     scaler_path = model_dir / "y_scaler.pkl"
     reg = None
-    if reg_path.exists():
-        with reg_path.open("rb") as f: reg = pickle.load(f)
+    try:
+        if reg_path.exists():
+            with reg_path.open("rb") as f:
+                reg = pickle.load(f)
+    except Exception:
+        reg = None  # if the model lib isn't available, just skip
     y_scaler = None
-    if scaler_path.exists():
-        with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
+    try:
+        if scaler_path.exists():
+            with scaler_path.open("rb") as f:
+                y_scaler = pickle.load(f)
+    except Exception:
+        y_scaler = None
     return reg, y_scaler
 
 def inverse_if_scaled(y_scaled: float, scaler):
@@ -172,7 +203,7 @@ with ctrl:
 
 prices = make_demo_prices()
 
-# 3 columns layout
+# Layout
 LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -184,7 +215,7 @@ with LEFT:
     for t in TICKERS:
         last = float(prices[t].iloc[-1])
         ref  = float(prices[t].iloc[-6])
-        pct  = (last - ref) / ref * 100
+        pct  = (last - ref) / ref * 100 if ref != 0 else 0.0
         col  = GREEN if pct >= 0 else ORANGE
         arrow = "↑" if pct >= 0 else "↓"
         st.markdown(
@@ -205,7 +236,7 @@ with LEFT:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# MID — metric tiles, forecast chart, heatmap + lower cards
+# MID — metric tiles, forecast chart, and lower cards
 # ────────────────────────────────────────────────────────────────────────────────
 with MID:
     pred, lo, hi, conf = None, None, None, None
@@ -234,7 +265,7 @@ with MID:
     with a:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='value'>{f'${pred:,.2f}' if pred is not None else '—'}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='value'>{('$' + format(pred, ',.2f')) if pred is not None else '—'}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with b:
         inter_text = f"{int(round(lo))} – {int(round(hi))}" if (lo is not None and hi is not None) else "—"
@@ -243,7 +274,7 @@ with MID:
         st.markdown(f"<div class='value'>{inter_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c:
-        conf_text = f"{conf:.2f}" if isinstance(conf, (float, int)) else "—"
+        conf_text = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Confidence</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
@@ -289,7 +320,7 @@ with MID:
         st.markdown("**Error metrics**")
         mae, rmse, confu = 1.31, 2.06, 0.91
         bar = lambda v: f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {v*70}%,rgba(255,255,255,.12) {v*70}%);border-radius:6px'></div>"
-        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>")
+        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
         st.markdown(bar(0.6), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
         st.markdown(bar(0.4), unsafe_allow_html=True)
@@ -319,23 +350,40 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Bottom action row + status
-    ac1, ac2, ac3 = st.columns([1.0, 1.0, 1.0])
+    # Action row placeholders
+    ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
     with ac1:
         st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
     with ac2:
         st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
-    with ac3:
-        pass
 
+    # Segmented sticky footer (margin-right avoids Streamlit Cloud "Manage app" pill)
     st.markdown(
-        f"""
-        <div class='statusbar'>
-          <div class='muted'>Model version <b>v1.2</b></div>
-          <div class='muted'>Training window: <b>1 year</b></div>
-          <div class='muted'>Data last updated: <b>30 min</b></div>
-          <div class='muted'>Latency: <b>~140 ms</b></div>
-          <div class='muted'>API status: <span class='ok'>●</span> All systems operational</div>
+        """
+        <div class="footer-wrap">
+          <div class="statusbar" style="margin-right:110px">
+            <div class="status-item">
+              <span class="status-label">Model version</span>
+              <span class="status-value">v1.2</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Training window</span>
+              <span class="status-value">1 year</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Data last updated</span>
+              <span class="status-value">30 min</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Latency</span>
+              <span class="status-value">~140 ms</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">API status</span>
+              <span class="dot"></span>
+              <span>All systems operational</span>
+            </div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,

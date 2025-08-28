@@ -23,11 +23,15 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
+# Global CSS (theme + widgets + sticky footer styles)
 st.markdown(
     f"""
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
+        /* Space to avoid Streamlit Cloud's "Manage app" tray on the right.
+           If running locally, set to 0px. */
+        --footer-safe: 160px;
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
       .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
@@ -48,7 +52,7 @@ st.markdown(
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs — target exact widgets to avoid ghost bars */
+      /* Inputs */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stSelectbox"]  > div > div,
       [data-testid="stNumberInput"]> div > div {{
@@ -58,7 +62,7 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Radio to look like pills */
+      /* Radio pills */
       [data-baseweb="radio"] > label {{
         padding:.35rem .7rem;
         border:1px solid rgba(255,255,255,.14);
@@ -66,43 +70,57 @@ st.markdown(
         margin-right:.35rem;
       }}
 
-      /* Primary button explicitly blue regardless of theme */
+      /* Primary button */
       .stButton > button {{
         height:42px; border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* ===== Segmented sticky footer ===== */
-      .footer-wrap{{ position:sticky; bottom:6px; z-index:50; }}
-      .statusbar{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.06);
-        border-radius:22px;
-        box-shadow:0 10px 28px rgba(0,0,0,.35);
-        display:grid;
-        grid-auto-flow:column;
-        grid-auto-columns:max-content;
-        align-items:center;
-        gap:0;
-        padding:10px 0;
-        overflow-x:auto;
-        white-space:nowrap;
-        scrollbar-width:none;
+      /* ===== Sticky segmented footer ===== */
+      .footer-wrap {{
+        position: sticky;
+        bottom: 8px;
+        z-index: 50;
       }}
-      .statusbar::-webkit-scrollbar{{ display:none; }}
-      .status-item{{
-        display:flex; align-items:center; gap:8px;
-        padding:8px 18px;
-        font-size:14px; color:{MUTED};
-        border-right:1px solid rgba(255,255,255,.08);
+      .footer-inner {{
+        width: calc(100% - var(--footer-safe));
+        margin-left: 0;
+        margin-right: var(--footer-safe);
       }}
-      .status-item:last-child{{ border-right:0; }}
-      .status-label{{ opacity:.95; }}
-      .status-value{{ color:var(--text); font-weight:700; margin-left:6px; }}
-      .dot{{ width:9px; height:9px; border-radius:50%; background:{GREEN};
-             box-shadow:0 0 0 2px rgba(92,242,184,.22); }}
-      .dot.warn{{ background:#FFCE6B; box-shadow:0 0 0 2px rgba(255,206,107,.22); }}
-      .dot.bad{{ background:#FF7A7A; box-shadow:0 0 0 2px rgba(255,122,122,.22); }}
+      .statusbar {{
+        background: {CARD};
+        border: 1px solid rgba(255,255,255,.06);
+        border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(0,0,0,.35);
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        gap: 0;
+        overflow: hidden;
+      }}
+      .status-item {{
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 18px;
+        font-size: 14px; color: {MUTED};
+        border-right: 1px solid rgba(255,255,255,.08);
+        white-space: nowrap;
+      }}
+      .status-item:last-child {{ border-right: 0; }}
+      .status-label {{ opacity: .95; }}
+      .status-value {{ color: {TEXT}; font-weight: 700; margin-left: 6px; }}
+      .dot {{
+        width: 9px; height: 9px; border-radius: 50%;
+        background: {GREEN};
+        box-shadow: 0 0 0 2px rgba(92,242,184,.22);
+        display: inline-block;
+      }}
+      .dot.warn {{ background:#FFCE6B; box-shadow:0 0 0 2px rgba(255,206,107,.22); }}
+      .dot.bad  {{ background:#FF7A7A; box-shadow:0 0 0 2px rgba(255,122,122,.22); }}
+      @media (max-width: 1100px) {{
+        .footer-inner {{ width: 100%; margin-right: 0; }}
+        .statusbar {{ overflow-x: auto; scrollbar-width: none; }}
+        .statusbar::-webkit-scrollbar {{ display: none; }}
+      }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -138,14 +156,18 @@ def feat_block(s: pd.Series) -> list[float]:
     return [last, prev, mean5, std5, mom5, level]
 
 def expected_n_feats(model) -> int | None:
-    if hasattr(model, "n_features_in_"): return int(model.n_features_in_)
-    try: return int(model.booster_.num_feature())
-    except Exception: return None
+    if hasattr(model, "n_features_in_"):
+        return int(model.n_features_in_)
+    try:
+        return int(model.booster_.num_feature())
+    except Exception:
+        return None
 
 def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in TICKERS if t != primary]
     feats = []
-    for t in order: feats.extend(feat_block(df[t]))
+    for t in order:
+        feats.extend(feat_block(df[t]))
     feats.append(1.0)  # bias -> 31
     note = None
     if n_expected is not None and len(feats) != n_expected:
@@ -157,7 +179,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     return np.asarray([feats], dtype=np.float32), note
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Optional model loading
+# Optional model loading (safe if model files/libs are missing)
 # ────────────────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
@@ -167,13 +189,15 @@ def load_artifacts():
         model_dir = Path("models")
     reg_path = model_dir / "nvda_A_reg_lgb.pkl"
     scaler_path = model_dir / "y_scaler.pkl"
+
     reg = None
     try:
         if reg_path.exists():
             with reg_path.open("rb") as f:
                 reg = pickle.load(f)
     except Exception:
-        reg = None  # if the model lib isn't available, just skip
+        reg = None
+
     y_scaler = None
     try:
         if scaler_path.exists():
@@ -181,10 +205,12 @@ def load_artifacts():
                 y_scaler = pickle.load(f)
     except Exception:
         y_scaler = None
+
     return reg, y_scaler
 
 def inverse_if_scaled(y_scaled: float, scaler):
-    if scaler is None: return float(y_scaled), True
+    if scaler is None:
+        return float(y_scaled), True
     arr = np.array([[y_scaled]], dtype=np.float32)
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
@@ -357,38 +383,6 @@ with MID:
     with ac2:
         st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
 
-    # Segmented sticky footer (margin-right avoids Streamlit Cloud "Manage app" pill)
-    st.markdown(
-        """
-        <div class="footer-wrap">
-          <div class="statusbar" style="margin-right:110px">
-            <div class="status-item">
-              <span class="status-label">Model version</span>
-              <span class="status-value">v1.2</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Training window</span>
-              <span class="status-value">1 year</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Data last updated</span>
-              <span class="status-value">30 min</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Latency</span>
-              <span class="status-value">~140 ms</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">API status</span>
-              <span class="dot"></span>
-              <span>All systems operational</span>
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
 # ────────────────────────────────────────────────────────────────────────────────
 # RIGHT — affiliated signals mini-sparklines + trade idea
 # ────────────────────────────────────────────────────────────────────────────────
@@ -413,7 +407,8 @@ with RIGHT:
             f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) , use_container_width=True, theme=None)
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+                        use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -422,3 +417,39 @@ with RIGHT:
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Footer (single HTML block) — place once at the very end
+# ────────────────────────────────────────────────────────────────────────────────
+st.markdown(
+    """
+    <div class="footer-wrap">
+      <div class="footer-inner">
+        <div class="statusbar">
+          <div class="status-item">
+            <span class="status-label">Model version</span>
+            <span class="status-value">v1.2</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Training window</span>
+            <span class="status-value">1 year</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Data last updated</span>
+            <span class="status-value">30 min</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Latency</span>
+            <span class="status-value">~140 ms</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">API status</span>
+            <span class="dot"></span>
+            <span>All systems operational</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)

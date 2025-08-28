@@ -1,7 +1,7 @@
+# streamlit/requirements.txt  (tested good with Python 3.11 on Streamlit Cloud)
 streamlit==1.38.0
-numpy==1.24.3
-pandas==2.0.3
-scikit-learn==1.3.2
-matplotlib==3.7.1
-yfinance==0.2.37
-plotly==5.18.0
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+lightgbm==4.3.0
+plotly==5.22.0

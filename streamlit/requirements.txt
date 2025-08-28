@@ -1,14 +1,8 @@
-# Large, complex packages with many dependencies (install first)
+--only-binary :all:
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.4.2
-
-# Medium complexity
 matplotlib==3.8.0
 plotly==5.18.0
-
-# Simpler packages
 streamlit==1.38.0
 yfinance==0.2.37
-
---only-binary :all:

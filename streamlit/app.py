@@ -325,8 +325,26 @@ LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
 # ────────────────────────────────────────────────────────────────────────────────
 # LEFT — Watchlist (enhanced) + Toggles
 # ────────────────────────────────────────────────────────────────────────────────
+# LEFT — Watchlist + Toggles (drop-in)
+# ------------------------------------------------
+from textwrap import dedent
+
+# Pretty labels for your CSV ticker columns (adjust if your column names differ)
+PRETTY = {
+    "NVDA": "NVDA",
+    "TSMC": "TSMC",
+    "ASML": "ASML",
+    "CDNS": "Cadence",
+    "SNPS": "Synopsys",
+    "AMD": "AMD",
+    "MSFT": "MSFT",
+    "005930.KS": "Samsung",
+}
+# Order you want to display
+DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"]
+
 with LEFT:
-    # --- Watchlist CSS (dedented so it's not seen as a code block) ---
+    # --- Watchlist CSS (dedented so Streamlit won’t treat it as code) ---
     WATCHLIST_CSS = dedent(f"""
     <style>
       .watch-card {{
@@ -363,6 +381,7 @@ with LEFT:
     st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
     def _badge_html(pct: float, side: str = "left") -> str:
+        """Left badge uses green/orange. Right badge uses teal/orange."""
         cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
         arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
         sign  = "+" if pct > 0 else ""
@@ -371,14 +390,17 @@ with LEFT:
     def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
         rows_html = []
         for t in tickers:
-            if t not in prices_df.columns: 
+            if t not in prices_df.columns:
                 continue
             s = prices_df[t].dropna().astype(float)
             if s.empty:
                 continue
+
             last = float(s.iloc[-1])
+            # Left badge: vs 5 bars ago; Right badge: last vs previous bar
             chg_left  = 100.0 * (s.iloc[-1] - s.iloc[-6]) / s.iloc[-6] if len(s) > 6 and s.iloc[-6] != 0 else 0.0
             chg_right = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
+
             label = PRETTY.get(t, t)
             rows_html.append(dedent(f"""
             <div class="watch-row">
@@ -391,22 +413,26 @@ with LEFT:
             </div>
             """))
 
-        st.markdown(dedent(f"""
-        <div class="watch-card">
-          <div class="watch-title">{title}</div>
-          {''.join(rows_html) if rows_html else '<div class="ticker" style="opacity:.7">No data</div>'}
-        </div>
-        """), unsafe_allow_html=True)
+        st.markdown(
+            dedent(f"""
+            <div class="watch-card">
+              <div class="watch-title">{title}</div>
+              {''.join(rows_html) if rows_html else '<div class="ticker" style="opacity:.7">No data</div>'}
+            </div>
+            """),
+            unsafe_allow_html=True,
+        )
 
-    # Render watchlist and the toggles card
+    # Render the watchlist card (NO extra HTML after this—this function outputs a complete card)
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    # Affiliated Signals — keep this as a separate card; no dangling HTML is printed as text
+    st.markdown("<div class='card'>", unsafe_allow_html=True)   # Open styled card
     st.markdown("**Affiliated Signals**")
     st.toggle("Macro layer", value=False)
     st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)               # Close styled card
 
 
 # ────────────────────────────────────────────────────────────────────────────────

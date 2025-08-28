@@ -1,454 +1,376 @@
 # streamlit/app.py
+from __future__ import annotations
+
 from pathlib import Path
 import pickle
-from typing import Optional, Tuple
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-
 # ────────────────────────────────────────────────────────────────────────────────
 # Page & theme
 # ────────────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
-# Palette
-BRAND_BG = "#0B1220"   # deep navy
-CARD_BG  = "#0F1A2B"   # card navy
-TEXT     = "#E6F0FF"   # off-white
-MUTED    = "#8AA1C7"   # muted label
-ACCENT   = "#496BFF"   # button blue
-ORANGE   = "#F08A3C"   # warm orange
-GREEN    = "#00D68F"   # mint green
+BG       = "#0B1220"
+CARD     = "#0F1A2B"
+TEXT     = "#E6F0FF"
+MUTED    = "#8AA1C7"
+ACCENT   = "#496BFF"   # CTA blue
+ORANGE   = "#F08A3C"
+GREEN    = "#5CF2B8"
+RED      = "#FF7A7A"
 
 st.markdown(
     f"""
     <style>
       :root {{
-        --bg: {BRAND_BG};
-        --card: {CARD_BG};
-        --text: {TEXT};
-        --muted: {MUTED};
-        --accent: {ACCENT};
-        --green: {GREEN};
-        --orange: {ORANGE};
+        --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
       }}
-      .stApp {{ background: var(--bg) !important; color: var(--text); }}
-      .block-container {{ padding-top: 1rem; padding-bottom: 1.2rem; }}
+      .stApp {{ background:var(--bg); color:var(--text); }}
+      .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
 
-      /* cards */
+      /* Title bar */
+      .titlebar {{ display:flex; align-items:center; margin:6px 4px 12px; }}
+      .titlebar h1 {{ font-size:26px; letter-spacing:.2px; margin:0; }}
+
+      /* Cards */
       .card {{
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 16px;
-        padding: 14px 16px;
-        box-shadow: 0 8px 22px rgba(0,0,0,.28);
-      }}
-      .tile .label {{ color: var(--muted); font-size: 13px; margin-bottom: 6px; }}
-      .tile .value {{ color: var(--text); font-size: 44px; font-weight: 700; letter-spacing: .3px; }}
-
-      /* primary button */
-      .predict-btn button {{
-        width: 100%; height: 46px; border-radius: 12px; border: 0;
-        background: var(--accent); color: #fff; font-weight: 700;
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.06);
+        border-radius:18px;
+        padding:14px 16px;
+        box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
 
-      /* inputs */
-      div[data-baseweb="input"] > div,
-      .stSelectbox [data-baseweb="select"] > div {{
-        background: var(--card) !important;
-        border: 1px solid rgba(255,255,255,0.10) !important;
-        border-radius: 12px !important;
-        color: var(--text) !important;
-      }}
-      input[type="text"], .stSelectbox span {{ color: var(--text) !important; }}
+      .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
+      .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* bottom metrics band */
-      .metric-band {{
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 18px;
-        padding: 16px 22px;
-        display: flex; justify-content: space-between; align-items: center;
-        font-weight: 700; font-size: 22px;
+      /* Inputs — target exact widgets to avoid ghost bars */
+      [data-testid="stTextInput"] > div > div,
+      [data-testid="stSelectbox"]  > div > div,
+      [data-testid="stNumberInput"]> div > div {{
+        background:var(--card) !important;
+        border:1px solid rgba(255,255,255,.10) !important;
+        border-radius:12px !important;
+        color:var(--text) !important;
       }}
-      .metric-label {{ color: var(--muted); font-weight: 600; margin-right: 8px; }}
 
-      /* subtle section title */
-      .section-title {{ color: var(--muted); font-size: 14px; margin: 2px 0 6px; }}
+      /* Radio to look like pills */
+      [data-baseweb="radio"] > label {{
+        padding:.35rem .7rem;
+        border:1px solid rgba(255,255,255,.14);
+        border-radius:10px;
+        margin-right:.35rem;
+      }}
+
+      /* Primary button explicitly blue regardless of theme */
+      .stButton > button {{
+        height:42px; border-radius:12px !important; border:0 !important;
+        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+      }}
+
+      /* Footer status bar */
+      .statusbar {{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.06);
+        border-radius:16px;
+        padding:12px 16px;
+        display:flex; gap:16px; justify-content:space-between; align-items:center;
+        margin-top:10px;
+      }}
+      .statusbar .muted {{ color:{MUTED}; font-size:12px; }}
+      .ok {{ color:{GREEN}; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("Stock Prediction Expert")
-
-
 # ────────────────────────────────────────────────────────────────────────────────
-# Artifacts (optional)
-# ────────────────────────────────────────────────────────────────────────────────
-@st.cache_resource(show_spinner=False)
-def load_artifacts() -> Tuple[Optional[object], Optional[object]]:
-    """Load optional model + scaler. If missing, return (None, None) safely."""
-    model_dir = Path(__file__).parent / "models"
-    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
-    scaler_path = model_dir / "y_scaler.pkl"
-
-    reg = None
-    scaler = None
-    try:
-        if reg_path.exists():
-            with reg_path.open("rb") as f:
-                reg = pickle.load(f)
-        if scaler_path.exists():
-            with scaler_path.open("rb") as f:
-                scaler = pickle.load(f)
-    except Exception as e:
-        st.warning(f"Model artifacts couldn't be loaded: {e}")
-    return reg, scaler
-
-
-def inverse_y_if_possible(y_scaled: float, scaler) -> Tuple[float, bool]:
-    """Inverse transform if scaler available; return (value, scaled_flag)."""
-    if scaler is None:
-        return float(y_scaled), True
-    arr = np.array([[y_scaled]], dtype=np.float32)
-    return float(scaler.inverse_transform(arr).ravel()[0]), False
-
-
-def _expected_n_features(model) -> Optional[int]:
-    """Try to read how many inputs the loaded model expects."""
-    if model is None:
-        return None
-    if hasattr(model, "n_features_in_"):
-        return int(model.n_features_in_)
-    try:
-        return int(model.booster_.num_feature())  # LightGBM booster
-    except Exception:
-        return None
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# Demo data (deterministic)
+# Demo data + features
 # ────────────────────────────────────────────────────────────────────────────────
 TICKERS = ["NVDA", "TSMC", "ASML", "AMD", "MSFT"]
 
-@st.cache_data(show_spinner=False)
-def demo_series(seed: int = 12, periods: int = 120) -> pd.DataFrame:
+@st.cache_data
+def make_demo_prices(seed=1, periods=140) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
-    base = np.cumsum(rng.normal(0.2, 0.8, size=periods)) + np.linspace(0, 18, periods)
+    base = np.cumsum(rng.normal(0.12, 0.7, size=periods)) + np.linspace(0, 22, periods)
     df = pd.DataFrame({"NVDA": base})
-    df["TSMC"] = base * 0.58 + np.cumsum(rng.normal(0.0, 0.55, size=periods)) + 5
-    df["ASML"] = base * 0.46 + np.cumsum(rng.normal(0.0, 0.60, size=periods)) - 3
-    df["AMD"]  = base * 0.40 + np.cumsum(rng.normal(0.0, 0.50, size=periods)) + 1
-    df["MSFT"] = base * 0.35 + np.cumsum(rng.normal(0.0, 0.45, size=periods)) + 2
-    df.index = pd.RangeIndex(1, periods + 1, name="t")
-    # make them look like price-ish levels
-    for c, shift, scale in zip(df.columns, [210, 95, 120, 65, 75], [2.3, 1.4, 1.6, 1.2, 1.1]):
-        df[c] = (df[c] * scale + shift).round(2)
+    df["TSMC"] = base*0.55 + np.cumsum(rng.normal(0, .55, size=periods)) + 5
+    df["ASML"] = base*0.45 + np.cumsum(rng.normal(0, .65, size=periods)) - 3
+    df["AMD"]  = base*0.35 + np.cumsum(rng.normal(0, .70, size=periods)) - 6
+    df["MSFT"] = base*0.25 + np.cumsum(rng.normal(0, .40, size=periods)) + 9
+    df.index = pd.RangeIndex(1, periods+1, name="t")
     return df
 
-
-def _feat_block_from_series(s: pd.Series) -> list:
-    """6 features from a single price series."""
+def feat_block(s: pd.Series) -> list[float]:
     s = s.astype(float)
     r = s.pct_change().dropna()
-    last  = float(r.iloc[-1]) if len(r) >= 1 else 0.0
-    prev  = float(r.iloc[-2]) if len(r) >= 2 else 0.0
-    mean5 = float(r.tail(5).mean()) if len(r) >= 1 else 0.0
-    std5  = float(r.tail(5).std(ddof=0)) if len(r) >= 2 else 0.0
-    if not np.isfinite(std5):
-        std5 = 0.0
+    last  = float(r.iloc[-1]) if len(r) else 0.0
+    prev  = float(r.iloc[-2]) if len(r) > 1 else 0.0
+    mean5 = float(r.tail(5).mean()) if len(r) else 0.0
+    std5  = float(r.tail(5).std(ddof=0)) if len(r) > 1 else 0.0
+    if not np.isfinite(std5): std5 = 0.0
     mom5  = float(s.iloc[-1] - s.tail(5).mean()) if len(s) >= 5 else 0.0
-    level = float(s.iloc[-1]) if len(s) >= 1 else 0.0
-    return [last, prev, mean5, std5, mom5, level]  # 6 features
+    level = float(s.iloc[-1]) if len(s) else 0.0
+    return [last, prev, mean5, std5, mom5, level]
 
+def expected_n_feats(model) -> int | None:
+    if hasattr(model, "n_features_in_"): return int(model.n_features_in_)
+    try: return int(model.booster_.num_feature())
+    except Exception: return None
 
-def build_features(df: pd.DataFrame, selected: str, n_expected: Optional[int]) -> Tuple[np.ndarray, Optional[str]]:
-    """
-    Build a single row of features from all 5 tickers (6 each = 30) + 1 bias = 31.
-    Order puts the selected ticker first. If model expects a different length,
-    pad with zeros or truncate.
-    """
-    order = [selected] + [t for t in TICKERS if t != selected]
-    feats: list[float] = []
-    for t in order:
-        feats.extend(_feat_block_from_series(df[t]))
+def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
+    order = [primary] + [t for t in TICKERS if t != primary]
+    feats = []
+    for t in order: feats.extend(feat_block(df[t]))
     feats.append(1.0)  # bias -> 31
-
     note = None
     if n_expected is not None and len(feats) != n_expected:
+        base = len(feats)
         if len(feats) < n_expected:
-            base_len = len(feats)
-            feats = feats + [0.0] * (n_expected - base_len)
-            note = f"Padded features from {base_len} to {n_expected}."
+            feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
         else:
-            base_len = len(feats)
-            feats = feats[:n_expected]
-            note = f"Truncated features from {base_len} to {n_expected}."
-    X = np.asarray([feats], dtype=np.float32)
-    return X, note
-
+            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
+    return np.asarray([feats], dtype=np.float32), note
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Controls (top row)
+# Optional model loading
 # ────────────────────────────────────────────────────────────────────────────────
-colA, colB, colC, colD = st.columns([1.6, 1.1, 1.3, 1.0], gap="large")
+@st.cache_resource
+def load_artifacts():
+    model_dir = Path(__file__).parent / "models"
+    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
+    scaler_path = model_dir / "y_scaler.pkl"
+    reg = None
+    if reg_path.exists():
+        with reg_path.open("rb") as f: reg = pickle.load(f)
+    y_scaler = None
+    if scaler_path.exists():
+        with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
+    return reg, y_scaler
 
-with colA:
-    ticker = st.selectbox("Ticker", TICKERS, index=0)
-with colB:
-    horizon = st.segmented_control("Horizon", options=["1D", "1W", "1M"], default="1W")
-with colC:
-    model_name = st.selectbox("Model", ["LightGBM", "RandomForest", "Linear"], index=0)
-with colD:
-    st.markdown('<div class="predict-btn">', unsafe_allow_html=True)
-    do_predict = st.button("Predict", use_container_width=True, type="primary")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# Tiles row: Predicted Close / Interval / Confidence
-# ────────────────────────────────────────────────────────────────────────────────
-lc_metrics = st.columns([1.1, 1.1, 0.9, 1.3], gap="large")
-
-series = demo_series()
-pred_value: Optional[float] = st.session_state.get("last_pred", None)
-conf_value: Optional[float] = st.session_state.get("last_conf", 0.78)
-
-if do_predict:
-    reg, y_scaler = load_artifacts()
-    try:
-        n_expected = _expected_n_features(reg) or 31
-        X, shape_note = build_features(series, ticker, n_expected)
-        if X.shape[1] != n_expected:
-            raise RuntimeError(f"Built {X.shape[1]} features but model expects {n_expected}")
-        y_scaled = float(reg.predict(X)[0]) if reg is not None else float(series[ticker].iloc[-1])
-        y_pred, scaled_flag = inverse_y_if_possible(y_scaled, y_scaler)
-        pred_value = y_pred
-        st.session_state["last_pred"] = pred_value
-        # naive confidence proxy
-        conf_value = float(np.clip(0.6 + np.random.default_rng(42).normal(0, 0.06), 0.55, 0.95))
-        st.session_state["last_conf"] = conf_value
-        if reg is None:
-            st.info("No model found — showing demo prediction.")
-        if shape_note:
-            st.caption(f"⚠️ {shape_note}")
-        if y_scaler is None and reg is not None:
-            st.info("Prediction shown in scaled space (y_scaler.pkl not found).")
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
-
-# compute an 80% interval around last price (demo logic if no pred)
-last_px = float(series[ticker].iloc[-1])
-vol80 = float(series[ticker].pct_change().tail(20).std(ddof=0) or 0.01)
-low_80 = last_px * (1 - 1.28 * vol80)
-high_80 = last_px * (1 + 1.28 * vol80)
-
-with lc_metrics[0]:
-    st.markdown('<div class="card tile">', unsafe_allow_html=True)
-    st.markdown('<div class="label">Predicted Close (Next Day)</div>', unsafe_allow_html=True)
-    pred_text = f"${pred_value:,.2f}" if isinstance(pred_value, (float, int)) else "—"
-    st.markdown(f'<div class="value">{pred_text}</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with lc_metrics[1]:
-    st.markdown('<div class="card tile">', unsafe_allow_html=True)
-    st.markdown('<div class="label">80% interval</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="value">{int(low_80):,} – {int(high_80):,}</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with lc_metrics[2]:
-    st.markdown('<div class="card tile">', unsafe_allow_html=True)
-    st.markdown('<div class="label">Confidence</div>', unsafe_allow_html=True)
-    conf_text = f"{conf_value:.2f}" if isinstance(conf_value, (float, int)) else "—"
-    st.markdown(f'<div class="value">{conf_text}</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with lc_metrics[3]:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Affiliated Signals</div>', unsafe_allow_html=True)
-
-    def spark(s: pd.Series) -> go.Figure:
-        fig = px.line(s.reset_index(drop=True), labels={"value": "", "index": ""})
-        fig.update_traces(mode="lines", line=dict(width=2), hovertemplate=None)
-        fig.update_layout(
-            height=58, margin=dict(l=6, r=6, t=6, b=2),
-            showlegend=False, template="plotly_dark",
-            paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG)
-        fig.update_xaxes(visible=False)
-        fig.update_yaxes(visible=False)
-        return fig
-
-    rng = np.random.default_rng(4)
-    for name in ["TSMC", "ASML", "Cadence", "Synopsys"]:
-        val = float(rng.normal(0.0, 0.4))
-        col = GREEN if val >= 0 else ORANGE
-        st.markdown(
-            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
-            f"<div>{name}</div><div style='color:{col}'>{val:+.2f}</div></div>",
-            unsafe_allow_html=True,
-        )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0, 0.6, 28)))), use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
-
+def inverse_if_scaled(y_scaled: float, scaler):
+    if scaler is None: return float(y_scaled), True
+    arr = np.array([[y_scaled]], dtype=np.float32)
+    return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist (left) + Main chart (right)
+# Header & controls
 # ────────────────────────────────────────────────────────────────────────────────
-row1 = st.columns([1.0, 2.3], gap="large")
+st.markdown("<div class='titlebar'><h1>Stock Prediction Expert</h1></div>", unsafe_allow_html=True)
 
-with row1[0]:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("**Watchlist**", unsafe_allow_html=True)
+ctrl = st.container()
+with ctrl:
+    c1, c2, c3, c4 = st.columns([1.2, 1.0, 1.0, 0.9])
+    with c1: ticker = st.selectbox("Ticker", TICKERS, index=0)
+    with c2: horizon = st.radio("Horizon", ["1D","1W","1M"], horizontal=True, index=0)
+    with c3: model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0)
+    with c4: do_predict = st.button("Predict", use_container_width=True, type="primary")
 
-    rng = np.random.default_rng(9)
-    prices = {t: float(series[t].iloc[-1]) for t in TICKERS}
-    changes = {t: float(rng.normal(0, 0.7)) for t in TICKERS}
+prices = make_demo_prices()
 
+# 3 columns layout
+LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
+
+# ────────────────────────────────────────────────────────────────────────────────
+# LEFT — watchlist & toggles
+# ────────────────────────────────────────────────────────────────────────────────
+with LEFT:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Watchlist**")
     for t in TICKERS:
-        sign_col = GREEN if changes[t] >= 0 else ORANGE
+        last = float(prices[t].iloc[-1])
+        ref  = float(prices[t].iloc[-6])
+        pct  = (last - ref) / ref * 100
+        col  = GREEN if pct >= 0 else ORANGE
+        arrow = "↑" if pct >= 0 else "↓"
         st.markdown(
-            f"<div style='display:flex;justify-content:space-between;margin:6px 0;'>"
-            f"<div>{t}</div>"
-            f"<div style='opacity:.85'>{prices[t]:.2f}</div>"
-            f"<div style='width:70px;text-align:right;color:{sign_col};'>{changes[t]:+0.2f}%</div>"
+            f"<div style='display:flex;justify-content:space-between;margin:7px 2px;'>"
+            f"<div style='opacity:.9'>{t}</div>"
+            f"<div style='opacity:.9'>{last:,.2f}</div>"
+            f"<div style='color:{col}'>{arrow} {abs(pct):.02f}%</div>"
             f"</div>",
             unsafe_allow_html=True,
         )
     st.markdown("</div>", unsafe_allow_html=True)
 
-with row1[1]:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("", divider=False)
-    long = series.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Affiliated Signals**")
+    st.toggle("Macro layer", value=False)
+    st.toggle("News Sentiment", value=False)
+    st.toggle("Options flow", value=False)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ────────────────────────────────────────────────────────────────────────────────
+# MID — metric tiles, forecast chart, heatmap + lower cards
+# ────────────────────────────────────────────────────────────────────────────────
+with MID:
+    pred, lo, hi, conf = None, None, None, None
+    if do_predict:
+        try:
+            reg, y_scaler = load_artifacts()
+            if reg is not None:
+                n_exp = expected_n_feats(reg) or 31
+                X, note = build_features(prices, ticker, n_exp)
+                y_scaled = float(reg.predict(X)[0])
+                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
+                lo, hi = pred*0.98, pred*1.02
+                conf = 0.78
+                if note: st.caption(f"⚠️ {note}")
+                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
+            else:
+                s = prices["NVDA"]
+                pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
+                lo, hi = pred*0.98, pred*1.02
+                conf = 0.65
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
+
+    # Metric tiles
+    a, b, c = st.columns(3)
+    with a:
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
+        st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='value'>{f'${pred:,.2f}' if pred is not None else '—'}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    with b:
+        inter_text = f"{int(round(lo))} – {int(round(hi))}" if (lo is not None and hi is not None) else "—"
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
+        st.markdown("<div class='label'>80% interval</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='value'>{inter_text}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    with c:
+        conf_text = f"{conf:.2f}" if isinstance(conf, (float, int)) else "—"
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
+        st.markdown("<div class='label'>Confidence</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Forecast chart with dotted projection & shaded area
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
     fig = px.line(
         long, x="t", y="price", color="ticker",
-        labels={"t": "", "price": "", "ticker": ""},
-        color_discrete_sequence=["#70B3FF", "#5F8BFF", "#4BB3FD", "#3F6AE0", "#6ED0FF"],
+        labels={"t":"","price":"","ticker":""},
+        color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF"],
         template="plotly_dark",
     )
-    cut = int(series.index.max() * 0.9)
-    last_actual = float(series[ticker].loc[cut])
-    # dotted projection (demo)
-    t_future = np.arange(cut, int(series.index.max()) + 1)
-    proj = np.linspace(last_actual, last_actual * (1 + 0.03), len(t_future))
-    fig.add_trace(go.Scatter(x=t_future, y=proj, mode="lines",
-                             line=dict(color="#E6F0FF", width=2, dash="dot"),
-                             name="Projection"))
-    # vline + vrect forecast window
-    fig.add_vline(x=cut, line_width=1, line_dash="dot", line_color="#93A1C9")
-    fig.add_vrect(x0=cut, x1=series.index.max(),
-                  fillcolor="rgba(73,107,255,0.10)", line_width=0)
-    # ensure space to the right so everything is visible
-    x0, x1 = int(series.index.min()), int(series.index.max())
-    fig.update_xaxes(range=[x0, x1 + 12])
+    # "Now" index & dotted projection for NVDA (fake extrapolation)
+    now_x = prices.index[-1]
+    last_nvda = float(prices["NVDA"].iloc[-1])
+    proj_x = np.arange(now_x, now_x+12)
+    proj_y = np.linspace(last_nvda, (last_nvda*1.01), len(proj_x))
+    fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
+                             line=dict(width=2, dash="dot", color="#d6d6d6"),
+                             name="projection", showlegend=False))
+    # vertical now line
+    fig.add_vline(x=now_x, line=dict(color="#9BA4B5", dash="dot"))
+    # shaded forecast area
+    fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
     fig.update_layout(
-        height=420, margin=dict(l=10, r=10, t=10, b=0),
-        paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
-        legend=dict(orientation="h", y=-0.2, font=dict(size=12)),
+        height=360, margin=dict(l=10, r=10, t=8, b=8),
+        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
         xaxis=dict(showgrid=False, showticklabels=False),
         yaxis=dict(showgrid=False, showticklabels=False),
     )
     st.plotly_chart(fig, use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # Lower cards: Error metrics · Error distribution · SHAP
+    lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
+
+    with lc1:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**Error metrics**")
+        mae, rmse, confu = 1.31, 2.06, 0.91
+        bar = lambda v: f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {v*70}%,rgba(255,255,255,.12) {v*70}%);border-radius:6px'></div>"
+        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>")
+        st.markdown(bar(0.6), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.4), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.8), unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with lc2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**Error distribution**")
+        rng = np.random.default_rng(9)
+        e = rng.normal(0, 1, 220)
+        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
+        hist.update_layout(
+            height=160, margin=dict(l=6, r=6, t=4, b=4),
+            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            xaxis=dict(visible=False), yaxis=dict(visible=False),
+        )
+        st.plotly_chart(hist, use_container_width=True, theme=None)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with lc3:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**SHAP**")
+        st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Bottom action row + status
+    ac1, ac2, ac3 = st.columns([1.0, 1.0, 1.0])
+    with ac1:
+        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
+    with ac2:
+        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
+    with ac3:
+        pass
+
+    st.markdown(
+        f"""
+        <div class='statusbar'>
+          <div class='muted'>Model version <b>v1.2</b></div>
+          <div class='muted'>Training window: <b>1 year</b></div>
+          <div class='muted'>Data last updated: <b>30 min</b></div>
+          <div class='muted'>Latency: <b>~140 ms</b></div>
+          <div class='muted'>API status: <span class='ok'>●</span> All systems operational</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Error metrics / Error distribution / SHAP-ish box
+# RIGHT — affiliated signals mini-sparklines + trade idea
 # ────────────────────────────────────────────────────────────────────────────────
-lc1, lc2, lc3 = st.columns(3, gap="large")
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines",
+                             line=dict(width=2)))
+    f.update_layout(
+        height=54, margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        xaxis=dict(visible=False), yaxis=dict(visible=False),
+    )
+    return f
 
-with lc1:
+with RIGHT:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Error metrics**", unsafe_allow_html=True)
-
-    def meter(label: str, val: float, pct_fill: int):
+    st.markdown("**Affiliated Signals**")
+    rng = np.random.default_rng(42)
+    for name in ["TSMC","ASML","Cadence","Synopsys"]:
+        val = float(rng.normal(0.0, 0.5))
         st.markdown(
-            f"<div style='display:flex;justify-content:space-between;margin:2px 0 6px;'>"
-            f"<span>{label}</span><b>{val:.2f}</b></div>",
+            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.markdown(
-            f"<div style='height:6px;border-radius:6px;"
-            f"background:linear-gradient(90deg,{ACCENT} {pct_fill}%,rgba(255,255,255,.10) {pct_fill}%);'></div>",
-            unsafe_allow_html=True,
-        )
-    meter("MAE", 1.31, 66)
-    meter("RMSE", 2.06, 40)
-    meter("Confu.", 0.91, 78)
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) , use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
-with lc2:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Error distribution**", unsafe_allow_html=True)
-    rng = np.random.default_rng(13)
-    hist = rng.normal(0, 1, 400)
-    hfig = px.histogram(pd.Series(hist), nbins=30, labels={"value": ""})
-    hfig.update_layout(
-        height=210, margin=dict(l=8, r=8, t=8, b=8),
-        showlegend=False, template="plotly_dark",
-        paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
-        xaxis=dict(showgrid=False, showticklabels=False),
-        yaxis=dict(showgrid=False, showticklabels=False),
-    )
-    st.plotly_chart(hfig, use_container_width=True, theme=None)
+    st.markdown("**Trade idea**")
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-
-with lc3:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**SHAP / Trade idea**", unsafe_allow_html=True)
-    st.markdown(
-        "<div style='display:flex;justify-content:space-between;margin:6px 0;'>"
-        "<span>Bias:</span><b style='color:#FFCA6B'>Mild long</b></div>", unsafe_allow_html=True)
-    st.markdown(
-        "<div style='display:flex;justify-content:space-between;margin:6px 0;'>"
-        "<span>Entry:</span><b>423.00</b></div>", unsafe_allow_html=True)
-    st.markdown(
-        "<div style='display:flex;justify-content:space-between;margin:6px 0;'>"
-        "<span>Target:</span><b>452.00</b></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# Correlation heatmap
-# ────────────────────────────────────────────────────────────────────────────────
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("Correlation Heatmap", divider=False)
-corr = series[TICKERS].corr()
-heat = go.Figure(
-    data=go.Heatmap(
-        z=corr.values, x=corr.columns, y=corr.index,
-        zmin=0, zmax=1, colorscale=[
-            [0.0, "#2B1A0F"], [0.2, "#4A2A17"], [0.4, "#7A3E1F"],
-            [0.6, "#B85A2B"], [0.8, ORANGE], [1.0, "#FFB073"]
-        ],
-        colorbar=dict(title="")
-    )
-)
-heat.update_layout(
-    height=420, margin=dict(l=10, r=10, t=10, b=10),
-    paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
-    xaxis=dict(showgrid=False, tickfont=dict(color=TEXT)),
-    yaxis=dict(showgrid=False, tickfont=dict(color=TEXT)),
-)
-st.plotly_chart(heat, use_container_width=True, theme=None)
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# Bottom metrics band (MAE / R²)
-# ────────────────────────────────────────────────────────────────────────────────
-st.markdown(
-    """
-    <div class="metric-band">
-      <div><span class="metric-label">MAE:</span> 5.62</div>
-      <div><span class="metric-label">R²:</span> 0.91</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)

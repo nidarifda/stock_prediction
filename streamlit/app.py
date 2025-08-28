@@ -233,33 +233,106 @@ prices = make_demo_prices()
 LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# LEFT — watchlist & toggles
+# LEFT — Watchlist (updated) + Toggles
+# Replace your whole LEFT block with this
 # ────────────────────────────────────────────────────────────────────────────────
 with LEFT:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Watchlist**")
-    for t in TICKERS:
-        last = float(prices[t].iloc[-1])
-        ref  = float(prices[t].iloc[-6])
-        pct  = (last - ref) / ref * 100 if ref != 0 else 0.0
-        col  = GREEN if pct >= 0 else ORANGE
-        arrow = "↑" if pct >= 0 else "↓"
+
+    # --- Watchlist CSS + helpers ---
+    CYAN = "#3DE4E0"  # teal for right-side micro-badge
+
+    WATCHLIST_CSS = f"""
+    <style>
+    .watch-card {{
+      background:{CARD};
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:14px 16px;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
+      margin-bottom:16px;
+    }}
+    .watch-title {{ font-weight:700; color:{TEXT}; margin:0 0 10px 0; }}
+
+    .watch-row {{
+      display:grid;
+      grid-template-columns: 1fr auto;  /* left = ticker, right = last price */
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }}
+    .watch-row:last-child {{ border-bottom:0; }}
+
+    .ticker {{ font-weight:600; color:{TEXT}; }}
+    .last   {{ font-weight:700; color:{TEXT}; }}
+
+    .badges {{
+      grid-column:1 / span 2;            /* full width under the row */
+      display:flex; justify-content:space-between;
+      font-size:13px; margin-top:4px;
+    }}
+    .badge {{ display:flex; gap:6px; align-items:center; }}
+    .up    {{ color:{GREEN}; }}
+    .down  {{ color:{ORANGE}; }}
+    .neut  {{ color:{CYAN}; }}
+    .arrow {{ font-weight:700; }}
+    </style>
+    """
+    st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
+
+    def _badge_html(pct: float, side: str = "left") -> str:
+        """Make a colored mini-badge like the mock.
+        left: green/orange, right: teal for non-negative, orange if negative.
+        """
+        if side == "right":
+            cls = "neut" if pct >= 0 else "down"
+        else:
+            cls = "up" if pct >= 0 else "down"
+        arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
+        sign  = "+" if pct > 0 else ""
+        return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
+
+    def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+        rows_html = []
+        for t in tickers:
+            s = prices_df[t].astype(float)
+            last = float(s.iloc[-1])
+            # left badge: vs 5 bars ago; right badge: last bar vs previous
+            chg_left  = 100.0 * (s.iloc[-1] - s.iloc[-6]) / s.iloc[-6] if len(s) > 6 and s.iloc[-6] != 0 else 0.0
+            chg_right = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
+            rows_html.append(
+                f"""
+                <div class="watch-row">
+                  <div class="ticker">{t}</div>
+                  <div class="last">{last:,.2f}</div>
+                  <div class="badges">
+                    {_badge_html(chg_left, side="left")}
+                    {_badge_html(chg_right, side="right")}
+                  </div>
+                </div>
+                """
+            )
+
         st.markdown(
-            f"<div style='display:flex;justify-content:space-between;margin:7px 2px;'>"
-            f"<div style='opacity:.9'>{t}</div>"
-            f"<div style='opacity:.9'>{last:,.2f}</div>"
-            f"<div style='color:{col}'>{arrow} {abs(pct):.02f}%</div>"
-            f"</div>",
+            f"""
+            <div class="watch-card">
+              <div class="watch-title">{title}</div>
+              {''.join(rows_html)}
+            </div>
+            """,
             unsafe_allow_html=True,
         )
-    st.markdown("</div>", unsafe_allow_html=True)
 
+    # --- Render the watchlist card on the LEFT ---
+    render_watchlist_from_prices(prices, ["TSMC", "ASML", "AMD", "MSFT"])
+
+    # --- Affiliated signals toggles card (kept as-is) ---
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     st.toggle("Macro layer", value=False)
     st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # MID — metric tiles, forecast chart, and lower cards

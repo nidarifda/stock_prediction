@@ -14,14 +14,14 @@ import streamlit as st
 # ────────────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
-BG   = "#0B1220"
-CARD = "#0F1A2B"
-TEXT = "#E6F0FF"
-MUTED= "#8AA1C7"
-ACCENT = "#496BFF"
-ORANGE = "#F08A3C"
-GREEN  = "#2ECC71"
-RED    = "#FF6B6B"
+BG       = "#0B1220"
+CARD     = "#0F1A2B"
+TEXT     = "#E6F0FF"
+MUTED    = "#8AA1C7"
+ACCENT   = "#496BFF"   # CTA blue
+ORANGE   = "#F08A3C"
+GREEN    = "#5CF2B8"
+RED      = "#FF7A7A"
 
 st.markdown(
     f"""
@@ -29,24 +29,26 @@ st.markdown(
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
       }}
-      .stApp {{ background: var(--bg); color: var(--text); }}
-      .block-container {{ padding-top:.8rem; padding-bottom:1.1rem; }}
+      .stApp {{ background:var(--bg); color:var(--text); }}
+      .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
 
-      /* Title */
-      .titlebar {{ display:flex; align-items:center; padding:8px 6px 14px; }}
-      .titlebar h1 {{ font-size:26px; margin:0; letter-spacing:.2px; }}
+      /* Title bar */
+      .titlebar {{ display:flex; align-items:center; margin:6px 4px 12px; }}
+      .titlebar h1 {{ font-size:26px; letter-spacing:.2px; margin:0; }}
 
       /* Cards */
       .card {{
         background:var(--card);
         border:1px solid rgba(255,255,255,.06);
-        border-radius:18px; padding:14px 16px;
+        border-radius:18px;
+        padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
-      .mcard .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
-      .mcard .value {{ font-weight:800; letter-spacing:.2px; font-size:40px !important; }}
 
-      /* EXACT widget targeting (avoid ghost bars) */
+      .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
+      .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
+
+      /* Inputs — target exact widgets to avoid ghost bars */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stSelectbox"]  > div > div,
       [data-testid="stNumberInput"]> div > div {{
@@ -56,35 +58,38 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Radio pills */
-      [data-testid="stHorizontalBlock"] label div[data-baseweb="radio"] {{ background:transparent; }}
+      /* Radio to look like pills */
       [data-baseweb="radio"] > label {{
-        padding:.35rem .7rem; border-radius:10px;
-        border:1px solid rgba(255,255,255,.12);
-        color:var(--text);
+        padding:.35rem .7rem;
+        border:1px solid rgba(255,255,255,.14);
+        border-radius:10px;
+        margin-right:.35rem;
       }}
 
-      /* Primary button: force blue accent regardless of theme */
+      /* Primary button explicitly blue regardless of theme */
       .stButton > button {{
         height:42px; border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
       /* Footer status bar */
-      .footerband {{
-        background:var(--card); border:1px solid rgba(255,255,255,.06);
-        border-radius:16px; padding:14px 20px;
-        display:flex; gap:18px; align-items:center; justify-content:space-between; margin-top:12px;
+      .statusbar {{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.06);
+        border-radius:16px;
+        padding:12px 16px;
+        display:flex; gap:16px; justify-content:space-between; align-items:center;
+        margin-top:10px;
       }}
-      .footerband .item {{ color:{MUTED}; font-size:12px; }}
-      .footerband .ok {{ color:#5CF2B8; }}
+      .statusbar .muted {{ color:{MUTED}; font-size:12px; }}
+      .ok {{ color:{GREEN}; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Demo data + simple features
+# Demo data + features
 # ────────────────────────────────────────────────────────────────────────────────
 TICKERS = ["NVDA", "TSMC", "ASML", "AMD", "MSFT"]
 
@@ -129,11 +134,10 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
             feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
         else:
             feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
-    X = np.asarray([feats], dtype=np.float32)
-    return X, note
+    return np.asarray([feats], dtype=np.float32), note
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Model loading (optional)
+# Optional model loading
 # ────────────────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
@@ -154,51 +158,57 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Header + controls
+# Header & controls
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("<div class='titlebar'><h1>Stock Prediction Expert</h1></div>", unsafe_allow_html=True)
 
 ctrl = st.container()
 with ctrl:
-    c1, c2, c3, c4 = st.columns([1.4, 1.0, 1.0, 0.9])
+    c1, c2, c3, c4 = st.columns([1.2, 1.0, 1.0, 0.9])
     with c1: ticker = st.selectbox("Ticker", TICKERS, index=0)
     with c2: horizon = st.radio("Horizon", ["1D","1W","1M"], horizontal=True, index=0)
     with c3: model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0)
     with c4: do_predict = st.button("Predict", use_container_width=True, type="primary")
 
-# 3 columns: Left watchlist, Middle main, Right signals
-L, M, R = st.columns([0.9, 2.4, 1.1], gap="large")
 prices = make_demo_prices()
 
-# LEFT — watchlist + toggles
-with L:
+# 3 columns layout
+LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
+
+# ────────────────────────────────────────────────────────────────────────────────
+# LEFT — watchlist & toggles
+# ────────────────────────────────────────────────────────────────────────────────
+with LEFT:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Watchlist**")
     for t in TICKERS:
         last = float(prices[t].iloc[-1])
-        delta = float((prices[t].iloc[-1] - prices[t].iloc[-6]) / prices[t].iloc[-6] * 100)
-        color = GREEN if delta >= 0 else RED
-        arrow = "↑" if delta >= 0 else "↓"
+        ref  = float(prices[t].iloc[-6])
+        pct  = (last - ref) / ref * 100
+        col  = GREEN if pct >= 0 else ORANGE
+        arrow = "↑" if pct >= 0 else "↓"
         st.markdown(
-            f"<div style='display:flex;justify-content:space-between;margin:6px 2px;'>"
+            f"<div style='display:flex;justify-content:space-between;margin:7px 2px;'>"
             f"<div style='opacity:.9'>{t}</div>"
-            f"<div style='opacity:.85'>{last:,.2f}</div>"
-            f"<div style='color:{color}'>{arrow} {abs(delta):.2f}%</div>"
-            f"</div>", unsafe_allow_html=True
+            f"<div style='opacity:.9'>{last:,.2f}</div>"
+            f"<div style='color:{col}'>{arrow} {abs(pct):.02f}%</div>"
+            f"</div>",
+            unsafe_allow_html=True,
         )
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
-    st.toggle("Enable affiliated signals", value=True)
     st.toggle("Macro layer", value=False)
-    st.toggle("News sentiment", value=False)
+    st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# MIDDLE — metrics + main chart + heatmap
-with M:
-    pred_price = conf = lo = hi = None
+# ────────────────────────────────────────────────────────────────────────────────
+# MID — metric tiles, forecast chart, heatmap + lower cards
+# ────────────────────────────────────────────────────────────────────────────────
+with MID:
+    pred, lo, hi, conf = None, None, None, None
     if do_predict:
         try:
             reg, y_scaler = load_artifacts()
@@ -206,43 +216,40 @@ with M:
                 n_exp = expected_n_feats(reg) or 31
                 X, note = build_features(prices, ticker, n_exp)
                 y_scaled = float(reg.predict(X)[0])
-                pred_price, scaled_flag = inverse_if_scaled(y_scaled, y_scaler)
-                lo, hi = pred_price*0.97, pred_price*1.03
+                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
+                lo, hi = pred*0.98, pred*1.02
                 conf = 0.78
                 if note: st.caption(f"⚠️ {note}")
-                if scaled_flag: st.info("Returned in scaled space; y_scaler.pkl missing.")
+                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
             else:
                 s = prices["NVDA"]
-                pred_price = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
-                lo, hi = pred_price*0.97, pred_price*1.03
+                pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
+                lo, hi = pred*0.98, pred*1.02
                 conf = 0.65
         except Exception as e:
             st.error(f"Prediction failed: {e}")
 
+    # Metric tiles
     a, b, c = st.columns(3)
     with a:
-        st.markdown("<div class='card mcard'>", unsafe_allow_html=True)
-        st.markdown("<div class='label'>Predicted Close (Next Day)</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='value'>{f'${pred_price:,.2f}' if pred_price is not None else '—'}</div>", unsafe_allow_html=True)
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
+        st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='value'>{f'${pred:,.2f}' if pred is not None else '—'}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with b:
-        st.markdown("<div class='card mcard'>", unsafe_allow_html=True)
+        inter_text = f"{int(round(lo))} – {int(round(hi))}" if (lo is not None and hi is not None) else "—"
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>80% interval</div>", unsafe_allow_html=True)
-        st.markdown(
-            f"<div class='value'>{f'{int(round(lo))} – {int(round(hi))}' if (lo is not None and hi is not None) else '—'}</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='value'>{inter_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c:
-        st.markdown("<div class='card mcard'>", unsafe_allow_html=True)
+        conf_text = f"{conf:.2f}" if isinstance(conf, (float, int)) else "—"
+        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Confidence</div>", unsafe_allow_html=True)
-        st.markdown(
-            f"<div class='value'>{f'{conf:.2f}' if isinstance(conf,(int,float)) else '—'}</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Forecast chart
+    # Forecast chart with dotted projection & shaded area
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
     fig = px.line(
@@ -251,6 +258,19 @@ with M:
         color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF"],
         template="plotly_dark",
     )
+    # "Now" index & dotted projection for NVDA (fake extrapolation)
+    now_x = prices.index[-1]
+    last_nvda = float(prices["NVDA"].iloc[-1])
+    proj_x = np.arange(now_x, now_x+12)
+    proj_y = np.linspace(last_nvda, (last_nvda*1.01), len(proj_x))
+    fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
+                             line=dict(width=2, dash="dot", color="#d6d6d6"),
+                             name="projection", showlegend=False))
+    # vertical now line
+    fig.add_vline(x=now_x, line=dict(color="#9BA4B5", dash="dot"))
+    # shaded forecast area
+    fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
     fig.update_layout(
         height=360, margin=dict(l=10, r=10, t=8, b=8),
         paper_bgcolor=CARD, plot_bgcolor=CARD,
@@ -261,61 +281,96 @@ with M:
     st.plotly_chart(fig, use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Heatmap
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Correlation Heatmap**")
-    corr = prices[TICKERS].corr()
-    heat = go.Figure(go.Heatmap(
-        z=corr.values, x=corr.columns, y=corr.index, zmin=0, zmax=1,
-        colorscale=[[0.0,"#2B1A0F"],[0.2,"#4A2A17"],[0.4,"#7A3E1F"],
-                    [0.6,"#B85A2B"],[0.8,"#F08A3C"],[1.0,"#FFB073"]],
-        colorbar=dict(title="")
-    ))
-    heat.update_layout(
-        height=330, margin=dict(l=10, r=10, t=10, b=10),
-        paper_bgcolor=CARD, plot_bgcolor=CARD,
-        xaxis=dict(showgrid=False, tickfont=dict(color=TEXT)),
-        yaxis=dict(showgrid=False, tickfont=dict(color=TEXT)),
-    )
-    st.plotly_chart(heat, use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Lower cards: Error metrics · Error distribution · SHAP
+    lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
 
-# RIGHT — affiliated signals with sparklines
-def tiny_spark(series: pd.Series) -> go.Figure:
+    with lc1:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**Error metrics**")
+        mae, rmse, confu = 1.31, 2.06, 0.91
+        bar = lambda v: f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {v*70}%,rgba(255,255,255,.12) {v*70}%);border-radius:6px'></div>"
+        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>")
+        st.markdown(bar(0.6), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.4), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.8), unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with lc2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**Error distribution**")
+        rng = np.random.default_rng(9)
+        e = rng.normal(0, 1, 220)
+        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
+        hist.update_layout(
+            height=160, margin=dict(l=6, r=6, t=4, b=4),
+            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            xaxis=dict(visible=False), yaxis=dict(visible=False),
+        )
+        st.plotly_chart(hist, use_container_width=True, theme=None)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with lc3:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**SHAP**")
+        st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Bottom action row + status
+    ac1, ac2, ac3 = st.columns([1.0, 1.0, 1.0])
+    with ac1:
+        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
+    with ac2:
+        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
+    with ac3:
+        pass
+
+    st.markdown(
+        f"""
+        <div class='statusbar'>
+          <div class='muted'>Model version <b>v1.2</b></div>
+          <div class='muted'>Training window: <b>1 year</b></div>
+          <div class='muted'>Data last updated: <b>30 min</b></div>
+          <div class='muted'>Latency: <b>~140 ms</b></div>
+          <div class='muted'>API status: <span class='ok'>●</span> All systems operational</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ────────────────────────────────────────────────────────────────────────────────
+# RIGHT — affiliated signals mini-sparklines + trade idea
+# ────────────────────────────────────────────────────────────────────────────────
+def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines",
                              line=dict(width=2)))
     f.update_layout(
-        height=52, margin=dict(l=0, r=0, t=0, b=0),
+        height=54, margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor=CARD, plot_bgcolor=CARD,
         xaxis=dict(visible=False), yaxis=dict(visible=False),
     )
     return f
 
-with R:
+with RIGHT:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     rng = np.random.default_rng(42)
     for name in ["TSMC","ASML","Cadence","Synopsys"]:
-        val = float(rng.normal(0.0, 0.4))
+        val = float(rng.normal(0.0, 0.5))
         st.markdown(
             f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
-            f"<div style='opacity:.9'>{name}</div>"
-            f"<div style='color:{ORANGE}'>{val:+.2f}</div>"
-            f"</div>", unsafe_allow_html=True
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
+            unsafe_allow_html=True,
         )
-        st.plotly_chart(tiny_spark(pd.Series(np.cumsum(rng.normal(0,0.6,18)))) , use_container_width=True, theme=None)
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) , use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Footer
-st.markdown(
-    """
-    <div class='footerband'>
-      <div class='item'>Model version <b>v1.2</b></div>
-      <div class='item'>Training window: <b>1 year</b></div>
-      <div class='item'>Data last updated: <b>30 min</b></div>
-      <div class='item'>Latency: <b>~140ms</b></div>
-      <div class='item'>API status: <span class='ok'>●</span> All systems operational</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Trade idea**")
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)

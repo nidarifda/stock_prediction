@@ -382,8 +382,6 @@ LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
 # ────────────────────────────────────────────────────────────────────────────────
 # LEFT — Watchlist (enhanced) + Toggles
 # ────────────────────────────────────────────────────────────────────────────────
-# LEFT — Watchlist + Toggles (drop-in)
-# ------------------------------------------------
 from textwrap import dedent
 
 # Pretty labels for your CSV ticker columns (adjust if your column names differ)
@@ -452,12 +450,9 @@ with LEFT:
             s = prices_df[t].dropna().astype(float)
             if s.empty:
                 continue
-
             last = float(s.iloc[-1])
-            # Left badge: vs 5 bars ago; Right badge: last vs previous bar
             chg_left  = 100.0 * (s.iloc[-1] - s.iloc[-6]) / s.iloc[-6] if len(s) > 6 and s.iloc[-6] != 0 else 0.0
             chg_right = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
-
             label = PRETTY.get(t, t)
             rows_html.append(dedent(f"""
             <div class="watch-row">
@@ -480,16 +475,17 @@ with LEFT:
             unsafe_allow_html=True,
         )
 
-    # Render the watchlist card (NO extra HTML after this—this function outputs a complete card)
+    # Render
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-    # Affiliated Signals — keep this as a separate card; no dangling HTML is printed as text
-    st.markdown("<div class='card'>", unsafe_allow_html=True)   # Open styled card
+    # Affiliated Signals card (notice correct indentation + arg)
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     st.toggle("Macro layer", value=False)
     st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
-     st.markdown("</div>", value=False)
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # ────────────────────────────────────────────────────────────────────────────────

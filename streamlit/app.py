@@ -432,7 +432,6 @@ with LEFT:
     st.toggle("Macro layer", value=False)
     st.toggle("News Sentiment", value=False)
     st.toggle("Options flow", value=False)
-    st.markdown("</div>", unsafe_allow_html=True)               # Close styled card
 
 
 # ────────────────────────────────────────────────────────────────────────────────

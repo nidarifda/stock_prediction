@@ -32,16 +32,10 @@ st.markdown(
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        /* Space to avoid Streamlit Cloud's "Manage app" tray on the right.
-           If running locally, set to 0px. */
-        --footer-safe: 160px;
+        --footer-safe: 160px; /* set to 0px if not using Streamlit Cloud */
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
       .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
-
-      /* Title bar */
-      .titlebar {{ display:flex; align-items:center; margin:6px 4px 12px; }}
-      .titlebar h1 {{ font-size:26px; letter-spacing:.2px; margin:0; }}
 
       /* Cards */
       .card {{
@@ -80,49 +74,26 @@ st.markdown(
       }}
 
       /* ===== Sticky segmented footer ===== */
-      .footer-wrap {{
-        position: sticky;
-        bottom: 8px;
-        z-index: 50;
-      }}
-      .footer-inner {{
-        width: calc(100% - var(--footer-safe));
-        margin-left: 0;
-        margin-right: var(--footer-safe);
-      }}
+      .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
+      .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
-        background: {CARD};
-        border: 1px solid rgba(255,255,255,.06);
-        border-radius: 22px;
-        box-shadow: 0 10px 28px rgba(0,0,0,.35);
-        display: flex;
-        align-items: center;
-        padding: 10px 0;
-        gap: 0;
-        overflow: hidden;
+        background: {CARD}; border: 1px solid rgba(255,255,255,.06); border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(0,0,0,.35); display: flex; align-items: center;
+        padding: 10px 0; gap: 0; overflow: hidden;
       }}
       .status-item {{
-        display: flex; align-items: center; gap: 8px;
-        padding: 10px 18px;
-        font-size: 14px; color: {MUTED};
-        border-right: 1px solid rgba(255,255,255,.08);
+        display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+        font-size: 14px; color: {MUTED}; border-right: 1px solid rgba(255,255,255,.08);
         white-space: nowrap;
       }}
       .status-item:last-child {{ border-right: 0; }}
-      .status-label {{ opacity: .95; }}
       .status-value {{ color: {TEXT}; font-weight: 700; margin-left: 6px; }}
-      .dot {{
-        width: 9px; height: 9px; border-radius: 50%;
-        background: {GREEN};
-        box-shadow: 0 0 0 2px rgba(92,242,184,.22);
-        display: inline-block;
-      }}
-      .dot.warn {{ background:#FFCE6B; box-shadow:0 0 0 2px rgba(255,206,107,.22); }}
-      .dot.bad  {{ background:#FF7A7A; box-shadow:0 0 0 2px rgba(255,122,122,.22); }}
+      .dot {{ width: 9px; height: 9px; border-radius: 50%; background: {GREEN};
+              box-shadow: 0 0 0 2px rgba(92,242,184,.22); display:inline-block; }}
       @media (max-width: 1100px) {{
-        .footer-inner {{ width: 100%; margin-right: 0; }}
-        .statusbar {{ overflow-x: auto; scrollbar-width: none; }}
-        .statusbar::-webkit-scrollbar {{ display: none; }}
+        .footer-inner {{ width:100%; margin-right:0; }}
+        .statusbar {{ overflow-x:auto; scrollbar-width:none; }}
+        .statusbar::-webkit-scrollbar {{ display:none; }}
       }}
     </style>
     """,
@@ -132,7 +103,6 @@ st.markdown(
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root folder) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
-# Display tickers -> filename prefixes (case-insensitive startswith)
 ALIASES = {
     "NVDA":       ["NVDA"],
     "TSMC":       ["TSMC", "TSM"],          # file: TSM_daily_data.csv
@@ -142,7 +112,7 @@ ALIASES = {
     "005930.KS":  ["005930.ks", "005930"],  # Samsung Electronics
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
-PRETTY = {"CDNS":"Cadence", "SNPS":"Synopsys", "005930.KS":"Samsung", "TSMC":"TSMC"}
+PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
 
 @st.cache_data(show_spinner=False)
 def load_prices_from_root_last_5y(
@@ -270,227 +240,151 @@ def load_artifacts():
     reg_path = model_dir / "nvda_A_reg_lgb.pkl"
     scaler_path = model_dir / "y_scaler.pkl"
 
-    reg = None
+    reg, y_scaler = None, None
     try:
         if reg_path.exists():
             with reg_path.open("rb") as f:
                 reg = pickle.load(f)
     except Exception:
         reg = None
-
-    y_scaler = None
     try:
         if scaler_path.exists():
             with scaler_path.open("rb") as f:
                 y_scaler = pickle.load(f)
     except Exception:
         y_scaler = None
-
     return reg, y_scaler
 
 def inverse_if_scaled(y_scaled: float, scaler):
-    if scaler is None:
-        return float(y_scaled), True
+    if scaler is None: return float(y_scaled), True
     arr = np.array([[y_scaled]], dtype=np.float32)
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Header, controls, and data (drop-in)
+# Title + NEW TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
 # ────────────────────────────────────────────────────────────────────────────────
 
-# 1) Styled title (lower on the page + white)
+# H1 styling
 st.markdown(
     """
     <style>
-      .block-container { padding-top: 1.2rem; }
-      .app-header {
-        display: flex; align-items: center; gap: .6rem;
-        margin: 2px 0 12px 0;
-      }
-      .app-header .title {
-        color: #E6F0FF; font-size: 28px; font-weight: 800; letter-spacing: .2px;
-      }
+      .block-container { padding-top: 1.1rem; }
+      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
+      .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
     </style>
     """,
     unsafe_allow_html=True,
 )
-st.markdown(
-    '<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+            unsafe_allow_html=True)
 
-# 2) Controls (pretty labels ↔ tickers, sticky defaults)
-TICKERS = DISPLAY_ORDER  # e.g. ["NVDA","TSMC","ASML","CDNS","SNPS","005930.KS"]
-label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-ticker_labels   = list(label_to_ticker.keys())
-
-# sensible default that survives reruns
-_default_label = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels:
-    _default_label = ticker_labels[0]
-_default_idx = ticker_labels.index(_default_label)
-
-with st.container():
-    c1, c2, c3, c4 = st.columns([1.4, 1.0, 1.0, 0.9])
-
-    with c1:
-        sel_label = st.selectbox(
-            "Ticker",
-            ticker_labels,
-            index=_default_idx,
-            key="ticker_select",
-            help="Pick the primary symbol to forecast.",
-        )
-        ticker = label_to_ticker[sel_label]
-        # remember the chosen label for next rerun
-        st.session_state["ticker_label"] = sel_label
-
-    with c2:
-        horizon = st.radio(
-            "Horizon", ["1D", "1W", "1M"],
-            horizontal=True,
-            key="horizon",
-            help="Change the forecast horizon.",
-        )
-
-    with c3:
-        model_name = st.selectbox(
-            "Model",
-            ["LightGBM", "RandomForest", "XGBoost"],
-            index=0,
-            key="model_name",
-            help="Which trained model to use for prediction.",
-        )
-
-    with c4:
-        do_predict = st.button(
-            "Predict",
-            use_container_width=True,
-            type="primary",
-            key="predict_btn",
-        )
-
-# 3) Load price history (last 5y only)
+# Load price history (5y) BEFORE rendering the watchlist
 with st.spinner("Loading price history…"):
-    prices = load_prices_from_root_last_5y(ALIASES)  # expects e.g. {"NVDA":"NVDA_daily_data.csv", ...}
+    prices = load_prices_from_root_last_5y(ALIASES)
 
-# 4) Main grid
-LEFT, MID, RIGHT = st.columns([0.95, 2.4, 1.1], gap="large")
+# Watchlist renderer
+def _badge_html(pct: float, side: str = "left") -> str:
+    cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
+    arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
+    sign  = "+" if pct > 0 else ""
+    return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
 
-
-
-# ────────────────────────────────────────────────────────────────────────────────
-# LEFT — Watchlist (enhanced) + Toggles
-# ────────────────────────────────────────────────────────────────────────────────
-from textwrap import dedent
-
-# Pretty labels for your CSV ticker columns (adjust if your column names differ)
-PRETTY = {
-    "NVDA": "NVDA",
-    "TSMC": "TSMC",
-    "ASML": "ASML",
-    "CDNS": "Cadence",
-    "SNPS": "Synopsys",
-    "AMD": "AMD",
-    "MSFT": "MSFT",
-    "005930.KS": "Samsung",
-}
-# Order you want to display
-DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"]
-
-with LEFT:
-    # --- Watchlist CSS (dedented so Streamlit won’t treat it as code) ---
+def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
     WATCHLIST_CSS = dedent(f"""
     <style>
       .watch-card {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.06);
-        border-radius:18px;
-        padding:14px 16px;
-        box-shadow:0 6px 18px rgba(0,0,0,.25);
+        background:{CARD}; border:1px solid rgba(255,255,255,.06);
+        border-radius:18px; padding:14px 16px; box-shadow:0 6px 18px rgba(0,0,0,.25);
         margin-bottom:16px;
       }}
       .watch-title {{ font-weight:700; color:{TEXT}; margin:0 0 10px 0; }}
       .watch-row {{
-        display:grid;
-        grid-template-columns: 1fr auto;
-        align-items:center;
-        padding:10px 0;
-        border-bottom:1px solid rgba(255,255,255,.06);
+        display:grid; grid-template-columns: 1fr auto; align-items:center;
+        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
       }}
       .watch-row:last-child {{ border-bottom:0; }}
       .ticker {{ font-weight:600; color:{TEXT}; }}
-      .last   {{ font-weight:700; color:{TEXT}; }}
-      .badges {{
-        grid-column:1 / span 2;
-        display:flex; justify-content:space-between;
-        font-size:13px; margin-top:4px;
-      }}
+      .last {{ font-weight:700; color:{TEXT}; }}
+      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
+                 font-size:13px; margin-top:4px; }}
       .badge {{ display:flex; gap:6px; align-items:center; }}
-      .up    {{ color:{GREEN}; }}
-      .down  {{ color:{ORANGE}; }}
-      .neut  {{ color:#3DE4E0; }}
+      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
       .arrow {{ font-weight:700; }}
     </style>
     """)
     st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
-    def _badge_html(pct: float, side: str = "left") -> str:
-        """Left badge uses green/orange. Right badge uses teal/orange."""
-        cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
-        arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
-        sign  = "+" if pct > 0 else ""
-        return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
+    rows = []
+    for t in tickers:
+        if t not in prices_df.columns: 
+            continue
+        s = prices_df[t].dropna().astype(float)
+        if s.empty:
+            continue
+        last = float(s.iloc[-1])
+        chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
+        chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
+        label = PRETTY.get(t, t)
+        rows.append(dedent(f"""
+        <div class="watch-row">
+          <div class="ticker">{label}</div>
+          <div class="last">{last:,.2f}</div>
+          <div class="badges">
+            {_badge_html(chg_left, side="left")}
+            {_badge_html(chg_right, side="right")}
+          </div>
+        </div>
+        """))
 
-    def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
-        rows_html = []
-        for t in tickers:
-            if t not in prices_df.columns:
-                continue
-            s = prices_df[t].dropna().astype(float)
-            if s.empty:
-                continue
-            last = float(s.iloc[-1])
-            chg_left  = 100.0 * (s.iloc[-1] - s.iloc[-6]) / s.iloc[-6] if len(s) > 6 and s.iloc[-6] != 0 else 0.0
-            chg_right = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
-            label = PRETTY.get(t, t)
-            rows_html.append(dedent(f"""
-            <div class="watch-row">
-              <div class="ticker">{label}</div>
-              <div class="last">{last:,.2f}</div>
-              <div class="badges">
-                {_badge_html(chg_left, side="left")}
-                {_badge_html(chg_right, side="right")}
-              </div>
-            </div>
-            """))
+    st.markdown(
+        dedent(f"""
+        <div class="watch-card">
+          <div class="watch-title">{title}</div>
+          {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
+        </div>
+        """),
+        unsafe_allow_html=True,
+    )
 
-        st.markdown(
-            dedent(f"""
-            <div class="watch-card">
-              <div class="watch-title">{title}</div>
-              {''.join(rows_html) if rows_html else '<div class="ticker" style="opacity:.7">No data</div>'}
-            </div>
-            """),
-            unsafe_allow_html=True,
-        )
+# Top row columns: [Watchlist] | [Ticker + Next day + Horizon] | [Model + Predict]
+top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
-    # Render
+with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-    # Affiliated Signals card (notice correct indentation + arg)
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Affiliated Signals**")
-    st.toggle("Macro layer", value=False)
-    st.toggle("News Sentiment", value=False)
-    st.toggle("Options flow", value=False)
-    st.markdown("</div>", unsafe_allow_html=True)
+# Ticker + Next day + Horizon controls
+TICKERS = DISPLAY_ORDER
+label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
+ticker_labels   = list(label_to_ticker.keys())
+_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
+if _default_label not in ticker_labels:
+    _default_label = ticker_labels[0]
+_default_idx = ticker_labels.index(_default_label)
 
+with top_mid:
+    sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
+    ticker = label_to_ticker[sel_label]
+    st.session_state["ticker_label"] = sel_label
 
+    c_nd, c_hz = st.columns([0.9, 1.6])
+    with c_nd:
+        next_day = st.toggle("Next day", value=True, key="next_day",
+                             help="Forecast the next trading day close.")
+    with c_hz:
+        horizon = st.radio(" ", ["1D", "1W", "1M"], horizontal=True,
+                           label_visibility="collapsed", key="horizon")
+
+# Model + Predict button
+with top_right:
+    model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
+    do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# MID — metric tiles, forecast chart, and lower cards
+# Main content grid BELOW the top row
 # ────────────────────────────────────────────────────────────────────────────────
+MID, RIGHT = st.columns([2.4, 1.1], gap="large")
+
+# MID — tiles + chart + lower cards
 with MID:
     pred = lo = hi = conf = None
 
@@ -507,8 +401,7 @@ with MID:
                 if note: st.caption(f"⚠️ {note}")
                 if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
             else:
-                # Naive fallback using NVDA momentum if model missing
-                base_ticker = "NVDA" if "NVDA" in prices.columns else prices.columns[0]
+                base_ticker = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
                 s = prices[base_ticker].dropna()
                 if len(s) >= 6:
                     pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
@@ -517,12 +410,11 @@ with MID:
         except Exception as e:
             st.error(f"Prediction failed: {e}")
 
-    # Pre-format safe strings
+    # Metric tiles
     pred_text = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # Metric tiles
     a, b, c = st.columns(3)
     with a:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
@@ -540,7 +432,7 @@ with MID:
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Forecast chart with dotted projection & shaded area
+    # Forecast chart
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
@@ -550,7 +442,6 @@ with MID:
             color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
             template="plotly_dark",
         )
-        # Projection using selected ticker (or NVDA)
         base_tkr = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
@@ -573,7 +464,7 @@ with MID:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Lower cards: Error metrics · Error distribution · SHAP
+    # Lower cards
     lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
 
     with lc1:
@@ -620,9 +511,7 @@ with MID:
     with ac2:
         st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# RIGHT — affiliated signals mini-sparklines + trade idea
-# ────────────────────────────────────────────────────────────────────────────────
+# RIGHT — mini-sparklines + trade idea
 def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines",
                              line=dict(width=2)))
@@ -644,7 +533,7 @@ with RIGHT:
             f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) ,
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
                         use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -656,7 +545,7 @@ with RIGHT:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Footer (single HTML block) — place once at the very end
+# Footer
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """

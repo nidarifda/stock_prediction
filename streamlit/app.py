@@ -355,11 +355,10 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Title + TOP ROW (Watchlist | Ticker / Next day · 1D · 1W · 1M | Model + Predict)
-# — Symmetric boxes, single baseline
-# Drop-in replacement for your current top-row block
+# — All boxes 44px tall, top-aligned, symmetric
 # ────────────────────────────────────────────────────────────────────────────────
 
-# Title styling + header
+# Title
 st.markdown(
     """
     <style>
@@ -373,11 +372,11 @@ st.markdown(
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
             unsafe_allow_html=True)
 
-# Load data before drawing the watchlist
+# Load prices first (so watchlist renders)
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ===== Uniform control styling (44px height for all; segmented radio; symmetric button)
+# ===== Uniform control styling (everything = 44px tall) =====
 st.markdown(
     f"""
     <style>
@@ -385,7 +384,7 @@ st.markdown(
         background:{CARD} !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
-        height:44px;               /* same as radio + button */
+        height:44px;
       }}
 
       .toprow [data-testid="stRadio"] {{
@@ -393,7 +392,7 @@ st.markdown(
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
         padding:6px 10px;
-        height:44px;               /* match height */
+        height:44px;
         display:flex; align-items:center;
       }}
       .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
@@ -409,13 +408,20 @@ st.markdown(
       .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      /* "Next day" is a fixed prefix (non-clickable) */
+      /* "Next day" is informational prefix (not clickable) */
       .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
       .toprow [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
-      /* Predict button: same height + remove default margins for perfect alignment */
-      .toprow .stButton {{ margin:0 !important; }}
-      .toprow .stButton > button {{
+      /* Predict button: same height, same baseline, no extra margins */
+      .toprow .btn-wrap {{
+        height:44px;
+        display:flex;                /* keeps the button flush to the top */
+      }}
+      .toprow .btn-wrap .stButton {{
+        width:100%;
+        margin:0 !important;         /* kill Streamlit's default margins */
+      }}
+      .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px;
         border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
@@ -426,14 +432,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== Top row layout
+# Layout for the top row
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Next day / Horizon (all boxed & aligned)
+# MIDDLE: Ticker + Next day / Horizon
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -447,8 +453,8 @@ with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
         sel_label = st.selectbox(
-            "", ticker_labels, index=_default_idx, key="ticker_select",
-            label_visibility="collapsed"
+            "", ticker_labels, index=_default_idx,
+            key="ticker_select", label_visibility="collapsed"
         )
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
@@ -462,7 +468,7 @@ with top_mid:
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model (boxed) + Predict (same line, same height)
+# RIGHT: Model + Predict (same line, perfectly top-aligned)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -474,8 +480,7 @@ with top_right:
         )
 
     with btn_col:
-        # flex wrapper keeps the 44px button centered and aligned with other boxes
-        st.markdown("<div style='display:flex;align-items:center;height:44px;'>", unsafe_allow_html=True)
+        st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
 

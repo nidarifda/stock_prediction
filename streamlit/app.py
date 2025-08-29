@@ -56,10 +56,14 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Primary button */
+      /* Primary button (match box height) */
       .stButton > button {{
-        height:42px; border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+        height:44px;                      /* aligned to control boxes */
+        border-radius:12px !important;
+        border:0 !important;
+        font-weight:700 !important;
+        background:{ACCENT} !important;
+        color:white !important;
       }}
 
       /* Footer */
@@ -334,14 +338,14 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Create top row columns
-top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
+# Create top row columns (right a bit wider so model + predict fit inline)
+top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.25], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Style widgets themselves (no HTML wrappers)
+# Style widgets (selectbox & radio to look like boxes)
 st.markdown(
     f"""
     <style>
@@ -403,22 +407,21 @@ with top_mid:
         next_day = True
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
-# RIGHT: Model + Predict
+# RIGHT: Model (boxed) + Predict — inline & aligned
 with top_right:
-    # model select inside the same .input-card you already use
-    st.markdown("<div class='input-card'>", unsafe_allow_html=True)
-    model_name = st.selectbox(
-        " ",                                # <- no text label
-        ["LightGBM", "RandomForest", "XGBoost"],
-        index=0,
-        key="model_name",
-        label_visibility="collapsed",       # hide the label completely
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+    model_col, btn_col = st.columns([1.0, 0.8], gap="medium")
 
-    # small gap, then the CTA
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-    do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+    with model_col:
+        model_name = st.selectbox(
+            " ", ["LightGBM", "RandomForest", "XGBoost"],
+            index=0, key="model_name", label_visibility="collapsed"
+        )
+
+    with btn_col:
+        st.markdown("<div style='display:flex;align-items:center;height:44px;'>", unsafe_allow_html=True)
+        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+        st.markdown("</div>", unsafe_allow_html=True)
+
 # ────────────────────────────────────────────────────────────────────────────────
 # PREDICTION (so tiles can show immediately under the controls)
 # ────────────────────────────────────────────────────────────────────────────────
@@ -452,7 +455,7 @@ conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 # ────────────────────────────────────────────────────────────────────────────────
 # METRICS — directly under the middle controls
 # ────────────────────────────────────────────────────────────────────────────────
-row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
+row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.25], gap="large")
 with row2_mid:
     m1, m2, m3 = st.columns(3)
     with m1:

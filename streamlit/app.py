@@ -354,8 +354,12 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW (Watchlist | Ticker/Horizon | Model + Predict)
+# Title + TOP ROW (Watchlist | Ticker / Next day · 1D · 1W · 1M | Model + Predict)
+# — Symmetric boxes, single baseline
+# Drop-in replacement for your current top-row block
 # ────────────────────────────────────────────────────────────────────────────────
+
+# Title styling + header
 st.markdown(
     """
     <style>
@@ -366,20 +370,70 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+            unsafe_allow_html=True)
 
-# Load price history up-front
+# Load data before drawing the watchlist
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Create top row columns
-top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
+# ===== Uniform control styling (44px height for all; segmented radio; symmetric button)
+st.markdown(
+    f"""
+    <style>
+      .toprow [data-testid="stSelectbox"] > div > div {{
+        background:{CARD} !important;
+        border:1px solid rgba(255,255,255,.10) !important;
+        border-radius:12px !important;
+        height:44px;               /* same as radio + button */
+      }}
+
+      .toprow [data-testid="stRadio"] {{
+        background:{CARD};
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        padding:6px 10px;
+        height:44px;               /* match height */
+        display:flex; align-items:center;
+      }}
+      .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
+      .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      .toprow [data-testid="stRadio"] label {{
+        background:transparent !important; border:0 !important; color:{MUTED} !important;
+        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
+        border-radius:8px; cursor:pointer; white-space:nowrap;
+      }}
+      .toprow [data-testid="stRadio"] label[aria-checked="true"] {{
+        color:{TEXT} !important; position:relative;
+      }}
+      .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
+        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
+      }}
+      /* "Next day" is a fixed prefix (non-clickable) */
+      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
+      .toprow [data-testid="stRadio"] label:first-child::after {{ display:none; }}
+
+      /* Predict button: same height + remove default margins for perfect alignment */
+      .toprow .stButton {{ margin:0 !important; }}
+      .toprow .stButton > button {{
+        height:44px; line-height:44px;
+        border-radius:12px !important; border:0 !important;
+        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+        padding:0 16px !important;
+      }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ===== Top row layout
+top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Next day / Horizon
+# MIDDLE: Ticker + Next day / Horizon (all boxed & aligned)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -389,17 +443,15 @@ if _default_label not in ticker_labels:
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='top-row-align'>", unsafe_allow_html=True)
-
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
         sel_label = st.selectbox(
-            "", ticker_labels, index=_default_idx,
-            key="ticker_select", label_visibility="collapsed"
+            "", ticker_labels, index=_default_idx, key="ticker_select",
+            label_visibility="collapsed"
         )
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
     with seg_col:
         seg_choice = st.radio(
             "", ["Next day", "1D", "1W", "1M"],
@@ -408,21 +460,21 @@ with top_mid:
         )
         next_day = True
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
-
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model + Predict (same row)
+# RIGHT: Model (boxed) + Predict (same line, same height)
 with top_right:
-    st.markdown("<div class='top-row-align'>", unsafe_allow_html=True)
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
 
-    model_col, btn_col = st.columns([1.0, 0.8], gap="medium")
     with model_col:
         model_name = st.selectbox(
             " ", ["LightGBM", "RandomForest", "XGBoost"],
-            index=0, key="model_name", label_visibility="collapsed"
+            index=0, key="model_name", label_visibility="collapsed",
         )
+
     with btn_col:
-        # Vertically center the CTA to match 44px control height
+        # flex wrapper keeps the 44px button centered and aligned with other boxes
         st.markdown("<div style='display:flex;align-items:center;height:44px;'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)

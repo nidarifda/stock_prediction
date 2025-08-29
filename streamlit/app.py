@@ -25,6 +25,7 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
+# Global CSS (base theme + tiles + footer)
 st.markdown(
     f"""
     <style>
@@ -47,7 +48,7 @@ st.markdown(
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs baseline skin */
+      /* Generic text/number inputs (kept for other parts of the page) */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
@@ -56,51 +57,13 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Make selectboxes look like cards */
-      [data-testid="stSelectbox"] > div > div {{
-        background:{CARD} !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        height:44px;
-      }}
-
-      /* Radio "box" */
-      [data-testid="stRadio"] {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
-      }}
-      /* Segmented look */
-      [data-testid="stRadio"] svg {{ display:none !important; }}
-      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{MUTED} !important;
-        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
-      }}
-      [data-testid="stRadio"] label[aria-checked="true"] {{
-        color:{TEXT} !important; position:relative;
-      }}
-      [data-testid="stRadio"] label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
-      }}
-      /* Make 'Next day' a static prefix */
-      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
-      [data-testid="stRadio"] label:first-child::after {{ display:none; }}
-
-      /* Primary button */
+      /* Primary button default skin (overridden in the top row for symmetry) */
       .stButton > button {{
         height:42px; border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* Nudge to align the control row with Watchlist top */
-      .top-row-align {{ margin-top: -8px; }}
-
-      /* Footer */
+      /* ===== Sticky footer ===== */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
       .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
@@ -136,7 +99,7 @@ ALIASES = {
     "ASML":       ["ASML"],
     "CDNS":       ["CDNS"],
     "SNPS":       ["SNPS"],
-    "005930.KS":  ["005930.ks", "005930"],
+    "005930.KS":  ["005930.ks", "005930"],  # Samsung Electronics
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
 PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
@@ -153,8 +116,7 @@ def load_prices_from_root_last_5y(
     for display, patterns in aliases.items():
         target = None
         for p in patterns:
-            pfx = p.lower()
-            match = next((f for f in csvs if f.lower().startswith(pfx)), None)
+            match = next((f for f in csvs if f.lower().startswith(p.lower())), None)
             if match:
                 target = os.path.join(root, match)
                 break
@@ -170,17 +132,15 @@ def load_prices_from_root_last_5y(
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
 
+        # price col
         price_col = None
         for pc in prefer_cols:
             if pc in df.columns:
-                price_col = pc
-                break
+                price_col = pc; break
         if price_col is None:
             for pc in ("adj close", "close", "price"):
                 m = [c for c in df.columns if c.lower() == pc]
-                if m:
-                    price_col = m[0]
-                    break
+                if m: price_col = m[0]; break
         if price_col is None:
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
@@ -204,19 +164,19 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
-    # Align to business days and forward-fill gaps
+    # business-day align + ffill
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
-    # Keep only the last N years
+    # last N years
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
-    # Simple integer index (1..N) for charts
+    # integer index for plotting
     out = merged.copy()
     out.index = pd.RangeIndex(1, len(out) + 1, name="t")
 
-    # Ensure column order
+    # ensure column order
     out = out.reindex(columns=list(aliases.keys()))
     return out
 
@@ -244,10 +204,8 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in ALIASES.keys() if t != primary]
     feats = []
     for t in order:
-        if t in df.columns:
-            feats.extend(feat_block(df[t].dropna()))
-        else:
-            feats.extend([0.0]*6)
+        if t in df.columns: feats.extend(feat_block(df[t].dropna()))
+        else: feats.extend([0.0]*6)
     feats.append(1.0)  # bias
     note = None
     if n_expected is not None and len(feats) != n_expected:
@@ -270,14 +228,12 @@ def load_artifacts():
     reg, y_scaler = None, None
     try:
         if reg_path.exists():
-            with reg_path.open("rb") as f:
-                reg = pickle.load(f)
+            with reg_path.open("rb") as f: reg = pickle.load(f)
     except Exception:
         reg = None
     try:
         if scaler_path.exists():
-            with scaler_path.open("rb") as f:
-                y_scaler = pickle.load(f)
+            with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
     except Exception:
         y_scaler = None
     return reg, y_scaler
@@ -288,7 +244,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# WATCHLIST renderer
+# Watchlist renderer
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -323,11 +279,9 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 
     rows = []
     for t in tickers:
-        if t not in prices_df.columns:
-            continue
+        if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
-        if s.empty:
-            continue
+        if s.empty: continue
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
@@ -354,8 +308,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW (Watchlist | Ticker / Next day · 1D · 1W · 1M | Model + Predict)
-# — All boxes 44px tall, top-aligned, symmetric
+# Title + TOP ROW (Watchlist | Ticker/Horizon | Model + Predict)
 # ────────────────────────────────────────────────────────────────────────────────
 
 # Title
@@ -372,14 +325,17 @@ st.markdown(
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
             unsafe_allow_html=True)
 
-# Load prices first (so watchlist renders)
+# Load price history up-front
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ===== Uniform control styling (everything = 44px tall) =====
+# ===== Top-row uniform styling (44px lane, perfect baseline) =====
 st.markdown(
     f"""
     <style>
+      .toprow {{ display:block; }}
+
+      /* Selectbox "box" */
       .toprow [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
         border:1px solid rgba(255,255,255,.10) !important;
@@ -387,6 +343,7 @@ st.markdown(
         height:44px;
       }}
 
+      /* Radio "box" */
       .toprow [data-testid="stRadio"] {{
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
@@ -394,6 +351,7 @@ st.markdown(
         padding:6px 10px;
         height:44px;
         display:flex; align-items:center;
+        margin:0 !important;
       }}
       .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
       .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
@@ -408,19 +366,24 @@ st.markdown(
       .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      /* "Next day" is informational prefix (not clickable) */
+      /* Prefix label "Next day" is informational */
       .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
       .toprow [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
-      /* Predict button: same height, same baseline, no extra margins */
+      /* Kill default margins that shift baseline */
+      .toprow [data-testid="column"] > div {{ margin-top:0 !important; }}
+      .toprow .stSelectbox {{ margin-top:0 !important; }}
+      .toprow .stRadio {{ margin-top:0 !important; }}
+
+      /* Predict button wrapper with exact 44px lane */
       .toprow .btn-wrap {{
         height:44px;
-        display:flex;                /* keeps the button flush to the top */
+        display:flex;
+        align-items:center;
+        margin:0 !important; padding:0 !important;
       }}
-      .toprow .btn-wrap .stButton {{
-        width:100%;
-        margin:0 !important;         /* kill Streamlit's default margins */
-      }}
+      .toprow .btn-wrap .stButton {{ margin:0 !important; padding:0 !important; }}
+      .toprow .btn-wrap .stButton > div {{ margin:0 !important; padding:0 !important; }}
       .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px;
         border-radius:12px !important; border:0 !important;
@@ -432,14 +395,14 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Layout for the top row
+# Create top row columns
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Next day / Horizon
+# MIDDLE: Ticker + Next day / Horizon (all inside .toprow)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -452,42 +415,33 @@ with top_mid:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
-        sel_label = st.selectbox(
-            "", ticker_labels, index=_default_idx,
-            key="ticker_select", label_visibility="collapsed"
-        )
+        sel_label = st.selectbox("", ticker_labels, index=_default_idx,
+                                 key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
     with seg_col:
-        seg_choice = st.radio(
-            "", ["Next day", "1D", "1W", "1M"],
-            horizontal=True, index=1, key="segmented_hz",
-            label_visibility="collapsed",
-        )
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
+                              horizontal=True, index=1, key="segmented_hz",
+                              label_visibility="collapsed")
         next_day = True
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model + Predict (same line, perfectly top-aligned)
+# RIGHT: Model + Predict — same line, perfectly aligned
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
-
     with model_col:
-        model_name = st.selectbox(
-            " ", ["LightGBM", "RandomForest", "XGBoost"],
-            index=0, key="model_name", label_visibility="collapsed",
-        )
-
+        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
+                                  index=0, key="model_name", label_visibility="collapsed")
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# PREDICTION (so tiles can show immediately under the controls)
+# Prediction (so tiles can show immediately under the controls)
 # ────────────────────────────────────────────────────────────────────────────────
 pred = lo = hi = conf = None
 if do_predict:
@@ -517,9 +471,9 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — directly under the middle controls
+# Metric tiles — directly under the middle controls
 # ────────────────────────────────────────────────────────────────────────────────
-row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
+row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.35], gap="large")
 with row2_mid:
     m1, m2, m3 = st.columns(3)
     with m1:
@@ -539,7 +493,7 @@ with row2_mid:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# MAIN CONTENT — chart + lower cards (mid) and signals (right)
+# Main content — chart + lower cards (mid) and signals (right)
 # ────────────────────────────────────────────────────────────────────────────────
 MID, RIGHT = st.columns([2.4, 1.1], gap="large")
 
@@ -575,6 +529,7 @@ with MID:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # Lower cards
     lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
     with lc1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -583,7 +538,6 @@ with MID:
         def bar(v: float) -> str:
             width = max(0, min(100, int(v*70)))
             return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
-            # visual aid only
         st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
         st.markdown(bar(0.6), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
@@ -614,6 +568,7 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+    # Action row placeholders
     ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
     with ac1:
         st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)

@@ -25,13 +25,12 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
-# Global CSS (theme + widgets + sticky footer styles)
 st.markdown(
     f"""
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px; /* set to 0px if not on Streamlit Cloud */
+        --footer-safe: 160px; /* set to 0px if not using Streamlit Cloud */
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
       .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
@@ -45,13 +44,11 @@ st.markdown(
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
 
-      /* Metric tiles */
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs */
+      /* Inputs baseline skin */
       [data-testid="stTextInput"] > div > div,
-      [data-testid="stSelectbox"]  > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
         border:1px solid rgba(255,255,255,.10) !important;
@@ -65,7 +62,7 @@ st.markdown(
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* ===== Sticky segmented footer ===== */
+      /* Footer */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
       .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
@@ -97,11 +94,11 @@ st.markdown(
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
-    "TSMC":       ["TSMC", "TSM"],
+    "TSMC":       ["TSMC", "TSM"],          # file: TSM_daily_data.csv
     "ASML":       ["ASML"],
-    "CDNS":       ["CDNS"],
-    "SNPS":       ["SNPS"],
-    "005930.KS":  ["005930.ks", "005930"],  # Samsung
+    "CDNS":       ["CDNS"],                 # Cadence
+    "SNPS":       ["SNPS"],                 # Synopsys
+    "005930.KS":  ["005930.ks", "005930"],  # Samsung Electronics
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
 PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
@@ -169,14 +166,19 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
+    # Align to business days and forward-fill gaps
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
+    # Keep only the last N years
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
+    # Simple integer index (1..N) for charts
     out = merged.copy()
     out.index = pd.RangeIndex(1, len(out) + 1, name="t")
+
+    # Ensure column order
     out = out.reindex(columns=list(aliases.keys()))
     return out
 
@@ -248,27 +250,8 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Header & TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
+# WATCHLIST renderer
 # ────────────────────────────────────────────────────────────────────────────────
-
-# Title
-st.markdown(
-    """
-    <style>
-      .block-container { padding-top: 1.1rem; }
-      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
-      .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
-
-# Load price history first
-with st.spinner("Loading price history…"):
-    prices = load_prices_from_root_last_5y(ALIASES)
-
-# ----- Watchlist helpers -----
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
     arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
@@ -332,6 +315,25 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
         unsafe_allow_html=True,
     )
 
+# ────────────────────────────────────────────────────────────────────────────────
+# Title + TOP ROW (Watchlist | Ticker/Horizon | Model+Predict)
+# ────────────────────────────────────────────────────────────────────────────────
+st.markdown(
+    """
+    <style>
+      .block-container { padding-top: 1.1rem; }
+      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
+      .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+
+# Load price history up-front
+with st.spinner("Loading price history…"):
+    prices = load_prices_from_root_last_5y(ALIASES)
+
 # Create top row columns
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
@@ -339,7 +341,49 @@ top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Prep ticker labels
+# Style widgets themselves (no HTML wrappers)
+st.markdown(
+    f"""
+    <style>
+      /* Selectbox "box" */
+      [data-testid="stSelectbox"] > div > div {{
+        background:{CARD} !important;
+        border:1px solid rgba(255,255,255,.10) !important;
+        border-radius:12px !important;
+        height:44px;
+      }}
+      /* Radio "box" */
+      [data-testid="stRadio"] {{
+        background:{CARD};
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        padding:6px 10px;
+        height:44px;
+        display:flex; align-items:center;
+      }}
+      /* Segmented look */
+      [data-testid="stRadio"] svg {{ display:none !important; }}
+      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      [data-testid="stRadio"] label {{
+        background:transparent !important; border:0 !important; color:{MUTED} !important;
+        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
+        border-radius:8px; cursor:pointer; white-space:nowrap;
+      }}
+      [data-testid="stRadio"] label[aria-checked="true"] {{
+        color:{TEXT} !important; position:relative;
+      }}
+      [data-testid="stRadio"] label[aria-checked="true"]::after {{
+        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
+      }}
+      /* Make 'Next day' a static prefix */
+      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
+      [data-testid="stRadio"] label:first-child::after {{ display:none; }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# MIDDLE: Ticker + Next day/period
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -348,78 +392,24 @@ if _default_label not in ticker_labels:
     _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
-# Style the boxed controls (ticker + segmented period)
-st.markdown(
-    f"""
-    <style>
-      .input-card, .seg-card {{
-        background: {CARD};
-        border: 1px solid rgba(255,255,255,.10);
-        border-radius: 12px;
-        padding: 6px 10px;
-        display: flex; align-items: center;
-        height: 44px;
-      }}
-      [data-testid="stSelectbox"] > div > div {{
-        background: transparent !important; border: 0 !important; box-shadow: none !important;
-      }}
-      .seg-card [data-testid="stRadio"] {{ width: 100%; }}
-      .seg-card [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      .seg-card [data-baseweb="radio"] svg {{ display:none !important; }}
-      .seg-card [data-baseweb="radio"] > label {{
-        background: transparent !important; border: 0 !important; color: {MUTED} !important;
-        padding: 6px 10px 10px !important; margin: 0 10px 0 0 !important;
-        border-radius: 8px; cursor: pointer; white-space: nowrap;
-      }}
-      .seg-card [data-baseweb="radio"] > label[aria-checked="true"] {{
-        color: {TEXT} !important; position: relative;
-      }}
-      .seg-card [data-baseweb="radio"] > label[aria-checked="true"]::after {{
-        content: ""; display:block; height:3px; border-radius:3px;
-        background:{ACCENT}; margin-top:6px;
-      }}
-      .seg-card [data-baseweb="radio"] > label:first-child {{
-        pointer-events: none; color: {MUTED} !important; opacity: .95;
-      }}
-      .seg-card [data-baseweb="radio"] > label:first-child::after {{ display:none; }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# MIDDLE: Ticker box + Segmented box
 with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
-
     with sel_col:
-        st.markdown("<div class='input-card'>", unsafe_allow_html=True)
-        sel_label = st.selectbox(
-            "Ticker", ticker_labels, index=_default_idx,
-            key="ticker_select", label_visibility="collapsed"
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+        sel_label = st.selectbox("", ticker_labels, index=_default_idx, key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
     with seg_col:
-        st.markdown("<div class='seg-card'>", unsafe_allow_html=True)
-        seg_choice = st.radio(
-            " ", ["Next day", "1D", "1W", "1M"],
-            horizontal=True, index=1, key="segmented_hz",
-            label_visibility="collapsed",
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, key="segmented_hz", label_visibility="collapsed")
         next_day = True
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
 # RIGHT: Model + Predict
 with top_right:
-    model_name = st.selectbox("Model", ["LightGBM", "RandomForest", "XGBoost"], index=0, key="model_name")
+    model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
     do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Compute prediction (so metrics can render right under the controls)
+# PREDICTION (so tiles can show immediately under the controls)
 # ────────────────────────────────────────────────────────────────────────────────
 pred = lo = hi = conf = None
 if do_predict:
@@ -435,8 +425,8 @@ if do_predict:
             if note: st.caption(f"⚠️ {note}")
             if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
         else:
-            base_ticker = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
-            s = prices[base_ticker].dropna()
+            base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
+            s = prices[base_t].dropna()
             if len(s) >= 6:
                 pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
                 lo, hi = pred*0.98, pred*1.02
@@ -449,7 +439,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# SECOND ROW — metrics directly under the middle controls
+# METRICS — directly under the middle controls
 # ────────────────────────────────────────────────────────────────────────────────
 row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
 with row2_mid:
@@ -471,7 +461,7 @@ with row2_mid:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# THIRD ROW — chart + right rail
+# MAIN CONTENT — chart + lower cards (mid) and signals (right)
 # ────────────────────────────────────────────────────────────────────────────────
 MID, RIGHT = st.columns([2.4, 1.1], gap="large")
 
@@ -547,10 +537,16 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT rail
+    # Action row placeholders
+    ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
+    with ac1:
+        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
+    with ac2:
+        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
+
+# RIGHT — mini-sparklines + trade idea
 def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines",
-                             line=dict(width=2)))
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
     f.update_layout(
         height=54, margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor=CARD, plot_bgcolor=CARD,
@@ -588,11 +584,27 @@ st.markdown(
     <div class="footer-wrap">
       <div class="footer-inner">
         <div class="statusbar">
-          <div class="status-item"><span class="status-label">Model version</span><span class="status-value">v1.2</span></div>
-          <div class="status-item"><span class="status-label">Training window</span><span class="status-value">1 year</span></div>
-          <div class="status-item"><span class="status-label">Data last updated</span><span class="status-value">30 min</span></div>
-          <div class="status-item"><span class="status-label">Latency</span><span class="status-value">~140 ms</span></div>
-          <div class="status-item"><span class="status-label">API status</span><span class="dot"></span><span>All systems operational</span></div>
+          <div class="status-item">
+            <span class="status-label">Model version</span>
+            <span class="status-value">v1.2</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Training window</span>
+            <span class="status-value">1 year</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Data last updated</span>
+            <span class="status-value">30 min</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Latency</span>
+            <span class="status-value">~140 ms</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">API status</span>
+            <span class="dot"></span>
+            <span>All systems operational</span>
+          </div>
         </div>
       </div>
     </div>

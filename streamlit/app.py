@@ -332,7 +332,6 @@ with top_mid:
     with sel_col:
         sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
         ticker = label_to_ticker[sel_label]
-        st.session_state["ticker_label"] = sel_label
     with seg_col:
         horizon = st.radio("Next day", ["1D","1W","1M"], horizontal=True, key="horizon")
 

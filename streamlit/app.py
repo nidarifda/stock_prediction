@@ -405,9 +405,20 @@ with top_mid:
 
 # RIGHT: Model + Predict
 with top_right:
-    model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
-    do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+    # model select inside the same .input-card you already use
+    st.markdown("<div class='input-card'>", unsafe_allow_html=True)
+    model_name = st.selectbox(
+        " ",                                # <- no text label
+        ["LightGBM", "RandomForest", "XGBoost"],
+        index=0,
+        key="model_name",
+        label_visibility="collapsed",       # hide the label completely
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
 
+    # small gap, then the CTA
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 # ────────────────────────────────────────────────────────────────────────────────
 # PREDICTION (so tiles can show immediately under the controls)
 # ────────────────────────────────────────────────────────────────────────────────

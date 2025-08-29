@@ -16,86 +16,94 @@ from textwrap import dedent
 # ────────────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
-BG, CARD, TEXT = "#0B1220", "#0F1A2B", "#E6F0FF"
-MUTED, ACCENT, ORANGE, GREEN, RED = "#8AA1C7", "#496BFF", "#F08A3C", "#5CF2B8", "#FF7A7A"
+BG       = "#0B1220"
+CARD     = "#0F1A2B"
+TEXT     = "#E6F0FF"
+MUTED    = "#8AA1C7"
+ACCENT   = "#496BFF"
+ORANGE   = "#F08A3C"
+GREEN    = "#5CF2B8"
+RED      = "#FF7A7A"
 
+# Global CSS
 st.markdown(
     f"""
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px; /* set 0px locally */
+        --footer-safe: 160px;
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
       .block-container {{ padding-top:.9rem; padding-bottom:1.0rem; }}
 
       /* Cards */
       .card {{
-        background:var(--card); border:1px solid rgba(255,255,255,.06);
-        border-radius:18px; padding:14px 16px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.06);
+        border-radius:18px;
+        padding:14px 16px;
+        box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Default inputs */
-      [data-testid="stTextInput"] > div > div,
+      /* Inputs (boxed) */
+      [data-testid="stSelectbox"] > div > div,
       [data-testid="stNumberInput"]> div > div {{
-        background:var(--card) !important; border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important; color:var(--text) !important;
+        background:var(--card) !important;
+        border:1px solid rgba(255,255,255,.10) !important;
+        border-radius:12px !important;
+        color:var(--text) !important;
       }}
+
+      /* Radio GROUP as segmented box */
+      [data-testid="stRadio"] {{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        padding:6px 10px;
+        height:44px;
+        display:flex; align-items:center;
+      }}
+      [data-testid="stRadio"] > label {{
+        margin:0 12px 0 2px; color:{TEXT}; font-weight:700; white-space:nowrap;
+      }}
+      [data-testid="stRadio"] div[role="radiogroup"] {{ display:flex; align-items:center; gap:10px; }}
+      [data-baseweb="radio"] svg {{ display:none !important; }}
+      [data-baseweb="radio"] > label {{
+        background: transparent !important; border:0 !important;
+        color:{MUTED} !important; padding:6px 8px 8px !important; margin:0 2px !important;
+        border-radius:8px; cursor:pointer; white-space:nowrap;
+      }}
+      [data-baseweb="radio"] > label[aria-checked="true"] {{ color:{TEXT} !important; position:relative; }}
+      [data-baseweb="radio"] > label[aria-checked="true"]::after {{
+        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:5px;
+      }}
+
+      /* Primary button */
       .stButton > button {{
         height:42px; border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* ===== Top row: boxed select + boxed segmented control ===== */
-      /* Make the selectbox itself look like a rounded "chip" box */
-      .top-select [data-testid="stSelectbox"] {{
-        background:{CARD}; border:1px solid rgba(255,255,255,.12);
-        border-radius:14px; padding:8px 10px; height:44px;
-        display:flex; align-items:center;
-      }}
-      .top-select [data-testid="stSelectbox"] > div > div {{
-        background:transparent !important; border:0 !important; box-shadow:none !important;
-      }}
-
-      /* Turn the radio into a box with underlined active item */
-      .seg-box [data-testid="stRadio"] > div {{
-        background:{CARD}; border:1px solid rgba(255,255,255,.12);
-        border-radius:14px; padding:6px 10px; height:44px;
-        display:flex; align-items:center;
-      }}
-      .seg-box [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      .seg-box [data-baseweb="radio"] svg {{ display:none !important; }}
-      .seg-box [data-baseweb="radio"] > label {{
-        color:{MUTED} !important; background:transparent !important; border:0 !important;
-        padding:6px 10px 10px !important; margin:0 12px 0 0 !important; border-radius:8px; cursor:pointer;
-        white-space:nowrap;
-      }}
-      .seg-box [data-baseweb="radio"] > label[aria-checked="true"] {{
-        color:{TEXT} !important; position:relative;
-      }}
-      .seg-box [data-baseweb="radio"] > label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
-      }}
-      /* First item "Next day" acts as caption inside the box */
-      .seg-box [data-baseweb="radio"] > label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
-      .seg-box [data-baseweb="radio"] > label:first-child::after {{ display:none; }}
-
-      /* ===== Footer ===== */
-      .footer-wrap {{ position:sticky; bottom:8px; z-index:50; }}
-      .footer-inner {{ width:calc(100% - var(--footer-safe)); margin-right:var(--footer-safe); }}
+      /* Footer */
+      .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
+      .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
-        background:{CARD}; border:1px solid rgba(255,255,255,.06); border-radius:22px;
-        box-shadow:0 10px 28px rgba(0,0,0,.35); display:flex; align-items:center;
-        padding:10px 0; gap:0; overflow:hidden;
+        background: {CARD}; border: 1px solid rgba(255,255,255,.06); border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(0,0,0,.35); display: flex; align-items: center;
+        padding: 10px 0; gap: 0; overflow: hidden;
       }}
-      .status-item {{ display:flex; align-items:center; gap:8px; padding:10px 18px;
-                      font-size:14px; color:{MUTED}; border-right:1px solid rgba(255,255,255,.08); white-space:nowrap; }}
-      .status-item:last-child {{ border-right:0; }}
-      .status-value {{ color:{TEXT}; font-weight:700; margin-left:6px; }}
-      .dot {{ width:9px; height:9px; border-radius:50%; background:{GREEN}; box-shadow:0 0 0 2px rgba(92,242,184,.22); display:inline-block; }}
-      @media (max-width:1100px) {{
+      .status-item {{
+        display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+        font-size: 14px; color: {MUTED}; border-right: 1px solid rgba(255,255,255,.08);
+        white-space: nowrap;
+      }}
+      .status-item:last-child {{ border-right: 0; }}
+      .status-value {{ color: {TEXT}; font-weight: 700; margin-left: 6px; }}
+      .dot {{ width: 9px; height: 9px; border-radius: 50%; background: {GREEN};
+              box-shadow: 0 0 0 2px rgba(92,242,184,.22); display:inline-block; }}
+      @media (max-width: 1100px) {{
         .footer-inner {{ width:100%; margin-right:0; }}
         .statusbar {{ overflow-x:auto; scrollbar-width:none; }}
         .statusbar::-webkit-scrollbar {{ display:none; }}
@@ -106,15 +114,15 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader → aligned 5Y DataFrame
+# CSV loader (root) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
-    "NVDA": ["NVDA"],
-    "TSMC": ["TSMC", "TSM"],
-    "ASML": ["ASML"],
-    "CDNS": ["CDNS"],
-    "SNPS": ["SNPS"],
-    "005930.KS": ["005930.ks", "005930"],
+    "NVDA":       ["NVDA"],
+    "TSMC":       ["TSMC", "TSM"],
+    "ASML":       ["ASML"],
+    "CDNS":       ["CDNS"],
+    "SNPS":       ["SNPS"],
+    "005930.KS":  ["005930.ks", "005930"],
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
 PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
@@ -133,27 +141,25 @@ def load_prices_from_root_last_5y(
         for p in patterns:
             match = next((f for f in csvs if f.lower().startswith(p.lower())), None)
             if match:
-                target = os.path.join(root, match)
-                break
+                target = os.path.join(root, match); break
         if target is None:
-            series_list.append(pd.Series(name=display, dtype="float64"))
-            continue
+            series_list.append(pd.Series(name=display, dtype="float64")); continue
 
         df = pd.read_csv(target)
         df.columns = [c.strip() for c in df.columns]
         date_col = next((c for c in df.columns if c.lower() == "date"), None)
         if date_col is None:
-            series_list.append(pd.Series(name=display, dtype="float64"))
-            continue
+            series_list.append(pd.Series(name=display, dtype="float64")); continue
 
-        # preferred price col
-        price_col = next((pc for pc in prefer_cols if pc in df.columns), None)
+        price_col = None
+        for pc in prefer_cols:
+            if pc in df.columns: price_col = pc; break
         if price_col is None:
-            m = [c for c in df.columns if c.lower() in {"adj close","close","price"}]
-            price_col = m[0] if m else None
+            for pc in ("adj close","close","price"):
+                m = [c for c in df.columns if c.lower() == pc]
+                if m: price_col = m[0]; break
         if price_col is None:
-            series_list.append(pd.Series(name=display, dtype="float64"))
-            continue
+            series_list.append(pd.Series(name=display, dtype="float64")); continue
 
         s = (
             df[[date_col, price_col]]
@@ -167,27 +173,22 @@ def load_prices_from_root_last_5y(
         s.name = display
         series_list.append(s)
 
-    if not series_list:
-        return pd.DataFrame(columns=list(aliases.keys()))
-
+    if not series_list: return pd.DataFrame(columns=list(aliases.keys()))
     merged = pd.concat(series_list, axis=1).sort_index()
-    if merged.empty:
-        return pd.DataFrame(columns=list(aliases.keys()))
+    if merged.empty:  return pd.DataFrame(columns=list(aliases.keys()))
 
-    # Business-day align + ffill
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
-
-    # last N years
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
     out = merged.copy()
     out.index = pd.RangeIndex(1, len(out) + 1, name="t")
-    return out.reindex(columns=list(aliases.keys()))
+    out = out.reindex(columns=list(aliases.keys()))
+    return out
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Simple features & optional model loading
+# Features & (optional) model loading
 # ────────────────────────────────────────────────────────────────────────────────
 def feat_block(s: pd.Series) -> list[float]:
     s = s.astype(float)
@@ -196,7 +197,7 @@ def feat_block(s: pd.Series) -> list[float]:
     prev  = float(r.iloc[-2]) if len(r) > 1 else 0.0
     mean5 = float(r.tail(5).mean()) if len(r) else 0.0
     std5  = float(r.tail(5).std(ddof=0)) if len(r) > 1 else 0.0
-    std5 = 0.0 if not np.isfinite(std5) else std5
+    if not np.isfinite(std5): std5 = 0.0
     mom5  = float(s.iloc[-1] - s.tail(5).mean()) if len(s) >= 5 else 0.0
     level = float(s.iloc[-1]) if len(s) else 0.0
     return [last, prev, mean5, std5, mom5, level]
@@ -210,30 +211,33 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in ALIASES.keys() if t != primary]
     feats = []
     for t in order:
-        feats.extend(feat_block(df[t].dropna())) if t in df.columns else feats.extend([0.0]*6)
-    feats.append(1.0)  # bias
+        if t in df.columns: feats.extend(feat_block(df[t].dropna()))
+        else: feats.extend([0.0]*6)
+    feats.append(1.0)
     note = None
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
         if len(feats) < n_expected:
-            feats = feats + [0.0]*(n_expected-base); note = f"Padded {base}->{n_expected}."
+            feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
         else:
-            feats = feats[:n_expected]; note = f"Truncated {base}->{n_expected}."
+            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
     return np.asarray([feats], dtype=np.float32), note
 
 @st.cache_resource
 def load_artifacts():
+    try: model_dir = Path(__file__).parent / "models"
+    except NameError: model_dir = Path("models")
+    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
+    scaler_path = model_dir / "y_scaler.pkl"
+
+    reg, y_scaler = None, None
     try:
-        model_dir = Path(__file__).parent / "models"
-    except NameError:
-        model_dir = Path("models")
-    reg_path, scaler_path = model_dir / "nvda_A_reg_lgb.pkl", model_dir / "y_scaler.pkl"
-    reg = y_scaler = None
-    try:
-        if reg_path.exists(): reg = pickle.load(open(reg_path, "rb"))
+        if reg_path.exists():
+            with reg_path.open("rb") as f: reg = pickle.load(f)
     except Exception: reg = None
     try:
-        if scaler_path.exists(): y_scaler = pickle.load(open(scaler_path, "rb"))
+        if scaler_path.exists():
+            with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
     except Exception: y_scaler = None
     return reg, y_scaler
 
@@ -243,13 +247,13 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW
+# Title + TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
     <style>
-      .app-header{ display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
-      .app-header .title{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
+      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
+      .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -259,7 +263,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Watchlist card
+# Watchlist helpers (NO indentation inside the HTML strings)
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
     arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
@@ -268,20 +272,20 @@ def _badge_html(pct: float, side: str = "left") -> str:
 
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
     st.markdown(
-        dedent(f"""
+        f"""
         <style>
-          .watch-card{{background:{CARD};border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:14px 16px;
-                       box-shadow:0 6px 18px rgba(0,0,0,.25);margin-bottom:16px;}}
+          .watch-card{{background:{CARD};border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:14px 16px;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-bottom:16px;}}
           .watch-title{{font-weight:700;color:{TEXT};margin:0 0 10px 0;}}
-          .watch-row{{display:grid;grid-template-columns:1fr auto;align-items:center;padding:10px 0;
-                      border-bottom:1px solid rgba(255,255,255,.06);}}
+          .watch-row{{display:grid;grid-template-columns:1fr auto;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);}}
           .watch-row:last-child{{border-bottom:0;}}
-          .ticker{{font-weight:600;color:{TEXT};}} .last{{font-weight:700;color:{TEXT};}}
+          .ticker{{font-weight:600;color:{TEXT};}}
+          .last{{font-weight:700;color:{TEXT};}}
           .badges{{grid-column:1 / span 2;display:flex;justify-content:space-between;font-size:13px;margin-top:4px;}}
           .badge{{display:flex;gap:6px;align-items:center;}}
-          .up{{color:{GREEN};}} .down{{color:{ORANGE};}} .neut{{color:#3DE4E0;}} .arrow{{font-weight:700;}}
+          .up{{color:{GREEN};}} .down{{color:{ORANGE};}} .neut{{color:#3DE4E0;}}
+          .arrow{{font-weight:700;}}
         </style>
-        """),
+        """,
         unsafe_allow_html=True,
     )
 
@@ -295,67 +299,50 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
         label = PRETTY.get(t, t)
         rows.append(
-            f"""
-            <div class="watch-row">
-              <div class="ticker">{label}</div>
-              <div class="last">{last:,.2f}</div>
-              <div class="badges">{_badge_html(chg_left,'left')}{_badge_html(chg_right,'right')}</div>
-            </div>
-            """
+            f"<div class='watch-row'><div class='ticker'>{label}</div>"
+            f"<div class='last'>{last:,.2f}</div>"
+            f"<div class='badges'>{_badge_html(chg_left,'left')}{_badge_html(chg_right,'right')}</div></div>"
         )
 
-    st.markdown(
-        f"""
-        <div class="watch-card">
-          <div class="watch-title">{title}</div>
-          {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
-        </div>
-        """,
-        unsafe_allow_html=True,
+    html = (
+        "<div class='watch-card'>"
+        f"<div class='watch-title'>{title}</div>"
+        + ("".join(rows) if rows else "<div class='ticker' style='opacity:.7'>No data</div>")
+        + "</div>"
     )
+    st.markdown(html, unsafe_allow_html=True)
 
-# Top row: [Watchlist] | [Ticker + Next day + Horizon] | [Model + Predict]
+# Build the top row 3 columns
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
+# LEFT: Watchlist under the title
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Ticker + segmented controls (boxed)
+# MIDDLE: Ticker box + Segmented (Next day | 1D 1W 1M)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-ticker_labels = list(label_to_ticker.keys())
-_default_label = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
+ticker_labels   = list(label_to_ticker.keys())
+_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
 if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
-
     with sel_col:
-        st.container().markdown("", unsafe_allow_html=True)
-        st.markdown('<div class="top-select">', unsafe_allow_html=True)
-        sel_label = st.selectbox(" ", ticker_labels, index=_default_idx,
-                                 key="ticker_select", label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
     with seg_col:
-        st.markdown('<div class="seg-box">', unsafe_allow_html=True)
-        seg_choice = st.radio(" ", ["Next day", "1D", "1W", "1M"],
-                              horizontal=True, index=1, key="segmented_hz",
-                              label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+        horizon = st.radio("Next day", ["1D","1W","1M"], horizontal=True, key="horizon")
 
-next_day = True
-horizon  = seg_choice if seg_choice != "Next day" else "1D"
-
+# RIGHT: Model + Predict
 with top_right:
     model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
     do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Main content grid
+# Main content grid BELOW the top row
 # ────────────────────────────────────────────────────────────────────────────────
 MID, RIGHT = st.columns([2.4, 1.1], gap="large")
 
@@ -374,8 +361,8 @@ with MID:
                 if note: st.caption(f"⚠️ {note}")
                 if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
             else:
-                base_tkr = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
-                s = prices[base_tkr].dropna()
+                base_ticker = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
+                s = prices[base_ticker].dropna()
                 if len(s) >= 6:
                     pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
                     lo, hi = pred*0.98, pred*1.02
@@ -413,11 +400,11 @@ with MID:
             color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
             template="plotly_dark",
         )
-        base_tkr = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
+        base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
         proj_x = np.arange(now_x, now_x+12)
-        proj_y = np.linspace(last_val, last_val*1.01, len(proj_x))
+        proj_y = np.linspace(last_val, (last_val*1.01), len(proj_x))
         fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
                                  line=dict(width=2, dash="dot", color="#d6d6d6"),
                                  name="projection", showlegend=False))
@@ -465,13 +452,16 @@ with MID:
         st.markdown("</div>", unsafe_allow_html=True)
 
     ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
-    with ac1: st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
-    with ac2: st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
+    with ac1:
+        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
+    with ac2:
+        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
 
-# RIGHT — signals + trade idea
+# RIGHT — sparklines + trade idea
 def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor=CARD, plot_bgcolor=CARD,
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
                     xaxis=dict(visible=False), yaxis=dict(visible=False))
     return f
 
@@ -481,8 +471,11 @@ with RIGHT:
     rng = np.random.default_rng(42)
     for name in ["TSMC","ASML","Cadence","Synopsys"]:
         val = float(rng.normal(0.0, 0.5))
-        st.markdown(f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
-                    f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
+            unsafe_allow_html=True,
+        )
         st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))), use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 

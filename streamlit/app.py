@@ -275,14 +275,16 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
-            unsafe_allow_html=True)
+st.markdown(
+    '<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+    unsafe_allow_html=True,
+)
 
 # Load price history (5y) BEFORE rendering the watchlist
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Watchlist renderer
+# Watchlist helpers (unchanged)
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
     arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
@@ -346,13 +348,45 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
         unsafe_allow_html=True,
     )
 
+# 👉 Segmented-control CSS (turn radio into underlined tabs)
+st.markdown(
+    f"""
+    <style>
+      /* hide radio dots; style labels as tabs with underline on selection */
+      [data-baseweb="radio"] svg {{ display:none !important; }}
+      [data-baseweb="radio"] > label {{
+        background: transparent !important;
+        border: 0 !important;
+        color: {MUTED} !important;
+        padding: 8px 10px 10px !important;
+        margin: 0 8px 0 0 !important;
+        border-radius: 8px;
+        cursor: pointer;
+      }}
+      [data-baseweb="radio"] > label[aria-checked="true"] {{
+        color: {TEXT} !important;
+        position: relative;
+      }}
+      [data-baseweb="radio"] > label[aria-checked="true"]::after {{
+        content: "";
+        display: block;
+        height: 3px;
+        border-radius: 3px;
+        background: {ACCENT};
+        margin-top: 6px;
+      }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Top row columns: [Watchlist] | [Ticker + Next day + Horizon] | [Model + Predict]
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Ticker + Next day + Horizon controls
+# Ticker + segmented (Next day | 1D | 1W | 1M) — all on one line
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -362,22 +396,29 @@ if _default_label not in ticker_labels:
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
-    ticker = label_to_ticker[sel_label]
-    st.session_state["ticker_label"] = sel_label
-
-    c_nd, c_hz = st.columns([0.9, 1.6])
-    with c_nd:
-        next_day = st.toggle("Next day", value=True, key="next_day",
-                             help="Forecast the next trading day close.")
-    with c_hz:
-        horizon = st.radio(" ", ["1D", "1W", "1M"], horizontal=True,
-                           label_visibility="collapsed", key="horizon")
+    sel_col, seg_col = st.columns([1.05, 1.55])
+    with sel_col:
+        sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
+        ticker = label_to_ticker[sel_label]
+        st.session_state["ticker_label"] = sel_label
+    with seg_col:
+        seg_choice = st.radio(
+            " ",  # collapse label space
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=1,  # default to 1D
+            key="segmented_hz",
+            label_visibility="collapsed",
+            help="Switch horizon; 'Next day' is a special case.",
+        )
+        next_day = (seg_choice == "Next day")
+        horizon  = "1D" if next_day else seg_choice
 
 # Model + Predict button
 with top_right:
     model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
     do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Main content grid BELOW the top row

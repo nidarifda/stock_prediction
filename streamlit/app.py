@@ -20,21 +20,21 @@ BG       = "#0B1220"
 CARD     = "#0F1A2B"
 TEXT     = "#E6F0FF"
 MUTED    = "#8AA1C7"
-ACCENT   = "#496BFF"
+ACCENT   = "#496BFF"   # CTA blue
 ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
-# Global CSS
+# Global CSS (theme + widgets + sticky footer styles)
 st.markdown(
     f"""
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px;
+        --footer-safe: 160px; /* set to 0px if not on Streamlit Cloud */
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
-      .block-container {{ padding-top:.9rem; padding-bottom:1.0rem; }}
+      .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
 
       /* Cards */
       .card {{
@@ -44,40 +44,19 @@ st.markdown(
         padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
+
+      /* Metric tiles */
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs (boxed) */
-      [data-testid="stSelectbox"] > div > div,
+      /* Inputs */
+      [data-testid="stTextInput"] > div > div,
+      [data-testid="stSelectbox"]  > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
         color:var(--text) !important;
-      }}
-
-      /* Radio GROUP as segmented box */
-      [data-testid="stRadio"] {{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
-      }}
-      [data-testid="stRadio"] > label {{
-        margin:0 12px 0 2px; color:{TEXT}; font-weight:700; white-space:nowrap;
-      }}
-      [data-testid="stRadio"] div[role="radiogroup"] {{ display:flex; align-items:center; gap:10px; }}
-      [data-baseweb="radio"] svg {{ display:none !important; }}
-      [data-baseweb="radio"] > label {{
-        background: transparent !important; border:0 !important;
-        color:{MUTED} !important; padding:6px 8px 8px !important; margin:0 2px !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
-      }}
-      [data-baseweb="radio"] > label[aria-checked="true"] {{ color:{TEXT} !important; position:relative; }}
-      [data-baseweb="radio"] > label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:5px;
       }}
 
       /* Primary button */
@@ -86,7 +65,7 @@ st.markdown(
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* Footer */
+      /* ===== Sticky segmented footer ===== */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
       .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
@@ -114,7 +93,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root) → aligned 5Y DataFrame
+# CSV loader (root folder) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -122,7 +101,7 @@ ALIASES = {
     "ASML":       ["ASML"],
     "CDNS":       ["CDNS"],
     "SNPS":       ["SNPS"],
-    "005930.KS":  ["005930.ks", "005930"],
+    "005930.KS":  ["005930.ks", "005930"],  # Samsung
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
 PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
@@ -139,27 +118,37 @@ def load_prices_from_root_last_5y(
     for display, patterns in aliases.items():
         target = None
         for p in patterns:
-            match = next((f for f in csvs if f.lower().startswith(p.lower())), None)
+            pfx = p.lower()
+            match = next((f for f in csvs if f.lower().startswith(pfx)), None)
             if match:
-                target = os.path.join(root, match); break
+                target = os.path.join(root, match)
+                break
+
         if target is None:
-            series_list.append(pd.Series(name=display, dtype="float64")); continue
+            series_list.append(pd.Series(name=display, dtype="float64"))
+            continue
 
         df = pd.read_csv(target)
         df.columns = [c.strip() for c in df.columns]
         date_col = next((c for c in df.columns if c.lower() == "date"), None)
         if date_col is None:
-            series_list.append(pd.Series(name=display, dtype="float64")); continue
+            series_list.append(pd.Series(name=display, dtype="float64"))
+            continue
 
         price_col = None
         for pc in prefer_cols:
-            if pc in df.columns: price_col = pc; break
+            if pc in df.columns:
+                price_col = pc
+                break
         if price_col is None:
-            for pc in ("adj close","close","price"):
+            for pc in ("adj close", "close", "price"):
                 m = [c for c in df.columns if c.lower() == pc]
-                if m: price_col = m[0]; break
+                if m:
+                    price_col = m[0]
+                    break
         if price_col is None:
-            series_list.append(pd.Series(name=display, dtype="float64")); continue
+            series_list.append(pd.Series(name=display, dtype="float64"))
+            continue
 
         s = (
             df[[date_col, price_col]]
@@ -173,12 +162,16 @@ def load_prices_from_root_last_5y(
         s.name = display
         series_list.append(s)
 
-    if not series_list: return pd.DataFrame(columns=list(aliases.keys()))
+    if not series_list:
+        return pd.DataFrame(columns=list(aliases.keys()))
+
     merged = pd.concat(series_list, axis=1).sort_index()
-    if merged.empty:  return pd.DataFrame(columns=list(aliases.keys()))
+    if merged.empty:
+        return pd.DataFrame(columns=list(aliases.keys()))
 
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
+
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
@@ -211,9 +204,11 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in ALIASES.keys() if t != primary]
     feats = []
     for t in order:
-        if t in df.columns: feats.extend(feat_block(df[t].dropna()))
-        else: feats.extend([0.0]*6)
-    feats.append(1.0)
+        if t in df.columns:
+            feats.extend(feat_block(df[t].dropna()))
+        else:
+            feats.extend([0.0]*6)
+    feats.append(1.0)  # bias
     note = None
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
@@ -225,20 +220,26 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
 
 @st.cache_resource
 def load_artifacts():
-    try: model_dir = Path(__file__).parent / "models"
-    except NameError: model_dir = Path("models")
+    try:
+        model_dir = Path(__file__).parent / "models"
+    except NameError:
+        model_dir = Path("models")
     reg_path = model_dir / "nvda_A_reg_lgb.pkl"
     scaler_path = model_dir / "y_scaler.pkl"
 
     reg, y_scaler = None, None
     try:
         if reg_path.exists():
-            with reg_path.open("rb") as f: reg = pickle.load(f)
-    except Exception: reg = None
+            with reg_path.open("rb") as f:
+                reg = pickle.load(f)
+    except Exception:
+        reg = None
     try:
         if scaler_path.exists():
-            with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
-    except Exception: y_scaler = None
+            with scaler_path.open("rb") as f:
+                y_scaler = pickle.load(f)
+    except Exception:
+        y_scaler = None
     return reg, y_scaler
 
 def inverse_if_scaled(y_scaled: float, scaler):
@@ -247,11 +248,14 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
+# Header & TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
 # ────────────────────────────────────────────────────────────────────────────────
+
+# Title
 st.markdown(
     """
     <style>
+      .block-container { padding-top: 1.1rem; }
       .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
       .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
     </style>
@@ -260,10 +264,11 @@ st.markdown(
 )
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
+# Load price history first
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Watchlist helpers (NO indentation inside the HTML strings)
+# ----- Watchlist helpers -----
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
     arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
@@ -271,130 +276,207 @@ def _badge_html(pct: float, side: str = "left") -> str:
     return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
 
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
-    st.markdown(
-        f"""
-        <style>
-          .watch-card{{background:{CARD};border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:14px 16px;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-bottom:16px;}}
-          .watch-title{{font-weight:700;color:{TEXT};margin:0 0 10px 0;}}
-          .watch-row{{display:grid;grid-template-columns:1fr auto;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);}}
-          .watch-row:last-child{{border-bottom:0;}}
-          .ticker{{font-weight:600;color:{TEXT};}}
-          .last{{font-weight:700;color:{TEXT};}}
-          .badges{{grid-column:1 / span 2;display:flex;justify-content:space-between;font-size:13px;margin-top:4px;}}
-          .badge{{display:flex;gap:6px;align-items:center;}}
-          .up{{color:{GREEN};}} .down{{color:{ORANGE};}} .neut{{color:#3DE4E0;}}
-          .arrow{{font-weight:700;}}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    WATCHLIST_CSS = dedent(f"""
+    <style>
+      .watch-card {{
+        background:{CARD}; border:1px solid rgba(255,255,255,.06);
+        border-radius:18px; padding:14px 16px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+        margin-bottom:16px;
+      }}
+      .watch-title {{ font-weight:700; color:{TEXT}; margin:0 0 10px 0; }}
+      .watch-row {{
+        display:grid; grid-template-columns: 1fr auto; align-items:center;
+        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
+      }}
+      .watch-row:last-child {{ border-bottom:0; }}
+      .ticker {{ font-weight:600; color:{TEXT}; }}
+      .last {{ font-weight:700; color:{TEXT}; }}
+      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
+                 font-size:13px; margin-top:4px; }}
+      .badge {{ display:flex; gap:6px; align-items:center; }}
+      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
+      .arrow {{ font-weight:700; }}
+    </style>
+    """)
+    st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
     rows = []
     for t in tickers:
-        if t not in prices_df.columns: continue
+        if t not in prices_df.columns:
+            continue
         s = prices_df[t].dropna().astype(float)
-        if s.empty: continue
+        if s.empty:
+            continue
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
         label = PRETTY.get(t, t)
-        rows.append(
-            f"<div class='watch-row'><div class='ticker'>{label}</div>"
-            f"<div class='last'>{last:,.2f}</div>"
-            f"<div class='badges'>{_badge_html(chg_left,'left')}{_badge_html(chg_right,'right')}</div></div>"
-        )
+        rows.append(dedent(f"""
+        <div class="watch-row">
+          <div class="ticker">{label}</div>
+          <div class="last">{last:,.2f}</div>
+          <div class="badges">
+            {_badge_html(chg_left, side="left")}
+            {_badge_html(chg_right, side="right")}
+          </div>
+        </div>
+        """))
 
-    html = (
-        "<div class='watch-card'>"
-        f"<div class='watch-title'>{title}</div>"
-        + ("".join(rows) if rows else "<div class='ticker' style='opacity:.7'>No data</div>")
-        + "</div>"
+    st.markdown(
+        dedent(f"""
+        <div class="watch-card">
+          <div class="watch-title">{title}</div>
+          {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
+        </div>
+        """),
+        unsafe_allow_html=True,
     )
-    st.markdown(html, unsafe_allow_html=True)
 
-# Build the top row 3 columns
+# Create top row columns
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
-# LEFT: Watchlist under the title
+# LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker box + Segmented (Next day | 1D 1W 1M)
+# Prep ticker labels
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
 _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels: _default_label = ticker_labels[0]
+if _default_label not in ticker_labels:
+    _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
+# Style the boxed controls (ticker + segmented period)
+st.markdown(
+    f"""
+    <style>
+      .input-card, .seg-card {{
+        background: {CARD};
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 12px;
+        padding: 6px 10px;
+        display: flex; align-items: center;
+        height: 44px;
+      }}
+      [data-testid="stSelectbox"] > div > div {{
+        background: transparent !important; border: 0 !important; box-shadow: none !important;
+      }}
+      .seg-card [data-testid="stRadio"] {{ width: 100%; }}
+      .seg-card [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      .seg-card [data-baseweb="radio"] svg {{ display:none !important; }}
+      .seg-card [data-baseweb="radio"] > label {{
+        background: transparent !important; border: 0 !important; color: {MUTED} !important;
+        padding: 6px 10px 10px !important; margin: 0 10px 0 0 !important;
+        border-radius: 8px; cursor: pointer; white-space: nowrap;
+      }}
+      .seg-card [data-baseweb="radio"] > label[aria-checked="true"] {{
+        color: {TEXT} !important; position: relative;
+      }}
+      .seg-card [data-baseweb="radio"] > label[aria-checked="true"]::after {{
+        content: ""; display:block; height:3px; border-radius:3px;
+        background:{ACCENT}; margin-top:6px;
+      }}
+      .seg-card [data-baseweb="radio"] > label:first-child {{
+        pointer-events: none; color: {MUTED} !important; opacity: .95;
+      }}
+      .seg-card [data-baseweb="radio"] > label:first-child::after {{ display:none; }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# MIDDLE: Ticker box + Segmented box
 with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
+
     with sel_col:
+        st.markdown("<div class='input-card'>", unsafe_allow_html=True)
         sel_label = st.selectbox(
-    "Ticker", ticker_labels,
-    index=_default_idx, key="ticker_select",
-    label_visibility="collapsed"   # hides the word "Ticker"
-)
+            "Ticker", ticker_labels, index=_default_idx,
+            key="ticker_select", label_visibility="collapsed"
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
+
     with seg_col:
-        horizon = st.radio("Next day", ["1D","1W","1M"], horizontal=True, key="horizon")
+        st.markdown("<div class='seg-card'>", unsafe_allow_html=True)
+        seg_choice = st.radio(
+            " ", ["Next day", "1D", "1W", "1M"],
+            horizontal=True, index=1, key="segmented_hz",
+            label_visibility="collapsed",
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        next_day = True
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
 # RIGHT: Model + Predict
 with top_right:
-    model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
+    model_name = st.selectbox("Model", ["LightGBM", "RandomForest", "XGBoost"], index=0, key="model_name")
     do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Main content grid BELOW the top row
+# Compute prediction (so metrics can render right under the controls)
 # ────────────────────────────────────────────────────────────────────────────────
-MID, RIGHT = st.columns([2.4, 1.1], gap="large")
-
-with MID:
-    pred = lo = hi = conf = None
-    if do_predict:
-        try:
-            reg, y_scaler = load_artifacts()
-            if reg is not None and ticker in prices.columns:
-                n_exp = expected_n_feats(reg) or 31
-                X, note = build_features(prices, ticker, n_exp)
-                y_scaled = float(reg.predict(X)[0])
-                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
+pred = lo = hi = conf = None
+if do_predict:
+    try:
+        reg, y_scaler = load_artifacts()
+        if reg is not None and ticker in prices.columns:
+            n_exp = expected_n_feats(reg) or 31
+            X, note = build_features(prices, ticker, n_exp)
+            y_scaled = float(reg.predict(X)[0])
+            pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
+            lo, hi = pred*0.98, pred*1.02
+            conf = 0.78
+            if note: st.caption(f"⚠️ {note}")
+            if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
+        else:
+            base_ticker = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
+            s = prices[base_ticker].dropna()
+            if len(s) >= 6:
+                pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
                 lo, hi = pred*0.98, pred*1.02
-                conf = 0.78
-                if note: st.caption(f"⚠️ {note}")
-                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
-            else:
-                base_ticker = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
-                s = prices[base_ticker].dropna()
-                if len(s) >= 6:
-                    pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
-                    lo, hi = pred*0.98, pred*1.02
-                    conf = 0.65
-        except Exception as e:
-            st.error(f"Prediction failed: {e}")
+                conf = 0.65
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
 
-    pred_text = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
-    inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
-    conf_text = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
+pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
+inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
+conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    a, b, c = st.columns(3)
-    with a:
+# ────────────────────────────────────────────────────────────────────────────────
+# SECOND ROW — metrics directly under the middle controls
+# ────────────────────────────────────────────────────────────────────────────────
+row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
+with row2_mid:
+    m1, m2, m3 = st.columns(3)
+    with m1:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='value'>{pred_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-    with b:
+    with m2:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>80% interval</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='value'>{inter_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-    with c:
+    with m3:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Confidence</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+# ────────────────────────────────────────────────────────────────────────────────
+# THIRD ROW — chart + right rail
+# ────────────────────────────────────────────────────────────────────────────────
+MID, RIGHT = st.columns([2.4, 1.1], gap="large")
+
+with MID:
+    # Forecast chart
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
@@ -404,7 +486,7 @@ with MID:
             color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
             template="plotly_dark",
         )
-        base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
+        base_tkr = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
         proj_x = np.arange(now_x, now_x+12)
@@ -426,6 +508,7 @@ with MID:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # Lower cards
     lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
     with lc1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -434,19 +517,28 @@ with MID:
         def bar(v: float) -> str:
             width = max(0, min(100, int(v*70)))
             return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
-        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True); st.markdown(bar(0.6), unsafe_allow_html=True)
-        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True); st.markdown(bar(0.4), unsafe_allow_html=True)
-        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True); st.markdown(bar(0.8), unsafe_allow_html=True)
+        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
+        st.markdown(bar(0.6), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.4), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.8), unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
+
     with lc2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**Error distribution**")
-        rng = np.random.default_rng(9); e = rng.normal(0, 1, 220)
+        rng = np.random.default_rng(9)
+        e = rng.normal(0, 1, 220)
         hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(height=160, margin=dict(l=6, r=6, t=4, b=4), paper_bgcolor=CARD, plot_bgcolor=CARD,
-                           xaxis=dict(visible=False), yaxis=dict(visible=False))
+        hist.update_layout(
+            height=160, margin=dict(l=6, r=6, t=4, b=4),
+            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            xaxis=dict(visible=False), yaxis=dict(visible=False),
+        )
         st.plotly_chart(hist, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
+
     with lc3:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
@@ -455,18 +547,15 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
-    with ac1:
-        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
-    with ac2:
-        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
-
-# RIGHT — sparklines + trade idea
+# RIGHT rail
 def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor=CARD, plot_bgcolor=CARD,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines",
+                             line=dict(width=2)))
+    f.update_layout(
+        height=54, margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        xaxis=dict(visible=False), yaxis=dict(visible=False),
+    )
     return f
 
 with RIGHT:
@@ -480,7 +569,8 @@ with RIGHT:
             f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))), use_container_width=True, theme=None)
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+                        use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)

@@ -330,7 +330,11 @@ _default_idx = ticker_labels.index(_default_label)
 with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
-        sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
+        sel_label = st.selectbox(
+    "Ticker", ticker_labels,
+    index=_default_idx, key="ticker_select",
+    label_visibility="collapsed"   # hides the word "Ticker"
+)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
     with seg_col:

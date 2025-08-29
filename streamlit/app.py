@@ -264,160 +264,95 @@ def inverse_if_scaled(y_scaled: float, scaler):
 # Title + NEW TOP ROW (Watchlist | Ticker+Next day+Horizon | Model+Predict)
 # ────────────────────────────────────────────────────────────────────────────────
 
-# H1 styling
-st.markdown(
-    """
-    <style>
-      .block-container { padding-top: 1.1rem; }
-      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
-      .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-st.markdown(
-    '<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
-    unsafe_allow_html=True,
-)
-
-# Load price history (5y) BEFORE rendering the watchlist
-with st.spinner("Loading price history…"):
-    prices = load_prices_from_root_last_5y(ALIASES)
-
-# Watchlist helpers (unchanged)
-def _badge_html(pct: float, side: str = "left") -> str:
-    cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
-    arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
-    sign  = "+" if pct > 0 else ""
-    return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
-
-def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
-    WATCHLIST_CSS = dedent(f"""
-    <style>
-      .watch-card {{
-        background:{CARD}; border:1px solid rgba(255,255,255,.06);
-        border-radius:18px; padding:14px 16px; box-shadow:0 6px 18px rgba(0,0,0,.25);
-        margin-bottom:16px;
-      }}
-      .watch-title {{ font-weight:700; color:{TEXT}; margin:0 0 10px 0; }}
-      .watch-row {{
-        display:grid; grid-template-columns: 1fr auto; align-items:center;
-        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
-      }}
-      .watch-row:last-child {{ border-bottom:0; }}
-      .ticker {{ font-weight:600; color:{TEXT}; }}
-      .last {{ font-weight:700; color:{TEXT}; }}
-      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
-                 font-size:13px; margin-top:4px; }}
-      .badge {{ display:flex; gap:6px; align-items:center; }}
-      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
-      .arrow {{ font-weight:700; }}
-    </style>
-    """)
-    st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
-
-    rows = []
-    for t in tickers:
-        if t not in prices_df.columns: 
-            continue
-        s = prices_df[t].dropna().astype(float)
-        if s.empty:
-            continue
-        last = float(s.iloc[-1])
-        chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
-        chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
-        label = PRETTY.get(t, t)
-        rows.append(dedent(f"""
-        <div class="watch-row">
-          <div class="ticker">{label}</div>
-          <div class="last">{last:,.2f}</div>
-          <div class="badges">
-            {_badge_html(chg_left, side="left")}
-            {_badge_html(chg_right, side="right")}
-          </div>
-        </div>
-        """))
-
-    st.markdown(
-        dedent(f"""
-        <div class="watch-card">
-          <div class="watch-title">{title}</div>
-          {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
-        </div>
-        """),
-        unsafe_allow_html=True,
-    )
-
-# 👉 Segmented-control CSS (turn radio into underlined tabs)
+# === Segmented control as BOX (Next day | 1D | 1W | 1M) and Ticker BOX ===
 st.markdown(
     f"""
     <style>
-      /* hide radio dots; style labels as tabs with underline on selection */
-      [data-baseweb="radio"] svg {{ display:none !important; }}
-      [data-baseweb="radio"] > label {{
+      /* Boxed wrappers for select + radio */
+      .input-card, .seg-card {{
+        background: {CARD};
+        border: 1px solid rgba(255,255,255,.10);
+        border-radius: 12px;
+        padding: 6px 10px;
+        display: flex; align-items: center;
+        height: 44px;
+      }}
+
+      /* Make the select itself flat so the outer .input-card is the box */
+      [data-testid="stSelectbox"] > div > div {{
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }}
+
+      /* Turn the radio into an underlined segmented control */
+      .seg-card [data-testid="stRadio"] {{
+        width: 100%;
+      }}
+      .seg-card [data-baseweb="radio"] {{
+        display:flex; align-items:center;
+      }}
+      .seg-card [data-baseweb="radio"] svg {{ display:none !important; }}
+      .seg-card [data-baseweb="radio"] > label {{
         background: transparent !important;
         border: 0 !important;
         color: {MUTED} !important;
-        padding: 8px 10px 10px !important;
-        margin: 0 8px 0 0 !important;
+        padding: 6px 10px 10px !important;
+        margin: 0 10px 0 0 !important;
         border-radius: 8px;
         cursor: pointer;
+        white-space: nowrap;
       }}
-      [data-baseweb="radio"] > label[aria-checked="true"] {{
+      .seg-card [data-baseweb="radio"] > label[aria-checked="true"] {{
         color: {TEXT} !important;
         position: relative;
       }}
-      [data-baseweb="radio"] > label[aria-checked="true"]::after {{
+      .seg-card [data-baseweb="radio"] > label[aria-checked="true"]::after {{
         content: "";
-        display: block;
-        height: 3px;
-        border-radius: 3px;
-        background: {ACCENT};
-        margin-top: 6px;
+        display:block; height:3px; border-radius:3px;
+        background:{ACCENT}; margin-top:6px;
       }}
+
+      /* "Next day" shown inside the same box, not clickable */
+      .seg-card [data-baseweb="radio"] > label:first-child {{
+        pointer-events: none;
+        color: {MUTED} !important;
+        opacity: .95;
+      }}
+      .seg-card [data-baseweb="radio"] > label:first-child::after {{ display:none; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Top row columns: [Watchlist] | [Ticker + Next day + Horizon] | [Model + Predict]
-top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
-
-with top_left:
-    render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
-
-# Ticker + segmented (Next day | 1D | 1W | 1M) — all on one line
-TICKERS = DISPLAY_ORDER
-label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-ticker_labels   = list(label_to_ticker.keys())
-_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels:
-    _default_label = ticker_labels[0]
-_default_idx = ticker_labels.index(_default_label)
-
+# ---------- middle column: Ticker BOX + Segmented BOX ----------
 with top_mid:
     sel_col, seg_col = st.columns([1.05, 1.55])
+
+    # Ticker inside a box
     with sel_col:
-        sel_label = st.selectbox("Ticker", ticker_labels, index=_default_idx, key="ticker_select")
+        st.markdown("<div class='input-card'>", unsafe_allow_html=True)
+        sel_label = st.selectbox(
+            "Ticker", ticker_labels, index=_default_idx,
+            key="ticker_select", label_visibility="collapsed"
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-    with seg_col:
-        seg_choice = st.radio(
-            " ",  # collapse label space
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=1,  # default to 1D
-            key="segmented_hz",
-            label_visibility="collapsed",
-            help="Switch horizon; 'Next day' is a special case.",
-        )
-        next_day = (seg_choice == "Next day")
-        horizon  = "1D" if next_day else seg_choice
 
-# Model + Predict button
-with top_right:
-    model_name = st.selectbox("Model", ["LightGBM","RandomForest","XGBoost"], index=0, key="model_name")
-    do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+    # Segmented inside a box (shows 'Next day' text + 1D/1W/1M)
+    with seg_col:
+        st.markdown("<div class='seg-card'>", unsafe_allow_html=True)
+        seg_choice = st.radio(
+            " ", ["Next day", "1D", "1W", "1M"],
+            horizontal=True, index=1, key="segmented_hz",
+            label_visibility="collapsed",
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # expose the same variables you use later
+        next_day = True                         # 'Next day' is informational in the UI
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
 
 # ────────────────────────────────────────────────────────────────────────────────

@@ -56,15 +56,49 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Primary button (match box height) */
-      .stButton > button {{
-        height:44px;                      /* aligned to control boxes */
+      /* Make selectboxes look like cards */
+      [data-testid="stSelectbox"] > div > div {{
+        background:{CARD} !important;
+        border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
-        border:0 !important;
-        font-weight:700 !important;
-        background:{ACCENT} !important;
-        color:white !important;
+        height:44px;
       }}
+
+      /* Radio "box" */
+      [data-testid="stRadio"] {{
+        background:{CARD};
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        padding:6px 10px;
+        height:44px;
+        display:flex; align-items:center;
+      }}
+      /* Segmented look */
+      [data-testid="stRadio"] svg {{ display:none !important; }}
+      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      [data-testid="stRadio"] label {{
+        background:transparent !important; border:0 !important; color:{MUTED} !important;
+        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
+        border-radius:8px; cursor:pointer; white-space:nowrap;
+      }}
+      [data-testid="stRadio"] label[aria-checked="true"] {{
+        color:{TEXT} !important; position:relative;
+      }}
+      [data-testid="stRadio"] label[aria-checked="true"]::after {{
+        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
+      }}
+      /* Make 'Next day' a static prefix */
+      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
+      [data-testid="stRadio"] label:first-child::after {{ display:none; }}
+
+      /* Primary button */
+      .stButton > button {{
+        height:42px; border-radius:12px !important; border:0 !important;
+        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+      }}
+
+      /* Nudge to align the control row with Watchlist top */
+      .top-row-align {{ margin-top: -8px; }}
 
       /* Footer */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
@@ -98,11 +132,11 @@ st.markdown(
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
-    "TSMC":       ["TSMC", "TSM"],          # file: TSM_daily_data.csv
+    "TSMC":       ["TSMC", "TSM"],
     "ASML":       ["ASML"],
-    "CDNS":       ["CDNS"],                 # Cadence
-    "SNPS":       ["SNPS"],                 # Synopsys
-    "005930.KS":  ["005930.ks", "005930"],  # Samsung Electronics
+    "CDNS":       ["CDNS"],
+    "SNPS":       ["SNPS"],
+    "005930.KS":  ["005930.ks", "005930"],
 }
 DISPLAY_ORDER = ["NVDA", "TSMC", "ASML", "CDNS", "SNPS", "005930.KS"]
 PRETTY = {"NVDA":"NVDA","TSMC":"TSMC","ASML":"ASML","CDNS":"Cadence","SNPS":"Synopsys","005930.KS":"Samsung"}
@@ -320,7 +354,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW (Watchlist | Ticker/Horizon | Model+Predict)
+# Title + TOP ROW (Watchlist | Ticker/Horizon | Model + Predict)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -338,56 +372,14 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Create top row columns (right a bit wider so model + predict fit inline)
-top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.25], gap="large")
+# Create top row columns
+top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.0], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Style widgets (selectbox & radio to look like boxes)
-st.markdown(
-    f"""
-    <style>
-      /* Selectbox "box" */
-      [data-testid="stSelectbox"] > div > div {{
-        background:{CARD} !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        height:44px;
-      }}
-      /* Radio "box" */
-      [data-testid="stRadio"] {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
-      }}
-      /* Segmented look */
-      [data-testid="stRadio"] svg {{ display:none !important; }}
-      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{MUTED} !important;
-        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
-      }}
-      [data-testid="stRadio"] label[aria-checked="true"] {{
-        color:{TEXT} !important; position:relative;
-      }}
-      [data-testid="stRadio"] label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
-      }}
-      /* Make 'Next day' a static prefix */
-      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
-      [data-testid="stRadio"] label:first-child::after {{ display:none; }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# MIDDLE: Ticker + Next day/period
+# MIDDLE: Ticker + Next day / Horizon
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -397,30 +389,45 @@ if _default_label not in ticker_labels:
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
+    st.markdown("<div class='top-row-align'>", unsafe_allow_html=True)
+
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
-        sel_label = st.selectbox("", ticker_labels, index=_default_idx, key="ticker_select", label_visibility="collapsed")
+        sel_label = st.selectbox(
+            "", ticker_labels, index=_default_idx,
+            key="ticker_select", label_visibility="collapsed"
+        )
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
+
     with seg_col:
-        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, key="segmented_hz", label_visibility="collapsed")
+        seg_choice = st.radio(
+            "", ["Next day", "1D", "1W", "1M"],
+            horizontal=True, index=1, key="segmented_hz",
+            label_visibility="collapsed",
+        )
         next_day = True
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
-# RIGHT: Model (boxed) + Predict — inline & aligned
-with top_right:
-    model_col, btn_col = st.columns([1.0, 0.8], gap="medium")
+    st.markdown("</div>", unsafe_allow_html=True)
 
+# RIGHT: Model + Predict (same row)
+with top_right:
+    st.markdown("<div class='top-row-align'>", unsafe_allow_html=True)
+
+    model_col, btn_col = st.columns([1.0, 0.8], gap="medium")
     with model_col:
         model_name = st.selectbox(
             " ", ["LightGBM", "RandomForest", "XGBoost"],
             index=0, key="model_name", label_visibility="collapsed"
         )
-
     with btn_col:
+        # Vertically center the CTA to match 44px control height
         st.markdown("<div style='display:flex;align-items:center;height:44px;'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # PREDICTION (so tiles can show immediately under the controls)
@@ -455,7 +462,7 @@ conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 # ────────────────────────────────────────────────────────────────────────────────
 # METRICS — directly under the middle controls
 # ────────────────────────────────────────────────────────────────────────────────
-row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.25], gap="large")
+row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
 with row2_mid:
     m1, m2, m3 = st.columns(3)
     with m1:
@@ -480,7 +487,6 @@ with row2_mid:
 MID, RIGHT = st.columns([2.4, 1.1], gap="large")
 
 with MID:
-    # Forecast chart
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
@@ -490,7 +496,7 @@ with MID:
             color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
             template="plotly_dark",
         )
-        base_tkr = ticker if ticker in prices.columns else ( "NVDA" if "NVDA" in prices.columns else prices.columns[0] )
+        base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
         proj_x = np.arange(now_x, now_x+12)
@@ -512,7 +518,6 @@ with MID:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Lower cards
     lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
     with lc1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -521,6 +526,7 @@ with MID:
         def bar(v: float) -> str:
             width = max(0, min(100, int(v*70)))
             return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
+            # visual aid only
         st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
         st.markdown(bar(0.6), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
@@ -551,7 +557,6 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Action row placeholders
     ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
     with ac1:
         st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)

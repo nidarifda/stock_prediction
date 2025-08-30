@@ -47,7 +47,7 @@ st.markdown(
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Text/number inputs */
+      /* Inputs */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
@@ -57,6 +57,7 @@ st.markdown(
       }}
 
       /* Selectboxes look like cards + white text */
+      [data-testid="stSelectbox"] {{ margin:0 !important; }}
       [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
         border:1px solid rgba(255,255,255,.10) !important;
@@ -75,20 +76,18 @@ st.markdown(
         height:44px;
         display:flex; align-items:center;
       }}
-      /* Hide default icon, use labels as segmented control */
       [data-testid="stRadio"] svg {{ display:none !important; }}
       [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
 
-      /* ▼ Make ALL radio labels white by default */
-      [data-testid="stRadio"] label,
-      [data-testid="stRadio"] label * {{
+      /* Force white labels + full opacity */
+      [data-testid="stRadio"], 
+      [data-testid="stRadio"] * {{
         color:{TEXT} !important;
+        opacity:1 !important;
       }}
 
       /* Selected label underline */
-      [data-testid="stRadio"] label[aria-checked="true"] {{
-        color:{TEXT} !important; position:relative;
-      }}
+      [data-testid="stRadio"] label[aria-checked="true"] {{ position:relative; }}
       [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
@@ -99,10 +98,8 @@ st.markdown(
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* Top-row layout helpers */
-      .toprow .btn-wrap {{
-        height:44px; display:flex;
-      }}
+      /* Top-row helpers */
+      .toprow .btn-wrap {{ height:44px; display:flex; }}
       .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
       .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px; width:100% !important;
@@ -139,7 +136,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root folder) → aligned 5Y DataFrame
+# CSV loader
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -259,7 +256,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
             feats.extend(feat_block(df[t].dropna()))
         else:
             feats.extend([0.0]*6)
-    feats.append(1.0)  # bias
+    feats.append(1.0)
     note = None
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
@@ -383,7 +380,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Additional top-row specificity (duplicate a few rules to guarantee white text)
+# Extra toprow specificity + make "Next day" clickable
 st.markdown(
     f"""
     <style>
@@ -403,17 +400,9 @@ st.markdown(
       }}
       .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
       .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-
-      /* Force white for labels AND descendants (handles BaseWeb wrappers) */
-      .toprow [data-testid="stRadio"] label,
-      .toprow [data-testid="stRadio"] label * {{ color:{TEXT} !important; }}
-
-      .toprow [data-testid="stRadio"] label[aria-checked="true"] {{ color:{TEXT} !important; position:relative; }}
-      .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
+      .toprow [data-testid="stRadio"], .toprow [data-testid="stRadio"] * {{
+        color:{TEXT} !important; opacity:1 !important;
       }}
-
-      /* Ensure first label ("Next day") is clickable */
       .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:auto; }}
     </style>
     """,
@@ -437,19 +426,14 @@ with top_mid:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([1.05, 1.55])
     with sel_col:
-        sel_label = st.selectbox(
-            "", ticker_labels, index=_default_idx,
-            key="ticker_select", label_visibility="collapsed"
-        )
+        sel_label = st.selectbox("", ticker_labels, index=_default_idx,
+                                 key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
     with seg_col:
-        seg_choice = st.radio(
-            "", ["Next day", "1D", "1W", "1M"],
-            horizontal=True, index=1, key="segmented_hz",
-            label_visibility="collapsed",
-        )
-        # If you want "Next day" to toggle behavior, you can inspect seg_choice later
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
+                              horizontal=True, index=1, key="segmented_hz",
+                              label_visibility="collapsed")
         next_day = (seg_choice == "Next day")
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
@@ -458,10 +442,8 @@ with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
     with model_col:
-        model_name = st.selectbox(
-            " ", ["LightGBM", "RandomForest", "XGBoost"],
-            index=0, key="model_name", label_visibility="collapsed",
-        )
+        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
+                                  index=0, key="model_name", label_visibility="collapsed")
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
@@ -499,7 +481,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — directly under the middle controls
+# METRICS (always visible, under controls)
 # ────────────────────────────────────────────────────────────────────────────────
 row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
 with row2_mid:
@@ -520,21 +502,28 @@ with row2_mid:
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# MAIN CONTENT
-# ────────────────────────────────────────────────────────────────────────────────
-MID, RIGHT = st.columns([2.4, 1.1], gap="large")
+# Helper for sparklines (used in Tab 3)
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
 
-with MID:
+# ────────────────────────────────────────────────────────────────────────────────
+# TABS (Tab 1, Tab 2, Tab 3)
+# ────────────────────────────────────────────────────────────────────────────────
+tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
+
+with tab1:
+    # Forecast chart
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
-        fig = px.line(
-            long, x="t", y="price", color="ticker",
-            labels={"t":"","price":"","ticker":""},
-            color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
-            template="plotly_dark",
-        )
+        fig = px.line(long, x="t", y="price", color="ticker",
+                      labels={"t":"","price":"","ticker":""},
+                      color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
+                      template="plotly_dark")
         base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
@@ -545,20 +534,20 @@ with MID:
                                  name="projection", showlegend=False))
         fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-        fig.update_layout(
-            height=360, margin=dict(l=10, r=10, t=8, b=8),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
-            xaxis=dict(showgrid=False, showticklabels=False),
-            yaxis=dict(showgrid=False, showticklabels=False),
-        )
+        fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
+                          paper_bgcolor=CARD, plot_bgcolor=CARD,
+                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
+                          xaxis=dict(showgrid=False, showticklabels=False),
+                          yaxis=dict(showgrid=False, showticklabels=False))
         st.plotly_chart(fig, use_container_width=True, theme=None)
     else:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
-    with lc1:
+with tab2:
+    # Error metrics + distribution + SHAP
+    c1, c2 = st.columns([1.2, 1.0], gap="large")
+    with c1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**Error metrics**")
         mae, rmse, confu = 1.31, 2.06, 0.91
@@ -573,21 +562,18 @@ with MID:
         st.markdown(bar(0.8), unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with lc2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
         st.markdown("**Error distribution**")
         rng = np.random.default_rng(9)
         e = rng.normal(0, 1, 220)
         hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(
-            height=160, margin=dict(l=6, r=6, t=4, b=4),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(visible=False), yaxis=dict(visible=False),
-        )
+        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
+                           paper_bgcolor=CARD, plot_bgcolor=CARD,
+                           xaxis=dict(visible=False), yaxis=dict(visible=False))
         st.plotly_chart(hist, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with lc3:
+    with c2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
         st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
@@ -595,24 +581,7 @@ with MID:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    ac1, ac2, _ = st.columns([1.0, 1.0, 1.0])
-    with ac1:
-        st.markdown("<div class='card' style='text-align:center;padding:10px 12px;'>Confusion</div>", unsafe_allow_html=True)
-    with ac2:
-        st.markdown("<div class='card' style='text-align:center;padding:8px 12px;'><b>Simulate</b></div>", unsafe_allow_html=True)
-
-# RIGHT — mini-sparklines + trade idea
-def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(
-        height=54, margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor:CARD, plot_bgcolor:CARD,
-        xaxis=dict(visible=False), yaxis=dict(visible=False),
-    )
-    return f
-
-RIGHT_COL = RIGHT  # keep your naming if needed
-with RIGHT:
+with tab3:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     rng = np.random.default_rng(42)
@@ -627,7 +596,7 @@ with RIGHT:
                         use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)

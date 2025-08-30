@@ -43,20 +43,19 @@ st.markdown(
         padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
-
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs */
+      /* Inputs baseline */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
-        color:var(--text) !important;
+        color:{TEXT} !important;
       }}
 
-      /* Selectboxes look like cards + white text */
+      /* Selectboxes as cards + white text */
       [data-testid="stSelectbox"] {{ margin:0 !important; }}
       [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
@@ -85,20 +84,13 @@ st.markdown(
         color:{TEXT} !important;
         opacity:1 !important;
       }}
-
       /* Selected label underline */
       [data-testid="stRadio"] label[aria-checked="true"] {{ position:relative; }}
       [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Primary button */
-      .stButton > button {{
-        height:42px; border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
-      }}
-
-      /* Top-row helpers */
+      /* Predict button same height as inputs */
       .toprow .btn-wrap {{ height:44px; display:flex; }}
       .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
       .toprow .btn-wrap .stButton > button {{
@@ -136,7 +128,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader
+# CSV loader (root) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -166,7 +158,6 @@ def load_prices_from_root_last_5y(
             if match:
                 target = os.path.join(root, match)
                 break
-
         if target is None:
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
@@ -181,14 +172,11 @@ def load_prices_from_root_last_5y(
         price_col = None
         for pc in prefer_cols:
             if pc in df.columns:
-                price_col = pc
-                break
+                price_col = pc; break
         if price_col is None:
             for pc in ("adj close", "close", "price"):
                 m = [c for c in df.columns if c.lower() == pc]
-                if m:
-                    price_col = m[0]
-                    break
+                if m: price_col = m[0]; break
         if price_col is None:
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
@@ -212,19 +200,14 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
-    # Align to business days and forward-fill gaps
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
-    # Keep only the last N years
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
-    # Simple integer index (1..N) for charts
     out = merged.copy()
     out.index = pd.RangeIndex(1, len(out) + 1, name="t")
-
-    # Ensure column order
     out = out.reindex(columns=list(aliases.keys()))
     return out
 
@@ -252,11 +235,8 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in ALIASES.keys() if t != primary]
     feats = []
     for t in order:
-        if t in df.columns:
-            feats.extend(feat_block(df[t].dropna()))
-        else:
-            feats.extend([0.0]*6)
-    feats.append(1.0)
+        feats.extend(feat_block(df[t].dropna()) if t in df.columns else [0.0]*6)
+    feats.append(1.0)  # bias
     note = None
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
@@ -278,14 +258,12 @@ def load_artifacts():
     reg, y_scaler = None, None
     try:
         if reg_path.exists():
-            with reg_path.open("rb") as f:
-                reg = pickle.load(f)
+            with reg_path.open("rb") as f: reg = pickle.load(f)
     except Exception:
         reg = None
     try:
         if scaler_path.exists():
-            with scaler_path.open("rb") as f:
-                y_scaler = pickle.load(f)
+            with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
     except Exception:
         y_scaler = None
     return reg, y_scaler
@@ -296,7 +274,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# WATCHLIST renderer
+# Watchlist renderer
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -331,11 +309,9 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 
     rows = []
     for t in tickers:
-        if t not in prices_df.columns:
-            continue
+        if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
-        if s.empty:
-            continue
+        if s.empty: continue
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
@@ -380,7 +356,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Extra toprow specificity + make "Next day" clickable
+# Extra specificity for white radio labels + make "Next day" clickable
 st.markdown(
     f"""
     <style>
@@ -409,17 +385,19 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Layout for the top row
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
+# LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
+# MIDDLE: Ticker + Horizon
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
 _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels:
-    _default_label = ticker_labels[0]
+if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
@@ -438,6 +416,7 @@ with top_mid:
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
+# RIGHT: Model + Predict
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -451,7 +430,7 @@ with top_right:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# PREDICTION
+# Prediction
 # ────────────────────────────────────────────────────────────────────────────────
 pred = lo = hi = conf = None
 if do_predict:
@@ -481,10 +460,10 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS (always visible, under controls)
+# METRICS — now placed directly under the middle controls
 # ────────────────────────────────────────────────────────────────────────────────
-row2_left, row2_mid, row2_right = st.columns([1.05, 1.6, 1.0], gap="large")
-with row2_mid:
+with top_mid:
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     with m1:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
@@ -502,21 +481,12 @@ with row2_mid:
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# Helper for sparklines (used in Tab 3)
-def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor=CARD, plot_bgcolor=CARD,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False))
-    return f
-
 # ────────────────────────────────────────────────────────────────────────────────
-# TABS (Tab 1, Tab 2, Tab 3)
+# Tabs (optional; stay lower on the page)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 
 with tab1:
-    # Forecast chart
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
@@ -545,7 +515,6 @@ with tab1:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with tab2:
-    # Error metrics + distribution + SHAP
     c1, c2 = st.columns([1.2, 1.0], gap="large")
     with c1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -580,6 +549,13 @@ with tab2:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
+
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
 
 with tab3:
     st.markdown("<div class='card'>", unsafe_allow_html=True)

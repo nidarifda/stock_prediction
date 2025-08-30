@@ -30,7 +30,7 @@ st.markdown(
     <style>
       :root {{
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px; /* set to 0px if not using Streamlit Cloud */
+        --footer-safe: 160px;
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
       .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
@@ -63,6 +63,13 @@ st.markdown(
         border-radius:12px !important;
         height:44px;
       }}
+      /* ▼ Force white text inside selects (value & menu options) */
+      [data-testid="stSelectbox"] [data-baseweb="select"] * {{
+        color:{TEXT} !important;
+      }}
+      [data-baseweb="menu"] * {{
+        color:{TEXT} !important;
+      }}
 
       /* Radio "box" */
       [data-testid="stRadio"] {{
@@ -76,8 +83,9 @@ st.markdown(
       /* Segmented look */
       [data-testid="stRadio"] svg {{ display:none !important; }}
       [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      /* ▼ Make radio labels white (selected & unselected) */
       [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{MUTED} !important;
+        background:transparent !important; border:0 !important; color:{TEXT} !important;
         padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
         border-radius:8px; cursor:pointer; white-space:nowrap;
       }}
@@ -87,8 +95,8 @@ st.markdown(
       [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      /* Make 'Next day' a static prefix */
-      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
+      /* "Next day" static prefix (still white) */
+      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{TEXT} !important; opacity:1; }}
       [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
       /* Primary button */
@@ -355,10 +363,8 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Title + TOP ROW (Watchlist | Ticker / Next day · 1D · 1W · 1M | Model + Predict)
-# — All boxes 44px tall, top-aligned, symmetric
 # ────────────────────────────────────────────────────────────────────────────────
 
-# Title
 st.markdown(
     """
     <style>
@@ -376,7 +382,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ===== Uniform control styling (everything = 44px tall) =====
+# ===== Uniform control styling for this top row =====
 st.markdown(
     f"""
     <style>
@@ -385,6 +391,10 @@ st.markdown(
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
         height:44px;
+      }}
+      /* ensure select text is white here too */
+      .toprow [data-testid="stSelectbox"] [data-baseweb="select"] * {{
+        color:{TEXT} !important;
       }}
 
       .toprow [data-testid="stRadio"] {{
@@ -397,8 +407,9 @@ st.markdown(
       }}
       .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
       .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      /* ▼ white labels in segmented control */
       .toprow [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{MUTED} !important;
+        background:transparent !important; border:0 !important; color:{TEXT} !important;
         padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
         border-radius:8px; cursor:pointer; white-space:nowrap;
       }}
@@ -408,19 +419,14 @@ st.markdown(
       .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      /* "Next day" is informational prefix (not clickable) */
-      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{MUTED} !important; opacity:.95; }}
+      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{TEXT} !important; opacity:1; }}
       .toprow [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
-      /* Predict button: same height, same baseline, no extra margins */
+      /* Predict button: same height/baseline */
       .toprow .btn-wrap {{
-        height:44px;
-        display:flex;                /* keeps the button flush to the top */
+        height:44px; display:flex;
       }}
-      .toprow .btn-wrap .stButton {{
-        width:100%;
-        margin:0 !important;         /* kill Streamlit's default margins */
-      }}
+      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
       .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px;
         border-radius:12px !important; border:0 !important;
@@ -468,22 +474,19 @@ with top_mid:
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model + Predict (same line, perfectly top-aligned)
+# RIGHT: Model + Predict (same line, top-aligned)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
-
     with model_col:
         model_name = st.selectbox(
             " ", ["LightGBM", "RandomForest", "XGBoost"],
             index=0, key="model_name", label_visibility="collapsed",
         )
-
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -583,7 +586,6 @@ with MID:
         def bar(v: float) -> str:
             width = max(0, min(100, int(v*70)))
             return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
-            # visual aid only
         st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
         st.markdown(bar(0.6), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)

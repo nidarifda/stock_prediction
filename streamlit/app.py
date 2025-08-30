@@ -20,7 +20,7 @@ BG       = "#0B1220"
 CARD     = "#0F1A2B"
 TEXT     = "#E6F0FF"
 MUTED    = "#8AA1C7"
-ACCENT   = "#496BFF"   # CTA blue
+ACCENT   = "#496BFF"
 ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
@@ -47,7 +47,7 @@ st.markdown(
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
-      /* Inputs baseline skin */
+      /* Text/number inputs */
       [data-testid="stTextInput"] > div > div,
       [data-testid="stNumberInput"]> div > div {{
         background:var(--card) !important;
@@ -56,22 +56,17 @@ st.markdown(
         color:var(--text) !important;
       }}
 
-      /* Make selectboxes look like cards */
+      /* Selectboxes look like cards + white text */
       [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
         height:44px;
       }}
-      /* ▼ Force white text inside selects (value & menu options) */
-      [data-testid="stSelectbox"] [data-baseweb="select"] * {{
-        color:{TEXT} !important;
-      }}
-      [data-baseweb="menu"] * {{
-        color:{TEXT} !important;
-      }}
+      [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
+      [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
-      /* Radio "box" */
+      /* Radio container */
       [data-testid="stRadio"] {{
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
@@ -80,24 +75,23 @@ st.markdown(
         height:44px;
         display:flex; align-items:center;
       }}
-      /* Segmented look */
+      /* Hide default icon, use labels as segmented control */
       [data-testid="stRadio"] svg {{ display:none !important; }}
       [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      /* ▼ Make radio labels white (selected & unselected) */
-      [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{TEXT} !important;
-        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
+
+      /* ▼ Make ALL radio labels white by default */
+      [data-testid="stRadio"] label,
+      [data-testid="stRadio"] label * {{
+        color:{TEXT} !important;
       }}
+
+      /* Selected label underline */
       [data-testid="stRadio"] label[aria-checked="true"] {{
         color:{TEXT} !important; position:relative;
       }}
       [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      /* "Next day" static prefix (still white) */
-      [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{TEXT} !important; opacity:1; }}
-      [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
       /* Primary button */
       .stButton > button {{
@@ -105,8 +99,17 @@ st.markdown(
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
       }}
 
-      /* Nudge to align the control row with Watchlist top */
-      .top-row-align {{ margin-top: -8px; }}
+      /* Top-row layout helpers */
+      .toprow .btn-wrap {{
+        height:44px; display:flex;
+      }}
+      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
+      .toprow .btn-wrap .stButton > button {{
+        height:44px; line-height:44px; width:100% !important;
+        border-radius:12px !important; border:0 !important;
+        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+        padding:0 16px !important;
+      }}
 
       /* Footer */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
@@ -362,9 +365,8 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW (Watchlist | Ticker / Next day · 1D · 1W · 1M | Model + Predict)
+# Title + TOP ROW
 # ────────────────────────────────────────────────────────────────────────────────
-
 st.markdown(
     """
     <style>
@@ -378,11 +380,10 @@ st.markdown(
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
             unsafe_allow_html=True)
 
-# Load prices first (so watchlist renders)
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ===== Uniform control styling for this top row =====
+# Additional top-row specificity (duplicate a few rules to guarantee white text)
 st.markdown(
     f"""
     <style>
@@ -392,60 +393,38 @@ st.markdown(
         border-radius:12px !important;
         height:44px;
       }}
-      /* ensure select text is white here too */
-      .toprow [data-testid="stSelectbox"] [data-baseweb="select"] * {{
-        color:{TEXT} !important;
-      }}
+      .toprow [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
 
       .toprow [data-testid="stRadio"] {{
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
+        padding:6px 10px; height:44px; display:flex; align-items:center;
       }}
       .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
       .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      /* ▼ white labels in segmented control */
-      .toprow [data-testid="stRadio"] label {{
-        background:transparent !important; border:0 !important; color:{TEXT} !important;
-        padding:6px 10px 10px !important; margin:0 10px 0 0 !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
-      }}
-      .toprow [data-testid="stRadio"] label[aria-checked="true"] {{
-        color:{TEXT} !important; position:relative;
-      }}
+
+      /* Force white for labels AND descendants (handles BaseWeb wrappers) */
+      .toprow [data-testid="stRadio"] label,
+      .toprow [data-testid="stRadio"] label * {{ color:{TEXT} !important; }}
+
+      .toprow [data-testid="stRadio"] label[aria-checked="true"] {{ color:{TEXT} !important; position:relative; }}
       .toprow [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
-      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:none; color:{TEXT} !important; opacity:1; }}
-      .toprow [data-testid="stRadio"] label:first-child::after {{ display:none; }}
 
-      /* Predict button: same height/baseline */
-      .toprow .btn-wrap {{
-        height:44px; display:flex;
-      }}
-      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
-      .toprow .btn-wrap .stButton > button {{
-        height:44px; line-height:44px;
-        border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
-        padding:0 16px !important;
-      }}
+      /* Ensure first label ("Next day") is clickable */
+      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:auto; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Layout for the top row
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
-# LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Next day / Horizon
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -470,11 +449,11 @@ with top_mid:
             horizontal=True, index=1, key="segmented_hz",
             label_visibility="collapsed",
         )
-        next_day = True
+        # If you want "Next day" to toggle behavior, you can inspect seg_choice later
+        next_day = (seg_choice == "Next day")
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model + Predict (same line, top-aligned)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -490,7 +469,7 @@ with top_right:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# PREDICTION (so tiles can show immediately under the controls)
+# PREDICTION
 # ────────────────────────────────────────────────────────────────────────────────
 pred = lo = hi = conf = None
 if do_predict:
@@ -542,7 +521,7 @@ with row2_mid:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# MAIN CONTENT — chart + lower cards (mid) and signals (right)
+# MAIN CONTENT
 # ────────────────────────────────────────────────────────────────────────────────
 MID, RIGHT = st.columns([2.4, 1.1], gap="large")
 
@@ -627,11 +606,12 @@ def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
     f.update_layout(
         height=54, margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        paper_bgcolor:CARD, plot_bgcolor:CARD,
         xaxis=dict(visible=False), yaxis=dict(visible=False),
     )
     return f
 
+RIGHT_COL = RIGHT  # keep your naming if needed
 with RIGHT:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")

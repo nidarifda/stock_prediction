@@ -344,7 +344,7 @@ st.markdown(
     """
     <style>
       .block-container { padding-top: 1.1rem; }
-      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 12px 0; }
+      .app-header { display:flex; align-items:center; gap:.6rem; margin:2px 0 2px 0; }
       .app-header .title { color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }
     </style>
     """,

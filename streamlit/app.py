@@ -20,7 +20,7 @@ BG       = "#0B1220"
 CARD     = "#0F1A2B"
 TEXT     = "#E6F0FF"
 MUTED    = "#8AA1C7"
-ACCENT   = "#496BFF"   # CTA blue
+ACCENT   = "#496BFF"
 ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
@@ -43,7 +43,6 @@ st.markdown(
         padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
-
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
@@ -53,19 +52,22 @@ st.markdown(
         background:var(--card) !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
-        color:var(--text) !important;
+        color:{TEXT} !important;
       }}
 
-      /* === Uniform control styling (44px tall) === */
-      .controls [data-testid="stSelectbox"] > div > div {{
+      /* Selectboxes as cards + white text */
+      [data-testid="stSelectbox"] {{ margin:0 !important; }}
+      [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
         border:1px solid rgba(255,255,255,.10) !important;
         border-radius:12px !important;
         height:44px;
-        color:var(--text) !important;
       }}
+      [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
+      [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
-      .controls [data-testid="stRadio"] {{
+      /* Radio container */
+      [data-testid="stRadio"] {{
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
@@ -73,35 +75,29 @@ st.markdown(
         height:44px;
         display:flex; align-items:center;
       }}
-      .controls [data-testid="stRadio"] svg {{ display:none !important; }}
-      .controls [data-baseweb="radio"] {{ display:flex; align-items:center; gap:12px; }}
+      [data-testid="stRadio"] svg {{ display:none !important; }}
+      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
 
-      /* Make ALL radio labels white; dim when unselected */
-      .controls [data-baseweb="radio"] > label {{
-        color: var(--text) !important;
-        opacity: .70;                 /* unselected */
-        background:transparent !important; border:0 !important;
-        padding:6px 10px 10px !important; margin:0 !important;
-        border-radius:8px; cursor:pointer; white-space:nowrap;
+      /* Force white labels + full opacity */
+      [data-testid="stRadio"], 
+      [data-testid="stRadio"] * {{
+        color:{TEXT} !important;
+        opacity:1 !important;
       }}
-      .controls [data-baseweb="radio"] > label[aria-checked="true"] {{
-        opacity: 1;
-        position: relative;
-      }}
-      .controls [data-baseweb="radio"] > label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px;
-        background:{ACCENT}; margin-top:6px;
+      /* Selected label underline */
+      [data-testid="stRadio"] label[aria-checked="true"] {{ position:relative; }}
+      [data-testid="stRadio"] label[aria-checked="true"]::after {{
+        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Predict button: same height & baseline as selects */
-      .controls .btn-wrap {{
-        height:44px; display:flex; align-items:stretch;
-      }}
-      .controls .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
-      .controls .btn-wrap .stButton > button {{
-        height:44px; line-height:44px; padding:0 16px !important;
+      /* Predict button same height as inputs */
+      .toprow .btn-wrap {{ height:44px; display:flex; }}
+      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
+      .toprow .btn-wrap .stButton > button {{
+        height:44px; line-height:44px; width:100% !important;
         border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+        padding:0 16px !important;
       }}
 
       /* Footer */
@@ -132,7 +128,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root folder) → aligned 5Y DataFrame
+# CSV loader (root) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -176,14 +172,11 @@ def load_prices_from_root_last_5y(
         price_col = None
         for pc in prefer_cols:
             if pc in df.columns:
-                price_col = pc
-                break
+                price_col = pc; break
         if price_col is None:
             for pc in ("adj close", "close", "price"):
                 m = [c for c in df.columns if c.lower() == pc]
-                if m:
-                    price_col = m[0]
-                    break
+                if m: price_col = m[0]; break
         if price_col is None:
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
@@ -202,15 +195,14 @@ def load_prices_from_root_last_5y(
 
     if not series_list:
         return pd.DataFrame(columns=list(aliases.keys()))
+
     merged = pd.concat(series_list, axis=1).sort_index()
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
-    # Align to business days and forward-fill gaps
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
-    # Keep only the last N years
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
@@ -243,10 +235,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     order = [primary] + [t for t in ALIASES.keys() if t != primary]
     feats = []
     for t in order:
-        if t in df.columns:
-            feats.extend(feat_block(df[t].dropna()))
-        else:
-            feats.extend([0.0]*6)
+        feats.extend(feat_block(df[t].dropna()) if t in df.columns else [0.0]*6)
     feats.append(1.0)  # bias
     note = None
     if n_expected is not None and len(feats) != n_expected:
@@ -269,14 +258,12 @@ def load_artifacts():
     reg, y_scaler = None, None
     try:
         if reg_path.exists():
-            with reg_path.open("rb") as f:
-                reg = pickle.load(f)
+            with reg_path.open("rb") as f: reg = pickle.load(f)
     except Exception:
         reg = None
     try:
         if scaler_path.exists():
-            with scaler_path.open("rb") as f:
-                y_scaler = pickle.load(f)
+            with scaler_path.open("rb") as f: y_scaler = pickle.load(f)
     except Exception:
         y_scaler = None
     return reg, y_scaler
@@ -287,7 +274,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# WATCHLIST renderer
+# Watchlist renderer
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -322,11 +309,9 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 
     rows = []
     for t in tickers:
-        if t not in prices_df.columns:
-            continue
+        if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
-        if s.empty:
-            continue
+        if s.empty: continue
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
@@ -353,7 +338,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title
+# Title + TOP ROW
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -365,68 +350,84 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+            unsafe_allow_html=True)
 
-# Load data before rendering
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# LAYOUT: LEFT = Watchlist. RIGHT = Everything else (controls, metrics, charts)
-# ────────────────────────────────────────────────────────────────────────────────
-LEFT, MAIN = st.columns([1.05, 3.25], gap="large")
+# Extra specificity for white radio labels + make "Next day" clickable
+st.markdown(
+    f"""
+    <style>
+      .toprow [data-testid="stSelectbox"] > div > div {{
+        background:{CARD} !important;
+        border:1px solid rgba(255,255,255,.10) !important;
+        border-radius:12px !important;
+        height:44px;
+      }}
+      .toprow [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
 
-with LEFT:
+      .toprow [data-testid="stRadio"] {{
+        background:{CARD};
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        padding:6px 10px; height:44px; display:flex; align-items:center;
+      }}
+      .toprow [data-testid="stRadio"] svg {{ display:none !important; }}
+      .toprow [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+      .toprow [data-testid="stRadio"], .toprow [data-testid="stRadio"] * {{
+        color:{TEXT} !important; opacity:1 !important;
+      }}
+      .toprow [data-testid="stRadio"] label:first-child {{ pointer-events:auto; }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Layout for the top row
+top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
+
+# LEFT: Watchlist
+with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# ===== Controls (single row) =====
-with MAIN:
-    st.markdown("<div class='controls'>", unsafe_allow_html=True)
+# MIDDLE: Ticker + Horizon
+TICKERS = DISPLAY_ORDER
+label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
+ticker_labels   = list(label_to_ticker.keys())
+_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
+if _default_label not in ticker_labels: _default_label = ticker_labels[0]
+_default_idx = ticker_labels.index(_default_label)
 
-    # Ticker / Horizon / Model / Predict on one line
-    c_tkr, c_hz, c_model, c_btn = st.columns([1.05, 1.55, 1.2, 1.0], gap="large")
-
-    # Ticker
-    TICKERS = DISPLAY_ORDER
-    label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-    ticker_labels = list(label_to_ticker.keys())
-    _default_label = st.session_state.get("ticker_label", PRETTY.get("NVDA","NVDA"))
-    if _default_label not in ticker_labels:
-        _default_label = ticker_labels[0]
-    _default_idx = ticker_labels.index(_default_label)
-
-    with c_tkr:
+with top_mid:
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.05, 1.55])
+    with sel_col:
         sel_label = st.selectbox("", ticker_labels, index=_default_idx,
                                  key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
-    # Horizon radio (Next day clickable)
-    with c_hz:
-        seg_choice = st.radio(
-            "", ["Next day", "1D", "1W", "1M"],
-            horizontal=True, index=1, key="segmented_hz",
-            label_visibility="collapsed",
-        )
+    with seg_col:
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
+                              horizontal=True, index=1, key="segmented_hz",
+                              label_visibility="collapsed")
         next_day = (seg_choice == "Next day")
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    # Model
-    with c_model:
-        model_name = st.selectbox(
-            " ", ["LightGBM", "RandomForest", "XGBoost"],
-            index=0, key="model_name", label_visibility="collapsed",
-        )
-
-    # Predict (same height/visual weight as Model)
-    with c_btn:
+# RIGHT: Model + Predict
+with top_right:
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+    with model_col:
+        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
+                                  index=0, key="model_name", label_visibility="collapsed")
+    with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # ===== Metrics directly under the controls =====
-    m1, m2, m3 = st.columns(3, gap="large")
-    st.markdown("</div>", unsafe_allow_html=True)  # end .controls
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Prediction
@@ -458,8 +459,12 @@ pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
 inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-# Fill the metrics (they are directly under the control row)
-with MAIN:
+# ────────────────────────────────────────────────────────────────────────────────
+# METRICS — now placed directly under the middle controls
+# ────────────────────────────────────────────────────────────────────────────────
+with top_mid:
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    m1, m2, m3 = st.columns(3)
     with m1:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
@@ -477,18 +482,18 @@ with MAIN:
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# MAIN content under metrics (chart + lower cards)
+# Tabs (optional; stay lower on the page)
 # ────────────────────────────────────────────────────────────────────────────────
-with MAIN:
+tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
+
+with tab1:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
-        fig = px.line(
-            long, x="t", y="price", color="ticker",
-            labels={"t":"","price":"","ticker":""},
-            color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
-            template="plotly_dark",
-        )
+        fig = px.line(long, x="t", y="price", color="ticker",
+                      labels={"t":"","price":"","ticker":""},
+                      color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
+                      template="plotly_dark")
         base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
@@ -499,21 +504,19 @@ with MAIN:
                                  name="projection", showlegend=False))
         fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-        fig.update_layout(
-            height=360, margin=dict(l=10, r=10, t=8, b=8),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
-            xaxis=dict(showgrid=False, showticklabels=False),
-            yaxis=dict(showgrid=False, showticklabels=False),
-        )
+        fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
+                          paper_bgcolor=CARD, plot_bgcolor=CARD,
+                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
+                          xaxis=dict(showgrid=False, showticklabels=False),
+                          yaxis=dict(showgrid=False, showticklabels=False))
         st.plotly_chart(fig, use_container_width=True, theme=None)
     else:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Lower cards
-    lc1, lc2, lc3 = st.columns([1.0, 1.0, 1.0], gap="large")
-    with lc1:
+with tab2:
+    c1, c2 = st.columns([1.2, 1.0], gap="large")
+    with c1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**Error metrics**")
         mae, rmse, confu = 1.31, 2.06, 0.91
@@ -528,27 +531,53 @@ with MAIN:
         st.markdown(bar(0.8), unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with lc2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
         st.markdown("**Error distribution**")
         rng = np.random.default_rng(9)
         e = rng.normal(0, 1, 220)
         hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(
-            height=160, margin=dict(l=6, r=6, t=4, b=4),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(visible=False), yaxis=dict(visible=False),
-        )
+        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
+                           paper_bgcolor=CARD, plot_bgcolor=CARD,
+                           xaxis=dict(visible=False), yaxis=dict(visible=False))
         st.plotly_chart(hist, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with lc3:
+    with c2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
         st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
+
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
+
+with tab3:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Affiliated Signals**")
+    rng = np.random.default_rng(42)
+    for name in ["TSMC","ASML","Cadence","Synopsys"]:
+        val = float(rng.normal(0.0, 0.5))
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+                        use_container_width=True, theme=None)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
+    st.markdown("**Trade idea**")
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Footer

@@ -470,7 +470,7 @@ st.markdown("""
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
-  margin-top:8px;
+  margin-top:2px;
 }
 .metric-slot{
   background:var(--card);

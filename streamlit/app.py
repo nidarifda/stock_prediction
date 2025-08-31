@@ -289,12 +289,12 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
         background:{CARD};
         border:1px solid rgba(255,255,255,.06);
         border-radius:18px;
-        padding:14px 40px;                 /* tight inner padding */
+        padding:14px 72px;                 /* tight inner padding */
         box-shadow:0 6px 18px rgba(0,0,0,.25);
         margin-bottom:16px;
 
         /* make the card itself narrower */
-        max-width:400px;                   /* adjust 320–400px to taste */
+        max-width:600px;                   /* adjust 320–400px to taste */
         width:100%;
       }}
 

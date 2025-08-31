@@ -463,30 +463,36 @@ conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 # METRICS — inline, inside pill-style boxes (same look as inputs)
 # ────────────────────────────────────────────────────────────────────────────────
 
-# Add the pill styles (safe to call once; uses your :root vars)
+# --- metric pill styles: same padding as .watch-card (14px 100px) ---
 st.markdown("""
 <style>
 .metric-row{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
-  margin-top:2px;
+  margin-top:8px;
 }
 .metric-slot{
   background:var(--card);
   border:1px solid rgba(255,255,255,.10);
   border-radius:12px;
-  height:44px;                 /* same height as your selects/radio */
-  padding:0 14px;
+
+  /* match watch-card */
+  padding:14px 100px;
+  min-height:44px;          /* keep similar height when content is short */
+  box-sizing:border-box;
+
   display:flex; align-items:center; justify-content:space-between;
 }
 .metric-slot .m-label{ color:var(--muted); font-size:13px; }
 .metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
-@media (max-width: 900px){
+@media (max-width: 1100px){
   .metric-row{ grid-template-columns:1fr; }
+  .metric-slot{ padding:12px 16px; } /* collapse padding on small screens */
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 with top_mid:
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)

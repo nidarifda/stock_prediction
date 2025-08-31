@@ -43,7 +43,6 @@ st.markdown(
         padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
-
       .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
       .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
@@ -76,10 +75,10 @@ st.markdown(
       .controls [data-testid="stRadio"] svg {{ display:none !important; }}
       .controls [data-baseweb="radio"] {{ display:flex; align-items:center; gap:12px; }}
 
-      /* Make ALL radio labels white; dim when unselected */
+      /* White labels (dim when not selected) */
       .controls [data-baseweb="radio"] > label {{
         color: var(--text) !important;
-        opacity: .70;                 /* unselected */
+        opacity: .85;
         background:transparent !important; border:0 !important;
         padding:6px 10px 10px !important; margin:0 !important;
         border-radius:8px; cursor:pointer; white-space:nowrap;
@@ -93,10 +92,8 @@ st.markdown(
         background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Predict button: same height & baseline as selects */
-      .controls .btn-wrap {{
-        height:44px; display:flex; align-items:stretch;
-      }}
+      /* Predict button: same height & baseline as Model */
+      .controls .btn-wrap {{ height:44px; display:flex; align-items:stretch; }}
       .controls .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
       .controls .btn-wrap .stButton > button {{
         height:44px; line-height:44px; padding:0 16px !important;
@@ -162,6 +159,7 @@ def load_prices_from_root_last_5y(
             if match:
                 target = os.path.join(root, match)
                 break
+
         if target is None:
             series_list.append(pd.Series(name=display, dtype="float64"))
             continue
@@ -206,12 +204,10 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
-    # Align to business days and forward-fill gaps
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
-    # Keep only the last N years
-    cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
+    cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=5)
     merged = merged.loc[merged.index >= cutoff]
 
     out = merged.copy()
@@ -379,11 +375,9 @@ LEFT, MAIN = st.columns([1.05, 3.25], gap="large")
 with LEFT:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# ===== Controls (single row) =====
 with MAIN:
+    # ===== Controls (single row) =====
     st.markdown("<div class='controls'>", unsafe_allow_html=True)
-
-    # Ticker / Horizon / Model / Predict on one line
     c_tkr, c_hz, c_model, c_btn = st.columns([1.05, 1.55, 1.2, 1.0], gap="large")
 
     # Ticker
@@ -418,48 +412,48 @@ with MAIN:
             index=0, key="model_name", label_visibility="collapsed",
         )
 
-    # Predict (same height/visual weight as Model)
+    # Predict
     with c_btn:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ===== Metrics directly under the controls =====
-    m1, m2, m3 = st.columns(3, gap="large")
-    st.markdown("</div>", unsafe_allow_html=True)  # end .controls
+    st.markdown("</div>", unsafe_allow_html=True)  # end controls
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Prediction
-# ────────────────────────────────────────────────────────────────────────────────
-pred = lo = hi = conf = None
-if do_predict:
-    try:
-        reg, y_scaler = load_artifacts()
-        if reg is not None and ticker in prices.columns:
-            n_exp = expected_n_feats(reg) or 31
-            X, note = build_features(prices, ticker, n_exp)
-            y_scaled = float(reg.predict(X)[0])
-            pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
-            lo, hi = pred*0.98, pred*1.02
-            conf = 0.78
-            if note: st.caption(f"⚠️ {note}")
-            if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
-        else:
-            base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
-            s = prices[base_t].dropna()
-            if len(s) >= 6:
-                pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
+    # ───────────────────────────────────────────────────────────────────────────
+    # Prediction (compute before drawing tiles so the values are ready)
+    # ───────────────────────────────────────────────────────────────────────────
+    pred = lo = hi = conf = None
+    if do_predict:
+        try:
+            reg, y_scaler = load_artifacts()
+            if reg is not None and ticker in prices.columns:
+                n_exp = expected_n_feats(reg) or 31
+                X, note = build_features(prices, ticker, n_exp)
+                y_scaled = float(reg.predict(X)[0])
+                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
                 lo, hi = pred*0.98, pred*1.02
-                conf = 0.65
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
+                conf = 0.78
+                if note: st.caption(f"⚠️ {note}")
+                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
+            else:
+                base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
+                s = prices[base_t].dropna()
+                if len(s) >= 6:
+                    pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
+                    lo, hi = pred*0.98, pred*1.02
+                    conf = 0.65
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
 
-pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
-inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
-conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
+    pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
+    inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
+    conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-# Fill the metrics (they are directly under the control row)
-with MAIN:
+    # ───────────────────────────────────────────────────────────────────────────
+    # METRIC TILES — directly under the controls, inside .card.tile
+    # ───────────────────────────────────────────────────────────────────────────
+    m1, m2, m3 = st.columns(3, gap="large")
     with m1:
         st.markdown("<div class='card tile'>", unsafe_allow_html=True)
         st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
@@ -476,10 +470,9 @@ with MAIN:
         st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# MAIN content under metrics (chart + lower cards)
-# ────────────────────────────────────────────────────────────────────────────────
-with MAIN:
+    # ───────────────────────────────────────────────────────────────────────────
+    # Chart
+    # ───────────────────────────────────────────────────────────────────────────
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
         long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
@@ -536,7 +529,7 @@ with MAIN:
         hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
         hist.update_layout(
             height=160, margin=dict(l=6, r=6, t=4, b=4),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            paper_bgcolor:CARD, plot_bgcolor:CARD,
             xaxis=dict(visible=False), yaxis=dict(visible=False),
         )
         st.plotly_chart(hist, use_container_width=True, theme=None)

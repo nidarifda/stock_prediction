@@ -287,7 +287,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     <style>
       .watch-card {{
         background:{CARD}; border:1px solid rgba(255,255,255,.06);
-        border-radius:18px; padding:14px 100px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+        border-radius:18px; padding:14px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
         margin-bottom:16px;
       }}
       .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}

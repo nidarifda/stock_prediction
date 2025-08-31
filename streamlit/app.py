@@ -460,26 +460,53 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — now placed directly under the middle controls
+# METRICS — inline, inside pill-style boxes (same look as inputs)
 # ────────────────────────────────────────────────────────────────────────────────
+
+# Add the pill styles (safe to call once; uses your :root vars)
+st.markdown("""
+<style>
+.metric-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-top:8px;
+}
+.metric-slot{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  height:44px;                 /* same height as your selects/radio */
+  padding:0 14px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.metric-slot .m-label{ color:var(--muted); font-size:13px; }
+.metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
+@media (max-width: 900px){
+  .metric-row{ grid-template-columns:1fr; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 with top_mid:
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
-        st.markdown("<div class='label'>Predicted Close</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='value'>{pred_text}</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with m2:
-        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
-        st.markdown("<div class='label'>80% interval</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='value'>{inter_text}</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with m3:
-        st.markdown("<div class='card tile'>", unsafe_allow_html=True)
-        st.markdown("<div class='label'>Confidence</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='value'>{conf_text}</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="metric-row">
+      <div class="metric-slot">
+        <div class="m-label">Predicted Close</div>
+        <div class="m-value">{pred_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">80% interval</div>
+        <div class="m-value">{inter_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">Confidence</div>
+        <div class="m-value">{conf_text}</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (optional; stay lower on the page)

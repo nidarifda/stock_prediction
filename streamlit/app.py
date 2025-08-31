@@ -286,62 +286,32 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     WATCHLIST_CSS = dedent(f"""
     <style>
       .watch-card {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.06);
-        border-radius:18px;
-        padding:14px 72px;                 /* tight inner padding */
-        box-shadow:0 6px 18px rgba(0,0,0,.25);
+        background:{CARD}; border:1px solid rgba(255,255,255,.06);
+        border-radius:18px; padding:14px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
         margin-bottom:16px;
-
-        /* make the card itself narrower */
-        max-width:600px;                   /* adjust 320–400px to taste */
-        width:100%;
       }}
-
-      .watch-title {{
-        font-weight:900; color:{TEXT}; margin:0 0 8px 0;
-      }}
-
-      /* pack ticker & price near each other on the left */
+      .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}
       .watch-row {{
-        display:grid;
-        grid-template-columns:auto auto;   /* was 1fr auto */
-        column-gap:14px;                   /* spacing between 'NVDA' and '121.40' */
-        justify-content:start;             /* keep them left, no stretching */
-        align-items:baseline;
-        padding:8px 0;                     /* slightly tighter vertically */
-        border-bottom:1px solid rgba(255,255,255,.06);
+        display:grid; grid-template-columns: 1fr auto; align-items:center;
+        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
       }}
       .watch-row:last-child {{ border-bottom:0; }}
-
-      .ticker {{ font-weight:600; color:{TEXT}; font-size:15px; }}
-      .last   {{ font-weight:700; color:{TEXT}; font-size:15px; }}
-
-      /* badges sit under the row, aligned left with small gap */
-      .badges {{
-        grid-column:1 / -1;
-        display:flex; align-items:center; justify-content:flex-start;
-        gap:10px; font-size:13px; margin-top:4px;
-      }}
+      .ticker {{ font-weight:600; color:{TEXT}; }}
+      .last {{ font-weight:700; color:{TEXT}; }}
+      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
+                 font-size:13px; margin-top:4px; }}
       .badge {{ display:flex; gap:6px; align-items:center; }}
       .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
       .arrow {{ font-weight:700; }}
-
-      @media (max-width: 900px){{
-        .watch-card {{ max-width:320px; }}
-        .ticker, .last {{ font-size:14px; }}
-      }}
     </style>
     """)
     st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
     rows = []
     for t in tickers:
-        if t not in prices_df.columns:
-            continue
+        if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
-        if s.empty:
-            continue
+        if s.empty: continue
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0

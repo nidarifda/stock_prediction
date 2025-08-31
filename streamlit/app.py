@@ -284,49 +284,27 @@ def _badge_html(pct: float, side: str = "left") -> str:
 
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
     WATCHLIST_CSS = dedent(f"""
-<style>
-  .watch-card {{
-    background:{CARD};
-    border:1px solid rgba(255,255,255,.06);
-    border-radius:18px;
-    /* shrink inner left/right padding */
-    padding:14px 20px;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-    margin-bottom:16px;
-  }}
-  .watch-title {{
-    font-weight:900; color:{TEXT}; margin:0 0 8px 0;
-  }}
-
-  /* bring ticker and price closer together */
-  .watch-row {{
-    display:grid;
-    grid-template-columns: auto auto;   /* was 1fr auto */
-    column-gap:18px;                    /* space between 'NVDA' and '121.40' */
-    align-items:baseline;
-    padding:10px 0;
-    border-bottom:1px solid rgba(255,255,255,.06);
-  }}
-  .watch-row:last-child {{ border-bottom:0; }}
-
-  .ticker {{ font-weight:600; color:{TEXT}; }}
-  .last   {{ font-weight:700; color:{TEXT}; }}
-
-  /* keep both badges near the left, with a small gap between them */
-  .badges {{
-    grid-column: 1 / -1;
-    display:flex;
-    align-items:center;
-    gap:12px;               /* space between the two badges */
-    margin-top:4px;
-    justify-content:flex-start;  /* not space-between */
-  }}
-
-  .badge {{ display:flex; gap:6px; align-items:center; }}
-  .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
-  .arrow {{ font-weight:700; }}
-</style>
-""")
+    <style>
+      .watch-card {{
+        background:{CARD}; border:1px solid rgba(255,255,255,.06);
+        border-radius:18px; padding:14px 100px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+        margin-bottom:16px;
+      }}
+      .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}
+      .watch-row {{
+        display:grid; grid-template-columns: 1fr auto; align-items:center;
+        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
+      }}
+      .watch-row:last-child {{ border-bottom:0; }}
+      .ticker {{ font-weight:600; color:{TEXT}; }}
+      .last {{ font-weight:700; color:{TEXT}; }}
+      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
+                 font-size:13px; margin-top:4px; }}
+      .badge {{ display:flex; gap:6px; align-items:center; }}
+      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
+      .arrow {{ font-weight:700; }}
+    </style>
+    """)
     st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
     rows = []
@@ -663,4 +641,3 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True,
-)

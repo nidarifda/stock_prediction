@@ -460,54 +460,70 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, inside pill-style boxes (same look as inputs)
+# MIDDLE: Ticker + Horizon — tighter gap between select and radio
 # ────────────────────────────────────────────────────────────────────────────────
 
-# Add the pill styles (safe to call once; uses your :root vars)
+# Add compact spacing just for this row
 st.markdown("""
 <style>
-.metric-row{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-  margin-top:8px;
+/* squeeze Streamlit column padding inside this row only */
+.toprow-tight [data-testid="column"]{
+  padding-left:6px !important;      /* default ≈16px */
+  padding-right:6px !important;
 }
-.metric-slot{
-  background:var(--card);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:12px;
-  height:44px;                 /* same height as your selects/radio */
-  padding:0 14px;
-  display:flex; align-items:center; justify-content:space-between;
+
+/* remove outer margins and trim radio pill padding */
+.toprow-tight [data-testid="stSelectbox"],
+.toprow-tight [data-testid="stRadio"]{
+  margin:0 !important;
 }
-.metric-slot .m-label{ color:var(--muted); font-size:13px; }
-.metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
-@media (max-width: 900px){
-  .metric-row{ grid-template-columns:1fr; }
+.toprow-tight [data-testid="stRadio"]{
+  padding:6px 8px !important;       /* was 6px 10px */
+}
+
+/* optional: slightly reduce internal select padding so its pill looks tighter */
+.toprow-tight [data-testid="stSelectbox"] > div > div{
+  padding-left:10px !important;
+  padding-right:10px !important;
+}
+
+/* keep labels white in this row too (mirrors your earlier rules) */
+.toprow-tight [data-testid="stSelectbox"] [data-baseweb="select"] *,
+.toprow-tight [data-testid="stRadio"] *{
+  color: var(--text) !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-
 with top_mid:
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="metric-row">
-      <div class="metric-slot">
-        <div class="m-label">Predicted Close</div>
-        <div class="m-value">{pred_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">80% interval</div>
-        <div class="m-value">{inter_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">Confidence</div>
-        <div class="m-value">{conf_text}</div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # NOTE: add the 'toprow-tight' class and use a smaller column gap/ratio
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")  # tighten as needed (e.g., [1.0, 1.2])
 
+    with sel_col:
+        sel_label = st.selectbox(
+            "",
+            list(label_to_ticker.keys()),
+            index=_default_idx,
+            key="ticker_select",
+            label_visibility="collapsed",
+        )
+        ticker = label_to_ticker[sel_label]
+        st.session_state["ticker_label"] = sel_label
+
+    with seg_col:
+        seg_choice = st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=1,
+            key="segmented_hz",
+            label_visibility="collapsed",
+        )
+        next_day = (seg_choice == "Next day")
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (optional; stay lower on the page)

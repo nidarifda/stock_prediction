@@ -460,37 +460,41 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, inside pill-style boxes (same look as inputs)
+# METRICS — pills with row gutter like watch-card
 # ────────────────────────────────────────────────────────────────────────────────
-
-# Add the pill styles (safe to call once; uses your :root vars)
 st.markdown("""
 <style>
 .metric-row{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(3, minmax(0,1fr));
   gap:16px;
   margin-top:8px;
+
+  /* match the left/right gutter of your watch-card */
+  padding:0 100px;               /* <-- put 100px here, on the row */
+  box-sizing:border-box;
 }
 .metric-slot{
   background:var(--card);
   border:1px solid rgba(255,255,255,.10);
   border-radius:12px;
-  height:44px;                 /* same height as your selects/radio */
-  padding:0 14px;
+  height:44px;
+
+  /* small inner padding for the pill itself */
+  padding:0 14px;                /* <-- NOT 100px here */
   display:flex; align-items:center; justify-content:space-between;
 }
 .metric-slot .m-label{ color:var(--muted); font-size:13px; }
 .metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
-@media (max-width: 900px){
-  .metric-row{ grid-template-columns:1fr; }
+
+/* collapse nicely on narrow screens */
+@media (max-width:1100px){
+  .metric-row{ grid-template-columns:1fr; padding:0 16px; }
 }
 </style>
 """, unsafe_allow_html=True)
 
-
 with top_mid:
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
     <div class="metric-row">
       <div class="metric-slot">

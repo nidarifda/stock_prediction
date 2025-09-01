@@ -338,7 +338,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW
+# Header
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -356,39 +356,35 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Top-row control CSS (tight spacing just for this row)
+# ────────────────────────────────────────────────────────────────────────────────
+# Top-row controls (ticker select + horizon) — ULTRA-TIGHT spacing
+# ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+.toprow-tight [data-testid="stHorizontalBlock"]{ gap:0 !important; }
+.toprow-tight [data-testid="stVerticalBlock"]{ gap:0 !important; }
 .toprow-tight [data-testid="column"]{
-  padding-left:6px !important;
-  padding-right:6px !important;
+  padding-left:0 !important; padding-right:0 !important;
 }
 .toprow-tight [data-testid="stSelectbox"],
-.toprow-tight [data-testid="stRadio"]{
-  margin:0 !important;
-}
-.toprow-tight [data-testid="stRadio"]{
-  padding:6px 8px !important;
-}
+.toprow-tight [data-testid="stRadio"]{ margin:0 !important; }
+.toprow-tight [data-testid="stRadio"]{ padding:6px 8px !important; }
 .toprow-tight [data-testid="stSelectbox"] > div > div{
-  padding-left:10px !important;
-  padding-right:10px !important;
+  padding-left:10px !important; padding-right:10px !important;
 }
 .toprow-tight [data-testid="stSelectbox"] [data-baseweb="select"] *,
-.toprow-tight [data-testid="stRadio"] *{
-  color: var(--text) !important;
-}
+.toprow-tight [data-testid="stRadio"] *{ color: var(--text) !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Layout for the top row
+# Lay out three columns
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Horizon (tight) — SINGLE INSTANCE
+# MIDDLE: Ticker + Horizon (tight)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -398,13 +394,13 @@ _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")
+    sel_col, seg_col = st.columns([1.0, 1.25], gap="small")
     with sel_col:
         sel_label = st.selectbox(
             "",
             ticker_labels,
             index=_default_idx,
-            key="ticker_select",                 # <— used ONCE
+            key="ticker_select",                 # unique (used once)
             label_visibility="collapsed",
         )
         ticker = label_to_ticker[sel_label]
@@ -415,7 +411,7 @@ with top_mid:
             ["Next day", "1D", "1W", "1M"],
             horizontal=True,
             index=1,
-            key="segmented_hz",                  # <— used ONCE
+            key="segmented_hz",                  # unique (used once)
             label_visibility="collapsed",
         )
         next_day = (seg_choice == "Next day")

@@ -81,16 +81,25 @@ st.markdown(
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Make controls & Predict share the exact same geometry (44px) */
-      .topbar .control-wrap, .topbar .btn-wrap {{
-        height:44px; display:flex; align-items:center; width:100%;
+      /* Make Model and Predict perfectly aligned */
+      .toprow .control-wrap,
+      .toprow .btn-wrap {{
+        height:44px;
+        display:flex;
+        align-items:center;   /* vertical centering */
+        width:100%;
       }}
-      .topbar .control-wrap [data-testid="stSelectbox"] {{ width:100%; margin:0 !important; }}
-      .topbar .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
-      .topbar .btn-wrap .stButton > button {{
+      .toprow .control-wrap [data-testid="stSelectbox"] {{
+        width:100%;
+        margin:0 !important;  /* kill stray margins */
+      }}
+
+      /* Predict button (matches input height) */
+      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
+      .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px; width:100% !important;
         border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background:var(--accent) !important; color:white !important;
+        font-weight:700 !important; background: var(--accent) !important; color:white !important;
         padding:0 16px !important;
       }}
 
@@ -98,10 +107,41 @@ st.markdown(
       .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
 
+      /* Footer */
+      .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
+      .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
+      .statusbar {{
+        background: {CARD}; border: 1px solid rgba(255,255,255,.06); border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(0,0,0,.35); display: flex; align-items: center;
+        padding: 10px 0; gap: 0; overflow: hidden;
+      }}
+      .status-item {{
+        display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+        font-size: 14px; color: {MUTED}; border-right: 1px solid rgba(255,255,255,.08);
+        white-space: nowrap;
+      }}
+      .status-item:last-child {{ border-right: 0; }}
+      .status-value {{ color: {TEXT}; font-weight: 700; margin-left: 6px; }}
+      .dot {{ width: 9px; height: 9px; border-radius: 50%; background: {GREEN};
+              box-shadow: 0 0 0 2px rgba(92,242,184,.22); display:inline-block; }}
+
+      @media (max-width: 1100px) {{
+        .footer-inner {{ width:100%; margin-right:0; }}
+        .statusbar {{ overflow-x:auto; scrollbar-width:none; }}
+        .statusbar::-webkit-scrollbar {{ display:none; }}
+      }}
+
+      /* ── Tighter select+radio row (kill the gap) ─────────────────────────── */
+      .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
+      .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
+      .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
+      .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
+      .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
+
       /* Metric row (tight to controls above) */
       .metric-row{{
         display:grid; grid-template-columns:repeat(3,1fr);
-        gap:16px; margin-top:10px;
+        gap:16px; margin-top:6px;
       }}
       .metric-slot{{
         background:var(--card);
@@ -114,13 +154,13 @@ st.markdown(
       .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
       @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
-      /* Chart card spacing */
+      /* ── Inline chart card ──────────────────────────────────────────────── */
       .chart-card{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:12px;
+        margin-top:12px;   /* space below the metric boxes */
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
     </style>
@@ -353,19 +393,41 @@ with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# LAYOUT: two main columns → left(Watchlist) | right(controls+metrics+chart)
+# TOP ROW LAYOUT
 # ────────────────────────────────────────────────────────────────────────────────
-left_col, right_col = st.columns([0.90, 3.10], gap="small")
+top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 
-# LEFT — Watchlist
-with left_col:
+# LEFT: Watchlist (capture row count to size the chart)
+with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# compute watchlist height for matching the chart
-WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
+# Approximate Watchlist pixel height so the right chart matches it
+WL_HEADER  = 56   # title + paddings
+WL_ROW_H   = 45   # each .watch-row height (approx)
+WL_PADDING = 30   # inner/bottom paddings
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT — a single, perfectly aligned top bar row (Ticker | Horizon | Model | Predict)
+# RIGHT: Model + Predict (perfectly aligned)
+with top_right:
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+
+    with model_col:
+        st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
+        model_name = st.selectbox(
+            " ", ["LightGBM", "RandomForest", "XGBoost"],
+            index=0, key="model_name", label_visibility="collapsed"
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with btn_col:
+        st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
+        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# --- MIDDLE COLUMN (controls → metrics → chart) --------------------------------
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -373,37 +435,34 @@ _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"
 if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
-with right_col:
-    st.markdown("<div class='topbar'>", unsafe_allow_html=True)
-    c_ticker, c_hz, c_model, c_btn = st.columns([1.05, 1.35, 1.0, 0.9], gap="medium")
-
-    with c_ticker:
-        sel_label = st.selectbox("", ticker_labels, index=_default_idx,
-                                 key="ticker_select", label_visibility="collapsed")
+with top_mid:
+    # Controls row
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
+    with sel_col:
+        sel_label = st.selectbox(
+            "",
+            ticker_labels,
+            index=_default_idx,
+            key="ticker_select",
+            label_visibility="collapsed",
+        )
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
 
-    with c_hz:
-        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
-                              horizontal=True, index=1, key="segmented_hz",
-                              label_visibility="collapsed")
-
-    with c_model:
-        st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
-        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
-                                  index=0, key="model_name", label_visibility="collapsed")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with c_btn:
-        st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
-        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
-        st.markdown("</div>", unsafe_allow_html=True)
+    with seg_col:
+        seg_choice = st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True, index=1,
+            key="segmented_hz",
+            label_visibility="collapsed",
+        )
+        next_day = (seg_choice == "Next day")
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-    next_day = (seg_choice == "Next day")
-    horizon  = seg_choice if seg_choice != "Next day" else "1D"
-
-    # ── Prediction (triggered by button) ───────────────────────────────────────
+    # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
     if do_predict:
         try:
@@ -431,19 +490,28 @@ with right_col:
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # ── Metric pills ──────────────────────────────────────────────────────────
+    # Metric pills
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
-      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
-      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
+      <div class="metric-slot">
+        <div class="m-label">Predicted Close</div>
+        <div class="m-value">{pred_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">80% interval</div>
+        <div class="m-value">{inter_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">Confidence</div>
+        <div class="m-value">{conf_text}</div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Inline summary chart (readable ticks, height matches Watchlist) ───────
+    # Inline summary chart — DATETIME axis with readable ticks
     s = prices[ticker].dropna()
     if len(s) >= 15:
-        now_x = s.index[-1]
+        now_x = s.index[-1]                 # datetime index
         last_val = float(s.iloc[-1])
 
         target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
@@ -451,30 +519,39 @@ with right_col:
         proj_y = np.linspace(last_val, target, len(proj_x))
 
         fig_inline = go.Figure()
+
+        # history
         fig_inline.add_trace(go.Scatter(
             x=s.index, y=s.values, mode="lines",
             line=dict(width=2, color="#70B3FF"),
             hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
             showlegend=False
         ))
+
+        # current point
         fig_inline.add_trace(go.Scatter(
             x=[now_x], y=[last_val], mode="markers",
             marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
             hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
             showlegend=False
         ))
+
+        # projection
         fig_inline.add_trace(go.Scatter(
             x=proj_x, y=proj_y, mode="lines",
             line=dict(width=2, dash="dot", color="#F08A3C"),
             hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
             showlegend=False
         ))
+
+        # guide + forecast zone
         fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
+        # layout — readable ticks on dark bg
         fig_inline.update_layout(
-            height=watchlist_height_px,
-            margin=dict(l=52, r=16, t=8, b=40),
+            height=watchlist_height_px,                  # match Watchlist height
+            margin=dict(l=52, r=16, t=8, b=40),          # room for ticks
             paper_bgcolor=CARD, plot_bgcolor=CARD,
             hovermode="x unified",
             font=dict(color=TEXT, size=12),
@@ -499,27 +576,89 @@ with right_col:
         st.info("Not enough history to render the summary chart.")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Footer (optional)
+# Tabs (simple demo content)
+# ────────────────────────────────────────────────────────────────────────────────
+tab1, tab2 = st.tabs(["Tab 1", "Tab 2"])
+
+with tab1:
+    c1, c2 = st.columns([1.2, 1.0], gap="large")
+    with c1:
+        st.markdown("**Error metrics**")
+        mae, rmse, confu = 1.31, 2.06, 0.91
+        def bar(v: float) -> str:
+            width = max(0, min(100, int(v*70)))
+            return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
+        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
+        st.markdown(bar(0.6), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.4), unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
+        st.markdown(bar(0.8), unsafe_allow_html=True)
+
+    with c2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.markdown("**SHAP**")
+        st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
+
+with tab2:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Affiliated Signals**")
+    rng = np.random.default_rng(42)
+    for name in ["TSMC","ASML","Cadence","Synopsys"]:
+        val = float(rng.normal(0.0, 0.5))
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+                        use_container_width=True, theme=None)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
+    st.markdown("**Trade idea**")
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Footer
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
-    <div class="footer-wrap" style="position:sticky; bottom:8px;">
-      <div class="footer-inner" style="width: calc(100% - 160px); margin-right: 160px;">
-        <div class="statusbar" style="background:#0F1A2B;border:1px solid rgba(255,255,255,.06);border-radius:22px;box-shadow:0 10px 28px rgba(0,0,0,.35);display:flex;align-items:center;padding:10px 0;gap:0;overflow:hidden;">
-          <div class="status-item" style="display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;color:#8AA1C7;border-right:1px solid rgba(255,255,255,.08);white-space:nowrap;">
-            <span>Model version</span><span class="status-value" style="color:#E6F0FF;font-weight:700;margin-left:6px;">v1.2</span>
+    <div class="footer-wrap">
+      <div class="footer-inner">
+        <div class="statusbar">
+          <div class="status-item">
+            <span class="status-label">Model version</span>
+            <span class="status-value">v1.2</span>
           </div>
-          <div class="status-item" style="display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;color:#8AA1C7;border-right:1px solid rgba(255,255,255,.08);white-space:nowrap;">
-            <span>Training window</span><span class="status-value" style="color:#E6F0FF;font-weight:700;margin-left:6px;">1 year</span>
+          <div class="status-item">
+            <span class="status-label">Training window</span>
+            <span class="status-value">1 year</span>
           </div>
-          <div class="status-item" style="display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;color:#8AA1C7;border-right:1px solid rgba(255,255,255,.08);white-space:nowrap;">
-            <span>Data last updated</span><span class="status-value" style="color:#E6F0FF;font-weight:700;margin-left:6px;">30 min</span>
+          <div class="status-item">
+            <span class="status-label">Data last updated</span>
+            <span class="status-value">30 min</span>
           </div>
-          <div class="status-item" style="display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;color:#8AA1C7;border-right:1px solid rgba(255,255,255,.08);white-space:nowrap;">
-            <span>Latency</span><span class="status-value" style="color:#E6F0FF;font-weight:700;margin-left:6px;">~140 ms</span>
+          <div class="status-item">
+            <span class="status-label">Latency</span>
+            <span class="status-value">~140 ms</span>
           </div>
-          <div class="status-item" style="display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;color:#8AA1C7;white-space:nowrap;">
-            <span>API status</span><span class="dot" style="width:9px;height:9px;border-radius:50%;background:#5CF2B8;box-shadow:0 0 0 2px rgba(92,242,184,.22);display:inline-block;"></span>
+          <div class="status-item">
+            <span class="status-label">API status</span>
+            <span class="dot"></span>
             <span>All systems operational</span>
           </div>
         </div>

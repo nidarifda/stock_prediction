@@ -32,8 +32,14 @@ st.markdown(
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
         --footer-safe: 160px;
       }}
+
       .stApp {{ background:var(--bg); color:var(--text); }}
-      .block-container {{ padding-top:.7rem; padding-bottom:1.0rem; }}
+
+      /* more top padding so the title isn't cropped */
+      .block-container {{
+        padding-top: 1.6rem !important;   /* ↑ was 0.7rem */
+        padding-bottom: 1.0rem;
+      }}
 
       /* Generic cards */
       .card {{
@@ -91,7 +97,7 @@ st.markdown(
       }}
 
       /* Header */
-      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 2px 0; }}
+      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:0 0 6px 0; }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
 
       /* Footer */
@@ -118,20 +124,23 @@ st.markdown(
         .statusbar::-webkit-scrollbar {{ display:none; }}
       }}
 
-      /* ── Tighter select+radio row (kill the gap) ─────────────────────────── */
+      /* ── Tighter select+radio row (kill the big horizontal gap) ─────────── */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* ── Inline chart card ──────────────────────────────────────────────── */
-      .chart-card{{
+      /* ── Metric row: pull it closer to the row above ────────────────────── */
+      .metric-row {{ margin-top: 4px !important; }}     /* ↓ was 8px */
+
+      /* ── Inline chart card: give it a bit more top air ──────────────────── */
+      .chart-card {{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:12px;
+        margin-top:18px;     /* ↑ was 12px */
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
     </style>
@@ -370,10 +379,9 @@ with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
 # approximate the pixel height of the Watchlist so the right chart matches it
-# tweak the constants to your taste (depends on fonts / OS rendering)
-WL_HEADER = 56      # title + paddings
-WL_ROW_H  = 45      # each .watch-row height (approx)
-WL_PADDING = 30     # inner/bottom paddings + shadow breathing room
+WL_HEADER  = 56   # title + paddings
+WL_ROW_H   = 45   # each .watch-row height (approx)
+WL_PADDING = 30   # inner/bottom paddings + shadow breathing room
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
 # MIDDLE: Ticker + Horizon (tight)
@@ -386,13 +394,13 @@ _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")  # squeezed
+    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
     with sel_col:
         sel_label = st.selectbox(
             "",
             ticker_labels,
             index=_default_idx,
-            key="ticker_select",                 # used ONCE
+            key="ticker_select",
             label_visibility="collapsed",
         )
         ticker = label_to_ticker[sel_label]
@@ -402,7 +410,7 @@ with top_mid:
             "",
             ["Next day", "1D", "1W", "1M"],
             horizontal=True, index=1,
-            key="segmented_hz",                  # used ONCE
+            key="segmented_hz",
             label_visibility="collapsed",
         )
         next_day = (seg_choice == "Next day")
@@ -461,7 +469,6 @@ st.markdown("""
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
-  margin-top:8px;
 }
 .metric-slot{
   background:var(--card);
@@ -480,8 +487,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with top_mid:
-    # Metric pills
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    # Metric pills (pulled closer via CSS above)
     st.markdown(f"""
     <div class="metric-row">
       <div class="metric-slot">
@@ -499,7 +505,7 @@ with top_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart — height matched to Watchlist
+    # Inline summary chart — height matched to Watchlist, wrapped in .chart-card
     s = prices[ticker].dropna()
     if len(s) >= 15:
         now_x = int(s.index[-1])
@@ -527,20 +533,18 @@ with top_mid:
         fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig_inline.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
-        # match the Watchlist height
         fig_inline.update_layout(
             height=watchlist_height_px,
             margin=dict(l=10, r=10, t=6, b=6),
             paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(
-                showgrid=False, tickfont=dict(color="#7C8DA5", size=11),
-                zeroline=False, showticklabels=False  # keep mini clean; set True if you want labels
-            ),
-            yaxis=dict(
-                showgrid=True, gridcolor="rgba(255,255,255,.06)",
-                tickfont=dict(color="#7C8DA5", size=11), zeroline=False
-            ),
+            xaxis=dict(showgrid=False, tickfont=dict(color="#7C8DA5", size=11),
+                       zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,.06)",
+                       tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
         )
+
+        # add chart wrapper to create extra spacing from pills
+        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -565,26 +569,12 @@ with tab1:
         st.markdown(bar(0.4), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
         st.markdown(bar(0.8), unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
-        st.markdown("**Error distribution**")
-        rng = np.random.default_rng(9)
-        e = rng.normal(0, 1, 220)
-        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
-                           paper_bgcolor=CARD, plot_bgcolor=CARD,
-                           xaxis=dict(visible=False), yaxis=dict(visible=False))
-        st.plotly_chart(hist, use_container_width=True, theme=None)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with c2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
         st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
 def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
@@ -594,7 +584,6 @@ def spark(series: pd.Series) -> go.Figure:
     return f
 
 with tab2:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     rng = np.random.default_rng(42)
     for name in ["TSMC","ASML","Cadence","Synopsys"]:
@@ -606,14 +595,11 @@ with tab2:
         )
         st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
                         use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Footer

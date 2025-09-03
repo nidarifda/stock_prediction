@@ -432,19 +432,24 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + (NEW) Affiliated Signals cards
+# RIGHT: Model + Predict + Affiliated Signals (signals card height = watchlist height - controls)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
-        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
-                                  index=0, key="model_name", label_visibility="collapsed")
+        model_name = st.selectbox(
+            " ", ["LightGBM", "RandomForest", "XGBoost"],
+            index=0, key="model_name", label_visibility="collapsed"
+        )
         st.markdown("</div>", unsafe_allow_html=True)
+
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     # ⟶ Place the signals right under the controls, beside the main chart

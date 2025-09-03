@@ -111,20 +111,31 @@ st.markdown(
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
       /* Metric row */
-      .metric-row{{
-        display:grid; grid-template-columns:repeat(3,1fr);
-        gap:16px; margin-top:6px;
-      }}
-      .metric-slot{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        height:44px; padding:0 14px;
-        display:flex; align-items:center; justify-content:space-between;
-      }}
-      .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
-      .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
-      @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
+.metric-row{{
+  display:grid; 
+  grid-template-columns:repeat(3,1fr);
+  gap:16px; 
+  margin-top:6px;
+  padding:12px 0;            /* top & bottom padding */
+}}
+
+.metric-slot{{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  height:44px; 
+  padding:0 14px;
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between;
+}}
+
+.metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
+.metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
+
+@media (max-width: 900px){{
+  .metric-row{{ grid-template-columns:1fr; }}
+}}
 
       /* Inline chart card */
       .chart-card{{
@@ -510,13 +521,16 @@ with top_mid:
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
     # Metric pills
-    st.markdown(f"""
-    <div class="metric-row">
+    st.markdown(
+    f"""
+    <div class="metric-row" style="padding:12px 0;">  <!-- top & bottom padding -->
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
       <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
       <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
     # Inline summary chart
     s = prices[ticker].dropna()

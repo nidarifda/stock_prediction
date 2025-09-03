@@ -33,6 +33,7 @@ st.markdown(
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
 
+      /* page container spacing */
       .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
 
       /* Generic cards */
@@ -53,7 +54,7 @@ st.markdown(
         color:{TEXT} !important;
       }}
 
-      /* Selectboxes */
+      /* Selectboxes as dark pills + white text */
       [data-testid="stSelectbox"] {{ margin:0 !important; }}
       [data-testid="stSelectbox"] > div > div {{
         background:{CARD} !important;
@@ -80,9 +81,11 @@ st.markdown(
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Control rows baseline */
+      /* ──────────────────────────────────────────────────────────────────
+         CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
+         ────────────────────────────────────────────────────────────────── */
       .toprow {{
-        display:flex; align-items:center; gap:6px; margin:0; padding:0;
+        display:flex; align-items:center; gap:6px; margin-top:6px;
       }}
       .toprow .control-wrap,
       .toprow .seg-wrap,
@@ -92,7 +95,7 @@ st.markdown(
       .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
       .toprow [data-testid="stRadio"] {{
         height:44px; display:flex; align-items:center; margin:0 !important;
-        padding:0 0; border-radius:12px;
+        padding:0px 0px; border-radius:12px;
       }}
 
       /* Predict button */
@@ -104,22 +107,17 @@ st.markdown(
         padding:0 10px !important;
       }}
 
-      /* Tight horizontal block spacing */
+      /* Tighter select+radio row (extra compact spacing) */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* ── MID COLUMN SCOPE: pack metrics tightly under controls ───────────── */
-      .mid-scope [data-testid="stVerticalBlock"] {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-      }}
-      .mid-scope .controls-row {{ margin-bottom: 6px; }}  /* tiny gap to metrics */
-      .mid-scope .metric-row{{
+      /* Metric row */
+      .metric-row{{
         display:grid; grid-template-columns:repeat(3,1fr);
-        gap:10px; margin:0; padding:0;       /* kill extra space */
+        gap:10px; margin-top:0px; padding:0px 0;
       }}
       .metric-slot{{
         background:var(--card);
@@ -137,22 +135,16 @@ st.markdown(
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
-        padding:0 10px;
+        padding:0px 10px;
         margin-top:12px;
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
 
-      /* ── RIGHT COLUMN SCOPE: signals directly under model/predict ─────────── */
-      .right-scope [data-testid="stVerticalBlock"] {{
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-      }}
-      .right-scope .signals-gap {{ margin-top: 6px; }} /* small gap below model row */
-
+      /* Signals list */
       .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
       .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
 
-      /* Header (kept) */
+      /* Header with extra top padding so title isn't cut */
       .app-header {{
         display:flex; align-items:center; gap:.6rem;
         padding-top:50px; margin:0 0 10px 0;
@@ -278,9 +270,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
         base = len(feats)
         if len(feats) < n_expected:
             feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
-        else:
-            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
-    return np.asarray([feats], dtype=np.float32), note
+        return np.asarray([feats], dtype=np.float32), note
 
 @st.cache_resource
 def load_artifacts():
@@ -417,71 +407,82 @@ top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Canonical height for symmetry
+# Canonical height for symmetry (left, middle, right)
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (signals directly under)
+# RIGHT: Model + Predict + Signals (signals INSIDE the card)
 with top_right:
-    st.markdown("<div class='right-scope'>", unsafe_allow_html=True)
-
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
                                   index=0, key="model_name", label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
+
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Signals card aligned with chart height
-    signals_pad_y = 24
+    # ── Signals card aligned with chart height
+    signals_pad_y = 24  # total top+bottom padding we add inside the signals card (12 + 12)
     signals_height_px = watchlist_height_px - signals_pad_y
 
-    st.markdown("<div class='signals-gap'>", unsafe_allow_html=True)  # tiny gap below model row
     st.markdown(
         f"""
         <style>
+          /* remove Streamlit's default vertical padding in this scope */
           .signals-scope [data-testid="stVerticalBlock"] {{
-            padding-top: 0 !important; padding-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
           }}
+          /* style the bordered container as a large card and match height */
           .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
             background:{CARD};
             border:1px solid rgba(255,255,255,.08);
             border-radius:12px;
             box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:12px 14px;
-            min-height:{signals_height_px}px;
+            padding:12px 14px;             /* top/bottom = 12px, left/right = 14px */
+            margin-top:0; margin-bottom:0; /* align with chart top/bottom */
+            min-height:{signals_height_px}px;  /* inner area so total equals chart height */
           }}
         </style>
         """,
         unsafe_allow_html=True,
     )
+
     st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
+
         related = ["TSMC", "ASML", "CDNS", "SNPS"]
         for i, t in enumerate(related):
             label = PRETTY.get(t, t)
             change = pct_change_days(t, 20)
             vals = series_for(t, 36)
+
             c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
-            with c1: st.markdown(label)
+            with c1:
+                st.markdown(label)
             with c2:
                 color = GREEN if change >= 0 else ORANGE
-                st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>",
+                    unsafe_allow_html=True,
+                )
             with c3:
-                st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
-                                use_container_width=True, theme=None)
+                st.plotly_chart(
+                    mini_spark(vals, color=(ACCENT if change >= 0 else ORANGE)),
+                    use_container_width=True, theme=None
+                )
             if i < len(related) - 1:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)  # signals-scope
-    st.markdown("</div>", unsafe_allow_html=True)  # signals-gap
-    st.markdown("</div>", unsafe_allow_html=True)  # right-scope
+    st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER
@@ -492,10 +493,8 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='mid-scope'>", unsafe_allow_html=True)
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
 
-    # Controls row
-    st.markdown("<div class='toprow toprow-tight controls-row'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
     with sel_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
@@ -504,12 +503,14 @@ with top_mid:
         st.markdown("</div>", unsafe_allow_html=True)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
+
     with seg_col:
         st.markdown("<div class='seg-wrap'>", unsafe_allow_html=True)
         seg_choice = st.radio("", ["Next day", "1D", "1W", "1M", "1y"],
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     next_day = (seg_choice == "Next day")
@@ -517,7 +518,7 @@ with top_mid:
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
-    if 'do_predict' in locals() and do_predict:
+    if do_predict:
         try:
             reg, y_scaler = load_artifacts()
             if reg is not None and ticker in prices.columns:
@@ -527,7 +528,7 @@ with top_mid:
                 pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
                 lo, hi = pred*0.98, pred*1.02
                 conf = 0.78
-                if note: st.caption(f"⚠️ {note}")
+                if note: st.caption(f⚠️ {note}")
                 if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
             else:
                 base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
@@ -543,7 +544,7 @@ with top_mid:
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # Metric pills — packed directly under controls
+    # Metric pills
     st.markdown(
         f"""
         <div class="metric-row">
@@ -611,8 +612,6 @@ with top_mid:
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.info("Not enough history to render the summary chart.")
-
-    st.markdown("</div>", unsafe_allow_html=True)  # /mid-scope
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (demo)

@@ -32,6 +32,7 @@ st.markdown(
         --footer-safe: 160px;
       }}
       .stApp {{ background:var(--bg); color:var(--text); }}
+
       /* more top padding so the title isn't cut */
       .block-container {{ padding-top:1.2rem; padding-bottom:1.0rem; }}
 
@@ -80,13 +81,25 @@ st.markdown(
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
+      /* Make Model and Predict perfectly aligned */
+      .toprow .control-wrap,
+      .toprow .btn-wrap {{
+        height:44px;
+        display:flex;
+        align-items:center;   /* vertical centering */
+        width:100%;
+      }}
+      .toprow .control-wrap [data-testid="stSelectbox"] {{
+        width:100%;
+        margin:0 !important;  /* kill stray margins */
+      }}
+
       /* Predict button (matches input height) */
-      .toprow .btn-wrap {{ height:44px; display:flex; }}
       .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
       .toprow .btn-wrap .stButton > button {{
         height:44px; line-height:44px; width:100% !important;
         border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background:{ACCENT} !important; color:white !important;
+        font-weight:700 !important; background: var(--accent) !important; color:white !important;
         padding:0 16px !important;
       }}
 
@@ -125,7 +138,7 @@ st.markdown(
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* Metric row */
+      /* Metric row (tight to controls above) */
       .metric-row{{
         display:grid; grid-template-columns:repeat(3,1fr);
         gap:16px; margin-top:6px;
@@ -283,8 +296,8 @@ def load_artifacts():
         model_dir = Path(__file__).parent / "models"
     except NameError:
         model_dir = Path("models")
-    reg_path = model_dir / "nvda_A_reg_lgb.pkl"
-    scaler_path = model_dir / "y_scaler.pkl"
+    reg_path = (model_dir / "nvda_A_reg_lgb.pkl")
+    scaler_path = (model_dir / "y_scaler.pkl")
 
     reg, y_scaler = None, None
     try:
@@ -394,20 +407,27 @@ WL_ROW_H   = 45   # each .watch-row height (approx)
 WL_PADDING = 30   # inner/bottom paddings
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict (define the button first so we can use it later)
+# RIGHT: Model + Predict (perfectly aligned)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+
     with model_col:
-        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
-                                  index=0, key="model_name", label_visibility="collapsed")
+        st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
+        model_name = st.selectbox(
+            " ", ["LightGBM", "RandomForest", "XGBoost"],
+            index=0, key="model_name", label_visibility="collapsed"
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- MIDDLE COLUMN (single block: controls → metrics → chart) ------------------
+# --- MIDDLE COLUMN (controls → metrics → chart) --------------------------------
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -442,7 +462,7 @@ with top_mid:
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Prediction (uses the button from top_right)
+    # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
     if do_predict:
         try:

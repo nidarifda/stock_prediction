@@ -387,30 +387,71 @@ _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"
 if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
+# --- MIDDLE COLUMN -----------------------------------------------------------
 with top_mid:
-    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
-    with sel_col:
-        sel_label = st.selectbox(
-            "",
-            ticker_labels,
-            index=_default_idx,
-            key="ticker_select",
-            label_visibility="collapsed",
+    # …your selectbox + radio (already here) …
+
+    # metric pills
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.markdown("""<div class="metric-row">…</div>""", unsafe_allow_html=True)
+
+    # ⬇⬇ KEEP EVERYTHING BELOW INDENTED (still inside `with top_mid:`) ⬇⬇
+    s = prices[ticker].dropna()
+    if len(s) >= 15:
+        now_x = s.index[-1]
+        last_val = float(s.iloc[-1])
+
+        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
+        proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
+        proj_y = np.linspace(last_val, target, len(proj_x))
+
+        fig_inline = go.Figure()
+        fig_inline.add_trace(go.Scatter(
+            x=s.index, y=s.values, mode="lines",
+            line=dict(width=2, color="#70B3FF"),
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
+        fig_inline.add_trace(go.Scatter(
+            x=[now_x], y=[last_val], mode="markers",
+            marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
+            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
+        fig_inline.add_trace(go.Scatter(
+            x=proj_x, y=proj_y, mode="lines",
+            line=dict(width=2, dash="dot", color="#F08A3C"),
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
+        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+        fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
+        fig_inline.update_layout(
+            height=watchlist_height_px,
+            margin=dict(l=52, r=16, t=8, b=40),
+            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            hovermode="x unified",
+            font=dict(color=TEXT, size=12)
         )
-        ticker = label_to_ticker[sel_label]
-        st.session_state["ticker_label"] = sel_label
-    with seg_col:
-        seg_choice = st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True, index=1,
-            key="segmented_hz",
-            label_visibility="collapsed",
+        fig_inline.update_xaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.08)",
+            showticklabels=True, tickformat="%b %Y", dtick="M3",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+            tickfont=dict(color=MUTED), automargin=True
         )
-        next_day = (seg_choice == "Next day")
-        horizon  = seg_choice if seg_choice != "Next day" else "1D"
-    st.markdown("</div>", unsafe_allow_html=True)
+        fig_inline.update_yaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.10)",
+            tickformat=",.0f",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+            tickfont=dict(color=MUTED), automargin=True
+        )
+
+        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
+        st.plotly_chart(fig_inline, use_container_width=True, theme=None)
+        st.markdown("</div>", unsafe_allow_html=True)
+    # ⬆⬆ still inside `with top_mid:` ⬆⬆
+
 
 # RIGHT: Model + Predict
 with top_right:

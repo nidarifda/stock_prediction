@@ -69,7 +69,7 @@ st.markdown(
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
-        padding:6px 10px;
+        padding:2px 10px;
         height:44px;
         display:flex; align-items:center;
         margin:0 !important;

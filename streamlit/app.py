@@ -533,37 +533,9 @@ with top_mid:
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (optional demo content)
 # ────────────────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
+tab1, tab2 = st.tabs(["Tab 1", "Tab 2"])
 
 with tab1:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    if not prices.empty:
-        long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
-        fig = px.line(long, x="t", y="price", color="ticker",
-                      labels={"t":"","price":"","ticker":""},
-                      color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
-                      template="plotly_dark")
-        base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
-        now_x = prices.index[-1]
-        last_val = float(prices[base_tkr].dropna().iloc[-1])
-        proj_x = np.arange(now_x, now_x+12)
-        proj_y = np.linspace(last_val, (last_val*1.01), len(proj_x))
-        fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
-                                 line=dict(width=2, dash="dot", color="#d6d6d6"),
-                                 name="projection", showlegend=False))
-        fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-        fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
-                          paper_bgcolor=CARD, plot_bgcolor=CARD,
-                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
-                          xaxis=dict(showgrid=False, showticklabels=False),
-                          yaxis=dict(showgrid=False, showticklabels=False))
-        st.plotly_chart(fig, use_container_width=True, theme=None)
-    else:
-        st.info("No price data found. Please add your CSVs to the repo root.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with tab2:
     c1, c2 = st.columns([1.2, 1.0], gap="large")
     with c1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -606,7 +578,7 @@ def spark(series: pd.Series) -> go.Figure:
                     xaxis=dict(visible=False), yaxis=dict(visible=False))
     return f
 
-with tab3:
+with tab2:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     rng = np.random.default_rng(42)

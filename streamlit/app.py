@@ -85,7 +85,9 @@ st.markdown(
          CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
          ────────────────────────────────────────────────────────────────── */
       .toprow {{
-        display:flex; align-items:center; gap:12px; margin-top:14px;
+        display:flex; align-items:center; gap:12px;
+        margin-top:14px;               /* same offset as middle row */
+        margin-bottom:6px;             /* 🔧 tighten space above signals box */
       }}
       .toprow .control-wrap,
       .toprow .seg-wrap,
@@ -413,7 +415,7 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (signals INSIDE the box)
+# RIGHT: Model + Predict + Signals (signals INSIDE the box and snug)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -431,47 +433,33 @@ with top_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-
-    # Style ONLY the following bordered container to look like our big card
+    # ⚠️ No extra spacer here. We render the signals card immediately below.
     signals_height_px = watchlist_height_px
-    st.markdown(
-        f"""
-        <style>
-          .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
-            background:{CARD};
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:12px;
-            box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:12px 2px;
-            min-height:{signals_height_px}px;     /* ⬅ match watchlist/chart height */
-          }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
-    with st.container(border=True):
-        st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
 
-        related = ["TSMC", "ASML", "CDNS", "SNPS"]
-        for i, t in enumerate(related):
-            label = PRETTY.get(t, t)
-            change = pct_change_days(t, 20)
-            vals = series_for(t, 36)
+    # Use our own HTML card so we fully control the top margin (tight gap)
+    st.markdown(f"<div class='card' style='margin-top:6px; padding:12px 14px; min-height:{signals_height_px}px;'>",
+                unsafe_allow_html=True)
+    st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
 
-            c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
-            with c1:
-                st.markdown(label)
-            with c2:
-                color = GREEN if change >= 0 else ORANGE
-                st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
-            with c3:
-                st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
-                                use_container_width=True, theme=None)
-            if i < len(related) - 1:
-                st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope
+    related = ["TSMC", "ASML", "CDNS", "SNPS"]
+    for i, t in enumerate(related):
+        label = PRETTY.get(t, t)
+        change = pct_change_days(t, 20)
+        vals = series_for(t, 36)
+
+        c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
+        with c1:
+            st.markdown(label)
+        with c2:
+            color = GREEN if change >= 0 else ORANGE
+            st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
+        with c3:
+            st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
+                            use_container_width=True, theme=None)
+        if i < len(related) - 1:
+            st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)  # end signals card
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER

@@ -135,7 +135,7 @@ st.markdown(
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
-        padding:2px 10px;
+        padding:0px 10px;
         margin-top:12px;
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}

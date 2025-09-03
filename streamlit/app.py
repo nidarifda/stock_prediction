@@ -140,7 +140,7 @@ st.markdown(
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
 
-      /* Signals card styling */
+      /* Signals list */
       .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
       .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
 
@@ -369,7 +369,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     return real_rows
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tiny sparkline + signals card helpers
+# Small spark helper for signals
 # ────────────────────────────────────────────────────────────────────────────────
 def mini_spark(values: np.ndarray, color: str = ACCENT, height: int = 28) -> go.Figure:
     fig = go.Figure(go.Scatter(x=np.arange(len(values)), y=values, mode="lines",
@@ -392,24 +392,6 @@ def pct_change_days(ticker: str, days: int = 20) -> float:
     if len(s) <= days: return 0.0
     return float((s.iloc[-1] / s.iloc[-days] - 1.0) * 100.0)
 
-def render_signals_card(title: str, items: list[tuple[str, float, np.ndarray]], height: int | None = None):
-    style = f"style='height:{height}px; overflow:auto;'" if height else ""
-    st.markdown(f"<div class='card' {style}>", unsafe_allow_html=True)
-    st.markdown(f"<div class='signals-title'>{title}</div>", unsafe_allow_html=True)
-    for i, (label, value, vals) in enumerate(items):
-        c1, c2, c3 = st.columns([1.0, 0.45, 1.2])
-        with c1:
-            st.markdown(f"<div style='opacity:.95'>{label}</div>", unsafe_allow_html=True)
-        with c2:
-            col = GREEN if value >= 0 else ORANGE
-            st.markdown(f"<div style='font-weight:700;color:{col}'>{value:+.2f}</div>", unsafe_allow_html=True)
-        with c3:
-            st.plotly_chart(mini_spark(vals, color=(ACCENT if value>=0 else ORANGE)),
-                            use_container_width=True, theme=None)
-        if i < len(items) - 1:
-            st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
 # ────────────────────────────────────────────────────────────────────────────────
 # Title & data
 # ────────────────────────────────────────────────────────────────────────────────
@@ -431,7 +413,7 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + fixed-height signals card (same height as watchlist)
+# RIGHT: Model + Predict + Signals (signals INSIDE the box)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -451,10 +433,45 @@ with top_right:
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
+    # Style ONLY the following bordered container to look like our big card
     signals_height_px = watchlist_height_px
-    related = ["TSMC", "ASML", "CDNS", "SNPS"]
-    items = [(PRETTY.get(t, t), pct_change_days(t, 20), series_for(t, 36)) for t in related]
-    render_signals_card("Affiliated Signals", items, height=signals_height_px)
+    st.markdown(
+        f"""
+        <style>
+          .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
+            background:{CARD};
+            border:1px solid rgba(255,255,255,.08);
+            border-radius:12px;
+            box-shadow:0 6px 18px rgba(0,0,0,.22);
+            padding:12px 14px;
+            min-height:{signals_height_px}px;     /* ⬅ match watchlist/chart height */
+          }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
+
+        related = ["TSMC", "ASML", "CDNS", "SNPS"]
+        for i, t in enumerate(related):
+            label = PRETTY.get(t, t)
+            change = pct_change_days(t, 20)
+            vals = series_for(t, 36)
+
+            c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
+            with c1:
+                st.markdown(label)
+            with c2:
+                color = GREEN if change >= 0 else ORANGE
+                st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
+            with c3:
+                st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
+                                use_container_width=True, theme=None)
+            if i < len(related) - 1:
+                st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER
@@ -465,7 +482,6 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    # OPEN toprow wrapper for the middle row
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
 
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
@@ -484,7 +500,6 @@ with top_mid:
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # CLOSE toprow wrapper so spacing matches the right row
     st.markdown("</div>", unsafe_allow_html=True)
 
     next_day = (seg_choice == "Next day")

@@ -6,7 +6,6 @@ from pathlib import Path
 import pickle
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from textwrap import dedent
@@ -126,13 +125,29 @@ st.markdown(
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
+      /* Metric row */
+      .metric-row{{
+        display:grid; grid-template-columns:repeat(3,1fr);
+        gap:16px; margin-top:6px;
+      }}
+      .metric-slot{{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        height:44px; padding:0 14px;
+        display:flex; align-items:center; justify-content:space-between;
+      }}
+      .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
+      .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
+      @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
+
       /* ── Inline chart card ──────────────────────────────────────────────── */
       .chart-card{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:12px;   /* little breathing room below the metric boxes */
+        margin-top:12px;   /* space below the metric boxes */
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
     </style>
@@ -379,81 +394,7 @@ WL_ROW_H   = 45   # each .watch-row height (approx)
 WL_PADDING = 30   # inner/bottom paddings
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# MIDDLE: Ticker + Horizon (tight)
-TICKERS = DISPLAY_ORDER
-label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
-ticker_labels   = list(label_to_ticker.keys())
-_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels: _default_label = ticker_labels[0]
-_default_idx = ticker_labels.index(_default_label)
-
-# --- MIDDLE COLUMN -----------------------------------------------------------
-with top_mid:
-    # …your selectbox + radio (already here) …
-
-    # metric pills
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-    st.markdown("""<div class="metric-row">…</div>""", unsafe_allow_html=True)
-
-    # ⬇⬇ KEEP EVERYTHING BELOW INDENTED (still inside `with top_mid:`) ⬇⬇
-    s = prices[ticker].dropna()
-    if len(s) >= 15:
-        now_x = s.index[-1]
-        last_val = float(s.iloc[-1])
-
-        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
-        proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
-        proj_y = np.linspace(last_val, target, len(proj_x))
-
-        fig_inline = go.Figure()
-        fig_inline.add_trace(go.Scatter(
-            x=s.index, y=s.values, mode="lines",
-            line=dict(width=2, color="#70B3FF"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
-        fig_inline.add_trace(go.Scatter(
-            x=[now_x], y=[last_val], mode="markers",
-            marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
-        fig_inline.add_trace(go.Scatter(
-            x=proj_x, y=proj_y, mode="lines",
-            line=dict(width=2, dash="dot", color="#F08A3C"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
-        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-
-        fig_inline.update_layout(
-            height=watchlist_height_px,
-            margin=dict(l=52, r=16, t=8, b=40),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            hovermode="x unified",
-            font=dict(color=TEXT, size=12)
-        )
-        fig_inline.update_xaxes(
-            showgrid=True, gridcolor="rgba(255,255,255,.08)",
-            showticklabels=True, tickformat="%b %Y", dtick="M3",
-            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
-            tickfont=dict(color=MUTED), automargin=True
-        )
-        fig_inline.update_yaxes(
-            showgrid=True, gridcolor="rgba(255,255,255,.10)",
-            tickformat=",.0f",
-            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
-            tickfont=dict(color=MUTED), automargin=True
-        )
-
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
-        st.plotly_chart(fig_inline, use_container_width=True, theme=None)
-        st.markdown("</div>", unsafe_allow_html=True)
-    # ⬆⬆ still inside `with top_mid:` ⬆⬆
-
-
-# RIGHT: Model + Predict
+# RIGHT: Model + Predict (define the button first so we can use it later)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -466,64 +407,69 @@ with top_right:
         st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Prediction
-# ────────────────────────────────────────────────────────────────────────────────
-pred = lo = hi = conf = None
-if do_predict:
-    try:
-        reg, y_scaler = load_artifacts()
-        if reg is not None and ticker in prices.columns:
-            n_exp = expected_n_feats(reg) or 31
-            X, note = build_features(prices, ticker, n_exp)
-            y_scaled = float(reg.predict(X)[0])
-            pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
-            lo, hi = pred*0.98, pred*1.02
-            conf = 0.78
-            if note: st.caption(f"⚠️ {note}")
-            if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
-        else:
-            base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
-            s = prices[base_t].dropna()
-            if len(s) >= 6:
-                pred = float(s.iloc[-1] * (1 + s.pct_change().iloc[-5:].mean()))
-                lo, hi = pred*0.98, pred*1.02
-                conf = 0.65
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
-
-pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
-inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
-conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
-
-# ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART (sized to Watchlist)
-# ────────────────────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-.metric-row{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-  margin-top:6px; /* keep these closer to the row above */
-}
-.metric-slot{
-  background:var(--card);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:12px;
-  height:44px;
-  padding:0 14px;
-  display:flex; align-items:center; justify-content:space-between;
-}
-.metric-slot .m-label{ color:var(--muted); font-size:13px; }
-.metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
-@media (max-width: 900px){
-  .metric-row{ grid-template-columns:1fr; }
-}
-</style>
-""", unsafe_allow_html=True)
+# --- MIDDLE COLUMN (single block: controls → metrics → chart) ------------------
+TICKERS = DISPLAY_ORDER
+label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
+ticker_labels   = list(label_to_ticker.keys())
+_default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
+if _default_label not in ticker_labels: _default_label = ticker_labels[0]
+_default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
+    # Controls row
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
+    with sel_col:
+        sel_label = st.selectbox(
+            "",
+            ticker_labels,
+            index=_default_idx,
+            key="ticker_select",
+            label_visibility="collapsed",
+        )
+        ticker = label_to_ticker[sel_label]
+        st.session_state["ticker_label"] = sel_label
+
+    with seg_col:
+        seg_choice = st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True, index=1,
+            key="segmented_hz",
+            label_visibility="collapsed",
+        )
+        next_day = (seg_choice == "Next day")
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Prediction (uses the button from top_right)
+    pred = lo = hi = conf = None
+    if do_predict:
+        try:
+            reg, y_scaler = load_artifacts()
+            if reg is not None and ticker in prices.columns:
+                n_exp = expected_n_feats(reg) or 31
+                X, note = build_features(prices, ticker, n_exp)
+                y_scaled = float(reg.predict(X)[0])
+                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
+                lo, hi = pred*0.98, pred*1.02
+                conf = 0.78
+                if note: st.caption(f"⚠️ {note}")
+                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
+            else:
+                base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
+                s_tmp = prices[base_t].dropna()
+                if len(s_tmp) >= 6:
+                    pred = float(s_tmp.iloc[-1] * (1 + s_tmp.pct_change().iloc[-5:].mean()))
+                    lo, hi = pred*0.98, pred*1.02
+                    conf = 0.65
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
+
+    pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
+    inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
+    conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
+
     # Metric pills
     st.markdown(f"""
     <div class="metric-row">
@@ -543,75 +489,74 @@ with top_mid:
     """, unsafe_allow_html=True)
 
     # Inline summary chart — DATETIME axis with readable ticks
-s = prices[ticker].dropna()
-if len(s) >= 15:
-    now_x = s.index[-1]                 # datetime index
-    last_val = float(s.iloc[-1])
+    s = prices[ticker].dropna()
+    if len(s) >= 15:
+        now_x = s.index[-1]                 # datetime index
+        last_val = float(s.iloc[-1])
 
-    target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
-    proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
-    proj_y = np.linspace(last_val, target, len(proj_x))
+        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
+        proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
+        proj_y = np.linspace(last_val, target, len(proj_x))
 
-    fig_inline = go.Figure()
+        fig_inline = go.Figure()
 
-    # history
-    fig_inline.add_trace(go.Scatter(
-        x=s.index, y=s.values, mode="lines",
-        line=dict(width=2, color="#70B3FF"),
-        hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-        showlegend=False
-    ))
+        # history
+        fig_inline.add_trace(go.Scatter(
+            x=s.index, y=s.values, mode="lines",
+            line=dict(width=2, color="#70B3FF"),
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
 
-    # current point
-    fig_inline.add_trace(go.Scatter(
-        x=[now_x], y=[last_val], mode="markers",
-        marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-        hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-        showlegend=False
-    ))
+        # current point
+        fig_inline.add_trace(go.Scatter(
+            x=[now_x], y=[last_val], mode="markers",
+            marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
+            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
 
-    # projection
-    fig_inline.add_trace(go.Scatter(
-        x=proj_x, y=proj_y, mode="lines",
-        line=dict(width=2, dash="dot", color="#F08A3C"),
-        hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-        showlegend=False
-    ))
+        # projection
+        fig_inline.add_trace(go.Scatter(
+            x=proj_x, y=proj_y, mode="lines",
+            line=dict(width=2, dash="dot", color="#F08A3C"),
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
+        ))
 
-    # guide + forecast zone
-    fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-    fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+        # guide + forecast zone
+        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+        fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
-    # layout — show ticks clearly (bigger margins + light tick colors)
-    fig_inline.update_layout(
-        height=watchlist_height_px,
-        margin=dict(l=52, r=16, t=8, b=40),  # more room for y/x tick labels
-        paper_bgcolor=CARD, plot_bgcolor=CARD,
-        hovermode="x unified",
-        font=dict(color=TEXT, size=12)       # global text color on dark bg
-    )
-    fig_inline.update_xaxes(
-        showgrid=True, gridcolor="rgba(255,255,255,.08)",
-        showticklabels=True, tickformat="%b %Y", dtick="M3",
-        ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
-        tickfont=dict(color=MUTED), automargin=True
-    )
-    fig_inline.update_yaxes(
-        showgrid=True, gridcolor="rgba(255,255,255,.10)",
-        tickformat=",.0f",
-        ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
-        tickfont=dict(color=MUTED), automargin=True
-    )
+        # layout — readable ticks on dark bg
+        fig_inline.update_layout(
+            height=watchlist_height_px,                  # match Watchlist height
+            margin=dict(l=52, r=16, t=8, b=40),          # room for ticks
+            paper_bgcolor=CARD, plot_bgcolor=CARD,
+            hovermode="x unified",
+            font=dict(color=TEXT, size=12),
+        )
+        fig_inline.update_xaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.08)",
+            showticklabels=True, tickformat="%b %Y", dtick="M3",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+            tickfont=dict(color=MUTED), automargin=True
+        )
+        fig_inline.update_yaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.10)",
+            tickformat=",.0f",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+            tickfont=dict(color=MUTED), automargin=True
+        )
 
-    st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
-    st.plotly_chart(fig_inline, use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
-else:
-    st.info("Not enough history to render the summary chart.")
-
+        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
+        st.plotly_chart(fig_inline, use_container_width=True, theme=None)
+        st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.info("Not enough history to render the summary chart.")
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tabs (optional demo content)
+# Tabs (simple demo content)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2 = st.tabs(["Tab 1", "Tab 2"])
 
@@ -629,17 +574,6 @@ with tab1:
         st.markdown(bar(0.4), unsafe_allow_html=True)
         st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
         st.markdown(bar(0.8), unsafe_allow_html=True)
-
-        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
-        st.markdown("**Error distribution**")
-        rng = np.random.default_rng(9)
-        e = rng.normal(0, 1, 220)
-        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
-                           paper_bgcolor=CARD, plot_bgcolor=CARD,
-                           xaxis=dict(visible=False), yaxis=dict(visible=False))
-        st.plotly_chart(hist, use_container_width=True, theme=None)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with c2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)

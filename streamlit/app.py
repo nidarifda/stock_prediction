@@ -372,7 +372,7 @@ with top_left:
 # approximate the pixel height of the Watchlist so the right chart matches it
 # tweak the constants to your taste (depends on fonts / OS rendering)
 WL_HEADER = 56      # title + paddings
-WL_ROW_H  = 50      # each .watch-row height (approx)
+WL_ROW_H  = 45      # each .watch-row height (approx)
 WL_PADDING = 30     # inner/bottom paddings + shadow breathing room
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
@@ -541,7 +541,6 @@ with top_mid:
                 tickfont=dict(color="#7C8DA5", size=11), zeroline=False
             ),
         )
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -555,7 +554,6 @@ tab1, tab2 = st.tabs(["Tab 1", "Tab 2"])
 with tab1:
     c1, c2 = st.columns([1.2, 1.0], gap="large")
     with c1:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**Error metrics**")
         mae, rmse, confu = 1.31, 2.06, 0.91
         def bar(v: float) -> str:

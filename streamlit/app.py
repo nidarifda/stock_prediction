@@ -286,7 +286,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer
+# Watchlist renderer (returns row count so we can size the chart to match)
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -294,7 +294,7 @@ def _badge_html(pct: float, side: str = "left") -> str:
     sign  = "+" if pct > 0 else ""
     return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
 
-def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist") -> int:
     WATCHLIST_CSS = dedent(f"""
     <style>
       .watch-card {{
@@ -320,10 +320,12 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
 
     rows = []
+    real_rows = 0
     for t in tickers:
         if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
         if s.empty: continue
+        real_rows += 1
         last = float(s.iloc[-1])
         chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
         chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
@@ -348,6 +350,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
         """),
         unsafe_allow_html=True,
     )
+    return real_rows
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Title
@@ -362,9 +365,16 @@ with st.spinner("Loading price history…"):
 # ────────────────────────────────────────────────────────────────────────────────
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
-# LEFT: Watchlist
+# LEFT: Watchlist (we’ll capture row count to size the chart)
 with top_left:
-    render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
+    wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
+
+# approximate the pixel height of the Watchlist so the right chart matches it
+# tweak the constants to your taste (depends on fonts / OS rendering)
+WL_HEADER = 56      # title + paddings
+WL_ROW_H  = 74      # each .watch-row height (approx)
+WL_PADDING = 36     # inner/bottom paddings + shadow breathing room
+watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
 # MIDDLE: Ticker + Horizon (tight)
 TICKERS = DISPLAY_ORDER
@@ -443,7 +453,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART
+# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART (sized to Watchlist)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -489,12 +499,11 @@ with top_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart directly under the pills
+    # Inline summary chart — height matched to Watchlist
     s = prices[ticker].dropna()
     if len(s) >= 15:
         now_x = int(s.index[-1])
         last_val = float(s.iloc[-1])
-
         target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
         proj_x = np.arange(now_x, now_x + 12)
         proj_y = np.linspace(last_val, target, len(proj_x))
@@ -517,12 +526,20 @@ with top_mid:
         ))
         fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig_inline.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
+        # match the Watchlist height
         fig_inline.update_layout(
-            height=230,
+            height=watchlist_height_px,
             margin=dict(l=10, r=10, t=6, b=6),
             paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(showgrid=False, tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
-            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,.06)", tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
+            xaxis=dict(
+                showgrid=False, tickfont=dict(color="#7C8DA5", size=11),
+                zeroline=False, showticklabels=False  # keep mini clean; set True if you want labels
+            ),
+            yaxis=dict(
+                showgrid=True, gridcolor="rgba(255,255,255,.06)",
+                tickfont=dict(color="#7C8DA5", size=11), zeroline=False
+            ),
         )
         st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)

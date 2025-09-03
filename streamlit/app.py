@@ -94,20 +94,25 @@ st.markdown(
         padding:0 16px !important;
       }}
 
-      /* ── THIS MAKES SELECT + RADIO TOUCH ───────────────────────────────── */
-      .toprow-kiss [data-testid="stHorizontalBlock"] {{ gap:0 !important; }}
-      .toprow-kiss [data-testid="column"] {{
-        padding-left:0 !important; padding-right:0 !important;
+      /* —— NEW: make the Select + Radio sit right next to each other ——— */
+      /* target only the horizontal block that contains a selectbox (your row) */
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) {{
+        gap: 6px !important;                      /* kill the big gutter */
       }}
-      .toprow-kiss [data-testid="stSelectbox"],
-      .toprow-kiss [data-testid="stRadio"] {{ margin:0 !important; }}
-      /* eat any stubborn spacing by pulling the radio left slightly */
-      .toprow-kiss [data-testid="stRadio"] {{ margin-left:-10px !important; }}
-      /* keep the select pill a tad slimmer so edges align nicely */
-      .toprow-kiss [data-testid="stSelectbox"] > div > div {{
-        padding-left:10px !important; padding-right:10px !important;
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="column"] {{
+        padding-left: 0 !important;               /* remove column padding on both sides */
+        padding-right: 0 !important;
       }}
-      /* ─────────────────────────────────────────────────────────────────── */
+      /* trim the pills themselves a touch */
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stSelectbox"] > div > div {{
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        margin: 0 !important;
+      }}
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stRadio"] {{
+        padding: 6px 8px !important;
+        margin: 0 !important;
+      }}
 
       /* Footer */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
@@ -221,7 +226,7 @@ def load_prices_from_root_last_5y(
     return out
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Feature helpers & models
+# Features & (optional) model loading
 # ────────────────────────────────────────────────────────────────────────────────
 def feat_block(s: pd.Series) -> list[float]:
     s = s.astype(float)
@@ -283,7 +288,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist
+# Watchlist renderer
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -347,7 +352,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title
+# Title + TOP ROW
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -359,20 +364,19 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
-            unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Top row layout
-# ────────────────────────────────────────────────────────────────────────────────
+# Layout for the top row
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
+# LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
+# MIDDLE: Ticker + Horizon  (these two now sit very close)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -381,9 +385,8 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    # Wrap the select + radio row in the "kiss" class
-    st.markdown("<div class='toprow toprow-kiss'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")  # CSS above removes real gap
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")   # ratios only; gap gets nuked by CSS above
 
     with sel_col:
         sel_label = st.selectbox("", ticker_labels, index=_default_idx,
@@ -399,6 +402,7 @@ with top_mid:
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
+# RIGHT: Model + Predict
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -442,7 +446,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Metrics (pills)
+# METRICS — inline, pill-style boxes
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -472,14 +476,23 @@ with top_mid:
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
-      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
-      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
+      <div class="metric-slot">
+        <div class="m-label">Predicted Close</div>
+        <div class="m-value">{pred_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">80% interval</div>
+        <div class="m-value">{inter_text}</div>
+      </div>
+      <div class="metric-slot">
+        <div class="m-label">Confidence</div>
+        <div class="m-value">{conf_text}</div>
+      </div>
     </div>
     """, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tabs (plots & extras)
+# Tabs (optional)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 

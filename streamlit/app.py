@@ -123,7 +123,7 @@ st.markdown(
         background:var(--card);
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
-        height:44px; padding:0 40px;
+        height:44px; padding:0 0px;
         display:flex; align-items:center; justify-content:space-between;
       }}
       .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}

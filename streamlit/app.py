@@ -115,7 +115,7 @@ st.markdown(
   display:grid; 
   grid-template-columns:repeat(3,1fr);
   gap:16px; 
-  margin-top:6px;
+  margin-top:2px;
   padding:12px 0;            /* top & bottom padding */
 }}
 

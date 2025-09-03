@@ -118,14 +118,14 @@ st.markdown(
         .statusbar::-webkit-scrollbar {{ display:none; }}
       }}
 
-      /* ── Tighter select+radio row (kill the gap) ─────────────────────────── */
+      /* ── Tighter select+radio row ─────────────────────────── */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* ── Inline chart card ──────────────────────────────────────────────── */
+      /* ── Inline chart card ───────────────────────────────── */
       .chart-card{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
@@ -140,7 +140,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root) → aligned 5Y DataFrame
+# CSV loader (root) → aligned 5Y DataFrame  (KEEP DatetimeIndex!)
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -218,9 +218,9 @@ def load_prices_from_root_last_5y(
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
-    out = merged.copy()
-    out.index = pd.RangeIndex(1, len(out) + 1, name="t")
-    out = out.reindex(columns=list(aliases.keys()))
+    # IMPORTANT: keep the DatetimeIndex (business days)
+    merged.index.name = "Date"
+    out = merged.reindex(columns=list(aliases.keys()))
     return out
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -350,38 +350,34 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Compact forecast chart helper (shows y-axis numbers)
-# (enhanced to optionally aim the dotted projection at a target price)
+# Compact forecast chart helper (with visible date ticks)
 # ────────────────────────────────────────────────────────────────────────────────
 def plot_compact_forecast(prices: pd.DataFrame, base_tkr: str, target: float | None = None) -> go.Figure:
     s = prices[base_tkr].dropna().astype(float)
+    f = go.Figure()
     if s.empty:
-        f = go.Figure()
         f.update_layout(height=220, paper_bgcolor=CARD, plot_bgcolor=CARD, margin=dict(l=12, r=12, t=8, b=28))
         return f
 
-    x = s.index
+    x = s.index  # DatetimeIndex
     y = s.values
     now_x = x[-1]
     last_val = float(y[-1])
 
-    f = go.Figure()
-    # main line
     f.add_trace(go.Scatter(
         x=x, y=y, mode="lines",
         line=dict(width=2, color="#74B2FF"),
         name=base_tkr, showlegend=False,
-        hovertemplate="%{y:,.2f}<extra></extra>"
+        hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>"
     ))
 
-    # projection to target (prediction) if provided, else gentle +1%
     if target is None:
         target = last_val * 1.01
-    proj_x = np.arange(now_x, now_x + 12)
+    proj_x = pd.bdate_range(now_x, periods=12, freq="B")
     proj_y = np.linspace(last_val, float(target), len(proj_x))
 
     f.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5", opacity=0.9)
-    f.add_vrect(x0=now_x, x1=now_x + 11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+    f.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
     f.add_trace(go.Scatter(
         x=proj_x, y=proj_y, mode="lines",
@@ -389,7 +385,6 @@ def plot_compact_forecast(prices: pd.DataFrame, base_tkr: str, target: float | N
         showlegend=False, hoverinfo="skip"
     ))
 
-    # highlight last value
     f.add_trace(go.Scatter(
         x=[now_x], y=[last_val], mode="markers",
         marker=dict(size=8, color=TEXT, line=dict(width=2, color=BG)),
@@ -403,14 +398,18 @@ def plot_compact_forecast(prices: pd.DataFrame, base_tkr: str, target: float | N
         bordercolor="rgba(255,255,255,.18)", borderwidth=1, borderpad=4
     )
 
-    # layout
     f.update_layout(
-        height=220,
-        margin=dict(l=12, r=12, t=8, b=28),
+        height=230,
+        margin=dict(l=10, r=10, t=6, b=8),
         paper_bgcolor=CARD, plot_bgcolor=CARD,
         hovermode="x unified"
     )
-    f.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
+    # Show monthly ticks; switch to daily if the window is short
+    f.update_xaxes(
+        showgrid=False, zeroline=False,
+        tickfont=dict(color=MUTED, size=11),
+        tickformat="%b", dtick="M1"  # month ticks
+    )
     f.update_yaxes(
         showgrid=False, zeroline=False,
         tickfont=dict(size=11, color=MUTED),
@@ -512,7 +511,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART (using helper)
+# METRICS + INLINE SUMMARY CHART (with visible dates)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -539,26 +538,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with top_mid:
-    # Metric pills
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-slot">
-        <div class="m-label">Predicted Close</div>
-        <div class="m-value">{pred_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">80% interval</div>
-        <div class="m-value">{inter_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">Confidence</div>
-        <div class="m-value">{conf_text}</div>
-      </div>
+      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
+      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
+      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart directly under the pills (y-axis visible). Aim projection at pred if available.
     tgt = float(pred) if isinstance(pred, (float, int)) else None
     fig_inline = plot_compact_forecast(prices, ticker, target=tgt)
     st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
@@ -566,33 +554,33 @@ with top_mid:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tabs (optional demo content)
+# Tabs (demo content)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 
 with tab1:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
-        long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
-        fig = px.line(long, x="t", y="price", color="ticker",
-                      labels={"t":"","price":"","ticker":""},
+        long = prices.reset_index(names="Date").melt("Date", value_name="price", var_name="ticker")
+        fig = px.line(long, x="Date", y="price", color="ticker",
+                      labels={"Date":"","price":"","ticker":""},
                       color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
                       template="plotly_dark")
         base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
         now_x = prices.index[-1]
         last_val = float(prices[base_tkr].dropna().iloc[-1])
-        proj_x = np.arange(now_x, now_x+12)
+        proj_x = pd.bdate_range(now_x, periods=12, freq="B")
         proj_y = np.linspace(last_val, (last_val*1.01), len(proj_x))
         fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
                                  line=dict(width=2, dash="dot", color="#d6d6d6"),
                                  name="projection", showlegend=False))
         fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+        fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
         fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
                           paper_bgcolor=CARD, plot_bgcolor=CARD,
-                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
-                          xaxis=dict(showgrid=False, showticklabels=False),
-                          yaxis=dict(showgrid=False, showticklabels=False))
+                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)))
+        fig.update_xaxes(showgrid=False, tickfont=dict(color="#7C8DA5"), dtick="M3", tickformat="%b %Y")
+        fig.update_yaxes(showgrid=False, tickfont=dict(color="#7C8DA5"))
         st.plotly_chart(fig, use_container_width=True, theme=None)
     else:
         st.info("No price data found. Please add your CSVs to the repo root.")

@@ -117,7 +117,7 @@ st.markdown(
       /* Metric row */
       .metric-row{{
         display:grid; grid-template-columns:repeat(3,1fr);
-        gap:10px; margin-top:0px; padding:12px 0;
+        gap:10px; margin-top:0px; padding:2px 0;
       }}
       .metric-slot{{
         background:var(--card);

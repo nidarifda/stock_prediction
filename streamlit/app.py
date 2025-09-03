@@ -95,7 +95,7 @@ st.markdown(
       .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
       .toprow [data-testid="stRadio"] {{
         height:44px; display:flex; align-items:center; margin:0 !important;
-        padding:6px 10px; border-radius:12px;
+        padding:0px 10px; border-radius:12px;
       }}
 
       /* Predict button */

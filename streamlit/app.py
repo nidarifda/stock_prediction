@@ -373,7 +373,7 @@ with top_left:
 # tweak the constants to your taste (depends on fonts / OS rendering)
 WL_HEADER = 56      # title + paddings
 WL_ROW_H  = 74      # each .watch-row height (approx)
-WL_PADDING = 36     # inner/bottom paddings + shadow breathing room
+WL_PADDING = 30     # inner/bottom paddings + shadow breathing room
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
 # MIDDLE: Ticker + Horizon (tight)

@@ -561,30 +561,59 @@ tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 with tab1:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     if not prices.empty:
-        long = prices.reset_index(names="Date").melt("Date", value_name="price", var_name="ticker")
-        fig = px.line(long, x="Date", y="price", color="ticker",
-                      labels={"Date":"","price":"","ticker":""},
-                      color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
-                      template="plotly_dark")
-        base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
+        # Build a clean multi-line overview (no legend, monthly ticks)
+        fig = go.Figure()
+
+        palette = ["#9CCBFF", "#74B2FF", "#5DA5FF", "#6ED0FF", "#92E0FF", "#B3F1FF"]
+        for i, t in enumerate([c for c in prices.columns if c in DISPLAY_ORDER]):
+            s = prices[t].dropna()
+            if s.empty:
+                continue
+            fig.add_trace(
+                go.Scatter(
+                    x=s.index,
+                    y=s.values,
+                    mode="lines",
+                    line=dict(width=2, color=palette[i % len(palette)]),
+                    showlegend=False,
+                    name=t,
+                    hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+                )
+            )
+
+        # Vertical dashed "now" line + shaded future area (extends the axis)
         now_x = prices.index[-1]
-        last_val = float(prices[base_tkr].dropna().iloc[-1])
-        proj_x = pd.bdate_range(now_x, periods=12, freq="B")
-        proj_y = np.linspace(last_val, (last_val*1.01), len(proj_x))
-        fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
-                                 line=dict(width=2, dash="dot", color="#d6d6d6"),
-                                 name="projection", showlegend=False))
-        fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-        fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
-                          paper_bgcolor=CARD, plot_bgcolor=CARD,
-                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)))
-        fig.update_xaxes(showgrid=False, tickfont=dict(color="#7C8DA5"), dtick="M3", tickformat="%b %Y")
-        fig.update_yaxes(showgrid=False, tickfont=dict(color="#7C8DA5"))
-        st.plotly_chart(fig, use_container_width=True, theme=None)
+        extend_to = pd.bdate_range(now_x, periods=60, freq="B")[-1]  # ~3 months ahead
+        fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5", opacity=0.9)
+        fig.add_vrect(x0=now_x, x1=extend_to, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
+        # Layout to match the screenshot
+        fig.update_layout(
+            height=340,
+            margin=dict(l=10, r=10, t=8, b=8),
+            paper_bgcolor=CARD,
+            plot_bgcolor=CARD,
+        )
+        fig.update_xaxes(
+            showgrid=False,
+            zeroline=False,
+            tickfont=dict(color="#7C8DA5", size=12),
+            tickformat="%b %Y",      # Oct 2020, Jan 2021, …
+            dtick="M3",              # a tick every 3 months (adjust to "M2"/"M1" if you want more)
+            ticks="outside",
+            ticklabelmode="instant",
+        )
+        fig.update_yaxes(
+            showgrid=False,
+            zeroline=False,
+            tickfont=dict(color="#7C8DA5", size=12),
+        )
+
+        st.plotly_chart(fig, use_container_width=True, theme=None, config={"displayModeBar": False})
     else:
         st.info("No price data found. Please add your CSVs to the repo root.")
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 with tab2:
     c1, c2 = st.columns([1.2, 1.0], gap="large")

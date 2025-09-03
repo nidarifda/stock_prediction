@@ -81,17 +81,21 @@ st.markdown(
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
       }}
 
-      /* Make Model and Predict perfectly aligned */
-      .toprow .control-wrap,
-      .toprow .btn-wrap {{
-        height:40px;
-        display:flex;
-        align-items:center;
-        width:100%;
+      /* ──────────────────────────────────────────────────────────────────
+         CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
+         ────────────────────────────────────────────────────────────────── */
+      .toprow {{
+        display:flex; align-items:center; gap:12px; margin-top:14px;
       }}
-      .toprow .control-wrap [data-testid="stSelectbox"] {{
-        width:100%;
-        margin:0 !important;
+      .toprow .control-wrap,
+      .toprow .seg-wrap,
+      .toprow .btn-wrap {{
+        height:44px; display:flex; align-items:center; width:100%;
+      }}
+      .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
+      .toprow [data-testid="stRadio"] {{
+        height:44px; display:flex; align-items:center; margin:0 !important;
+        padding:6px 10px; border-radius:12px;
       }}
 
       /* Predict button */
@@ -103,7 +107,7 @@ st.markdown(
         padding:0 10px !important;
       }}
 
-      /* Tighter select+radio row */
+      /* Tighter select+radio row (extra compact spacing) */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
@@ -111,31 +115,20 @@ st.markdown(
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
       /* Metric row */
-.metric-row{{
-  display:grid; 
-  grid-template-columns:repeat(3,1fr);
-  gap:16px; 
-  margin-top:2px;
-  padding:12px 0;            /* top & bottom padding */
-}}
-
-.metric-slot{{
-  background:var(--card);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:12px;
-  height:44px; 
-  padding:0 14px;
-  display:flex; 
-  align-items:center; 
-  justify-content:space-between;
-}}
-
-.metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
-.metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
-
-@media (max-width: 900px){{
-  .metric-row{{ grid-template-columns:1fr; }}
-}}
+      .metric-row{{
+        display:grid; grid-template-columns:repeat(3,1fr);
+        gap:16px; margin-top:2px; padding:12px 0;
+      }}
+      .metric-slot{{
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.10);
+        border-radius:12px;
+        height:44px; padding:0 14px;
+        display:flex; align-items:center; justify-content:space-between;
+      }}
+      .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
+      .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
+      @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
       /* Inline chart card */
       .chart-card{{
@@ -151,11 +144,10 @@ st.markdown(
       .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
       .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
 
-      /* Header (ADD TOP PADDING HERE) */
+      /* Header with extra top padding */
       .app-header {{
         display:flex; align-items:center; gap:.6rem;
-        padding-top:30px;          /* top padding you asked for */
-        margin:0 0 10px 0;
+        padding-top:30px; margin:0 0 10px 0;
       }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
     </style>
@@ -401,7 +393,6 @@ def pct_change_days(ticker: str, days: int = 20) -> float:
     return float((s.iloc[-1] / s.iloc[-days] - 1.0) * 100.0)
 
 def render_signals_card(title: str, items: list[tuple[str, float, np.ndarray]], height: int | None = None):
-    """items: list of (label, value, spark_values). If height is set, the card is fixed-height and scrollable."""
     style = f"style='height:{height}px; overflow:auto;'" if height else ""
     st.markdown(f"<div class='card' {style}>", unsafe_allow_html=True)
     st.markdown(f"<div class='signals-title'>{title}</div>", unsafe_allow_html=True)
@@ -440,30 +431,29 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + ONE fixed-height signals card (matches watchlist/chart)
+# RIGHT: Model + Predict + fixed-height signals card (same height as watchlist)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
                                   index=0, key="model_name", label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
+
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-    signals_height_px = watchlist_height_px  # perfect symmetry with watchlist & chart
+    signals_height_px = watchlist_height_px
     related = ["TSMC", "ASML", "CDNS", "SNPS"]
-    items = []
-    for t in related:
-        val = pct_change_days(t, days=20)
-        spk = series_for(t, lookback=36)
-        items.append((PRETTY.get(t, t), val, spk))
+    items = [(PRETTY.get(t, t), pct_change_days(t, 20), series_for(t, 36)) for t in related]
     render_signals_card("Affiliated Signals", items, height=signals_height_px)
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
@@ -471,22 +461,30 @@ TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
 _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels:
-    _default_label = ticker_labels[0]
+if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
+    # OPEN toprow wrapper for the middle row
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
     with sel_col:
+        st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         sel_label = st.selectbox("", ticker_labels, index=_default_idx,
                                  key="ticker_select", label_visibility="collapsed")
+        st.markdown("</div>", unsafe_allow_html=True)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
+
     with seg_col:
+        st.markdown("<div class='seg-wrap'>", unsafe_allow_html=True)
         seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # CLOSE toprow wrapper so spacing matches the right row
     st.markdown("</div>", unsafe_allow_html=True)
 
     next_day = (seg_choice == "Next day")
@@ -522,15 +520,15 @@ with top_mid:
 
     # Metric pills
     st.markdown(
-    f"""
-    <div class="metric-row" style="padding:12px 0;">  <!-- top & bottom padding -->
-      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
-      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
-      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div class="metric-row">
+          <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
+          <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
+          <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # Inline summary chart
     s = prices[ticker].dropna()

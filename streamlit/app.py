@@ -147,7 +147,7 @@ st.markdown(
       /* Header with extra top padding */
       .app-header {{
         display:flex; align-items:center; gap:.6rem;
-        padding-top:30px; margin:0 0 10px 0;
+        padding-top:50px; margin:0 0 10px 0;
       }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
     </style>

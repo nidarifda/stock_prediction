@@ -74,17 +74,11 @@ st.markdown(
         padding:6px 10px;
         height:44px;
         display:flex; align-items:center;
+        margin:0 !important;
       }}
       [data-testid="stRadio"] svg {{ display:none !important; }}
       [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-
-      /* Force white labels + full opacity */
-      [data-testid="stRadio"], 
-      [data-testid="stRadio"] * {{
-        color:{TEXT} !important;
-        opacity:1 !important;
-      }}
-      /* Selected label underline */
+      [data-testid="stRadio"], [data-testid="stRadio"] * {{ color:{TEXT} !important; opacity:1 !important; }}
       [data-testid="stRadio"] label[aria-checked="true"] {{ position:relative; }}
       [data-testid="stRadio"] label[aria-checked="true"]::after {{
         content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
@@ -98,6 +92,26 @@ st.markdown(
         border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background:{ACCENT} !important; color:white !important;
         padding:0 16px !important;
+      }}
+
+      /* —— NEW: make the Select + Radio sit right next to each other ——— */
+      /* target only the horizontal block that contains a selectbox (your row) */
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) {{
+        gap: 6px !important;                      /* kill the big gutter */
+      }}
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="column"] {{
+        padding-left: 0 !important;               /* remove column padding on both sides */
+        padding-right: 0 !important;
+      }}
+      /* trim the pills themselves a touch */
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stSelectbox"] > div > div {{
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        margin: 0 !important;
+      }}
+      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stRadio"] {{
+        padding: 6px 8px !important;
+        margin: 0 !important;
       }}
 
       /* Footer */
@@ -338,7 +352,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Header
+# Title + TOP ROW
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -350,41 +364,19 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
-            unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Top-row controls (ticker select + horizon) — ULTRA-TIGHT spacing
-# ────────────────────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-.toprow-tight [data-testid="stHorizontalBlock"]{ gap:0 !important; }
-.toprow-tight [data-testid="stVerticalBlock"]{ gap:0 !important; }
-.toprow-tight [data-testid="column"]{
-  padding-left:0 !important; padding-right:0 !important;
-}
-.toprow-tight [data-testid="stSelectbox"],
-.toprow-tight [data-testid="stRadio"]{ margin:0 !important; }
-.toprow-tight [data-testid="stRadio"]{ padding:6px 8px !important; }
-.toprow-tight [data-testid="stSelectbox"] > div > div{
-  padding-left:10px !important; padding-right:10px !important;
-}
-.toprow-tight [data-testid="stSelectbox"] [data-baseweb="select"] *,
-.toprow-tight [data-testid="stRadio"] *{ color: var(--text) !important; }
-</style>
-""", unsafe_allow_html=True)
-
-# Lay out three columns
+# Layout for the top row
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
 # LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Horizon (tight)
+# MIDDLE: Ticker + Horizon  (these two now sit very close)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -393,27 +385,19 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.25], gap="small")
+    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")   # ratios only; gap gets nuked by CSS above
+
     with sel_col:
-        sel_label = st.selectbox(
-            "",
-            ticker_labels,
-            index=_default_idx,
-            key="ticker_select",                 # unique (used once)
-            label_visibility="collapsed",
-        )
+        sel_label = st.selectbox("", ticker_labels, index=_default_idx,
+                                 key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
+
     with seg_col:
-        seg_choice = st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=1,
-            key="segmented_hz",                  # unique (used once)
-            label_visibility="collapsed",
-        )
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
+                              horizontal=True, index=1, key="segmented_hz",
+                              label_visibility="collapsed")
         next_day = (seg_choice == "Next day")
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
@@ -508,7 +492,7 @@ with top_mid:
     """, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tabs
+# Tabs (optional)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 
@@ -594,7 +578,7 @@ with tab3:
             f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) ,
                         use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 

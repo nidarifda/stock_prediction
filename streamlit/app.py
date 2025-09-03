@@ -270,9 +270,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
         base = len(feats)
         if len(feats) < n_expected:
             feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
-        else:
-            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
-    return np.asarray([feats], dtype=np.float32), note
+        return np.asarray([feats], dtype=np.float32), note
 
 @st.cache_resource
 def load_artifacts():

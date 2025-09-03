@@ -84,7 +84,7 @@ st.markdown(
       /* Make Model and Predict perfectly aligned */
       .toprow .control-wrap,
       .toprow .btn-wrap {{
-        height:44px;
+        height:40px;
         display:flex;
         align-items:center;
         width:100%;
@@ -435,7 +435,7 @@ watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDI
 # RIGHT: Model + Predict + (NEW) Affiliated Signals cards
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
-    model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+    model_col, btn_col = st.columns([1.0, 1.0], gap="small")
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],

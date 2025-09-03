@@ -438,7 +438,7 @@ _default_idx = ticker_labels.index(_default_label)
 with top_mid:
     # Controls row
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
+    sel_col, seg_col = st.columns([0.60, 1.28], gap="small")
     with sel_col:
         sel_label = st.selectbox(
             "",

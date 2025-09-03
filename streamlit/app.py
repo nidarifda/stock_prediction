@@ -85,7 +85,7 @@ st.markdown(
          CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
          ────────────────────────────────────────────────────────────────── */
       .toprow {{
-        display:flex; align-items:center; gap:12px; margin-top:14px;
+        display:flex; align-items:center; gap:12px; margin-top:6px;
       }}
       .toprow .control-wrap,
       .toprow .seg-wrap,

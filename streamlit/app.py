@@ -144,7 +144,7 @@ st.markdown(
       .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
       .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
 
-      /* Header with extra top padding */
+      /* Header with extra top padding so title isn't cut */
       .app-header {{
         display:flex; align-items:center; gap:.6rem;
         padding-top:50px; margin:0 0 10px 0;
@@ -413,7 +413,7 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (signals INSIDE the box)
+# RIGHT: Model + Predict + Signals (signals INSIDE the card)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -431,25 +431,33 @@ with top_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    # ── Signals card aligned with chart height
+    signals_pad_y = 24  # total top+bottom padding we add inside the signals card (12 + 12)
+    signals_height_px = watchlist_height_px - signals_pad_y
 
-    # Style ONLY the following bordered container to look like our big card
-    signals_height_px = watchlist_height_px
     st.markdown(
         f"""
         <style>
+          /* remove Streamlit's default vertical padding in this scope */
+          .signals-scope [data-testid="stVerticalBlock"] {{
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }}
+          /* style the bordered container as a large card and match height */
           .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
             background:{CARD};
             border:1px solid rgba(255,255,255,.08);
             border-radius:12px;
             box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:2px 6px;
-            min-height:{signals_height_px}px;     /* ⬅ match watchlist/chart height */
+            padding:12px 14px;             /* top/bottom = 12px, left/right = 14px */
+            margin-top:0; margin-bottom:0; /* align with chart top/bottom */
+            min-height:{signals_height_px}px;  /* inner area so total equals chart height */
           }}
         </style>
         """,
         unsafe_allow_html=True,
     )
+
     st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
@@ -465,10 +473,15 @@ with top_right:
                 st.markdown(label)
             with c2:
                 color = GREEN if change >= 0 else ORANGE
-                st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>",
+                    unsafe_allow_html=True,
+                )
             with c3:
-                st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
-                                use_container_width=True, theme=None)
+                st.plotly_chart(
+                    mini_spark(vals, color=(ACCENT if change >= 0 else ORANGE)),
+                    use_container_width=True, theme=None
+                )
             if i < len(related) - 1:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope

@@ -117,13 +117,13 @@ st.markdown(
       /* Metric row */
       .metric-row{{
         display:grid; grid-template-columns:repeat(3,1fr);
-        gap:16px; margin-top:2px; padding:12px 0;
+        gap:0px; margin-top:2px; padding:12px 0;
       }}
       .metric-slot{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
-        height:44px; padding:0 0px;
+        height:44px; padding:0 40px;
         display:flex; align-items:center; justify-content:space-between;
       }}
       .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}

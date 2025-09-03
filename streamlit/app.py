@@ -111,7 +111,7 @@ st.markdown(
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
-      .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
+      .toprow-tight [data-testid="stRadio"]{{ padding:6px 0px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
       /* Metric row */

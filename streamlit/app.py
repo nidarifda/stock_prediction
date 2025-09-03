@@ -123,7 +123,7 @@ st.markdown(
         background:var(--card);
         border:1px solid rgba(255,255,255,.10);
         border-radius:12px;
-        height:44px; padding:0 14px;
+        height:44px; padding:0 0px;
         display:flex; align-items:center; justify-content:space-between;
       }}
       .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
@@ -314,7 +314,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     WATCHLIST_CSS = dedent(f"""
     <style>
       .watch-card {{
-        background:{CARD}; border:1px solid rgba(255,255,255,.06);
+        background:{CARD}; border:2px solid rgba(255,255,255,.06);
         border-radius:18px; padding:16px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
         margin-bottom:16px;
       }}
@@ -508,7 +508,7 @@ with top_mid:
 
     with seg_col:
         st.markdown("<div class='seg-wrap'>", unsafe_allow_html=True)
-        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
+        seg_choice = st.radio("", ["Next day", "1D", "1W", "1M", "1y"],
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)

@@ -382,7 +382,7 @@ with st.spinner("Loading price history…"):
 # ────────────────────────────────────────────────────────────────────────────────
 # TOP ROW LAYOUT
 # ────────────────────────────────────────────────────────────────────────────────
-top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="large")
+top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 
 # LEFT: Watchlist (capture row count to size the chart)
 with top_left:

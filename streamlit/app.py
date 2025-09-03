@@ -6,7 +6,7 @@ from pathlib import Path
 import pickle
 import numpy as np
 import pandas as pd
-import plotly_graph_objects as go  # If you use plotly, ensure this import path is correct in your env
+import plotly.graph_objects as go
 import streamlit as st
 from textwrap import dedent
 
@@ -110,10 +110,10 @@ st.markdown(
         border-radius: 12px;
         box-shadow: 0 6px 18px rgba(0,0,0,.22);
         padding: 10px 12px;
-        overflow: auto;               /* scroll if content exceeds height */
+        overflow: auto;
       }}
-      .sig-row {{ 
-        display:flex; align-items:center; justify-content:space-between; 
+      .sig-row {{
+        display:flex; align-items:center; justify-content:space-between;
         padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
       }}
       .sig-row:last-child {{ border-bottom:0; }}
@@ -177,7 +177,7 @@ st.markdown(
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:12px;   /* space below the metric boxes */
+        margin-top:12px;
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
 
@@ -200,7 +200,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Helpers (sparkline is used in the right column, define it early)
+# Helpers (sparkline used in right column)
 # ────────────────────────────────────────────────────────────────────────────────
 def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
@@ -469,7 +469,6 @@ with top_right:
     st.markdown("</div>", unsafe_allow_html=True)
 
     # --- Affiliated Signals panel (match left Watchlist total height) ---
-    # subtract controls row height (≈44) + small gap
     signals_height_px = max(220, watchlist_height_px - 44 - 16)
     st.markdown(
         f"<div class='right-stack' style='height:{signals_height_px}px; margin-top:12px;'>",
@@ -594,7 +593,7 @@ with top_mid:
     # Inline summary chart — DATETIME axis with readable ticks
     s = prices[ticker].dropna()
     if len(s) >= 15:
-        now_x = s.index[-1]                 # datetime index
+        now_x = s.index[-1]
         last_val = float(s.iloc[-1])
 
         target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
@@ -634,7 +633,7 @@ with top_mid:
         # layout — readable ticks on dark bg
         fig_inline.update_layout(
             height=watchlist_height_px,                  # match Watchlist height
-            margin=dict(l=52, r=16, t=8, b=40),          # room for ticks
+            margin=dict(l=52, r=16, t=8, b=40),
             paper_bgcolor=CARD, plot_bgcolor=CARD,
             hovermode="x unified",
             font=dict(color=TEXT, size=12),

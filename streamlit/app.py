@@ -443,7 +443,7 @@ with top_right:
             border:1px solid rgba(255,255,255,.08);
             border-radius:12px;
             box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:12px 10px;
+            padding:12px 2px;
             min-height:{signals_height_px}px;     /* ⬅ match watchlist/chart height */
           }}
         </style>

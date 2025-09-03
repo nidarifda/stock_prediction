@@ -489,7 +489,7 @@ with top_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart directly under the pills
+    # Inline summary chart directly under the pills (with y-axis numbers)
     s = prices[ticker].dropna()
     if len(s) >= 15:
         now_x = int(s.index[-1])
@@ -525,7 +525,7 @@ with top_mid:
             yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,.06)", tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
         )
         st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
-        st.plotly_chart(fig_inline, use_container_width=True, theme=None)
+        st.plotly_chart(fig_inline, use_container_width=True, theme=None, config={"displayModeBar": False})
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.info("Not enough history to render the summary chart.")

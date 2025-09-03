@@ -6,7 +6,7 @@ from pathlib import Path
 import pickle
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
+import plotly_graph_objects as go  # If you use plotly, ensure this import path is correct in your env
 import streamlit as st
 from textwrap import dedent
 
@@ -103,6 +103,23 @@ st.markdown(
         padding:0 16px !important;
       }}
 
+      /* Right column signals card sized to match Watchlist height */
+      .right-stack {{
+        background: var(--card);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,.22);
+        padding: 10px 12px;
+        overflow: auto;               /* scroll if content exceeds height */
+      }}
+      .sig-row {{ 
+        display:flex; align-items:center; justify-content:space-between; 
+        padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
+      }}
+      .sig-row:last-child {{ border-bottom:0; }}
+      .sig-name {{ color: var(--text); font-weight:600; }}
+      .sig-val  {{ color: var(--muted); font-weight:700; }}
+
       /* Header */
       .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
@@ -181,6 +198,16 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Helpers (sparkline is used in the right column, define it early)
+# ────────────────────────────────────────────────────────────────────────────────
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame (keep DATETIME index for plotting)
@@ -415,13 +442,13 @@ top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Approximate Watchlist pixel height so the right chart matches it
+# Watchlist height for symmetry calculations
 WL_HEADER  = 56   # title + paddings
 WL_ROW_H   = 45   # each .watch-row height (approx)
 WL_PADDING = 30   # inner/bottom paddings
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict (perfectly aligned)
+# RIGHT: Model + Predict + Affiliated Signals (signals card height = watchlist height - controls)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -441,6 +468,41 @@ with top_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # --- Affiliated Signals panel (match left Watchlist total height) ---
+    # subtract controls row height (≈44) + small gap
+    signals_height_px = max(220, watchlist_height_px - 44 - 16)
+    st.markdown(
+        f"<div class='right-stack' style='height:{signals_height_px}px; margin-top:12px;'>",
+        unsafe_allow_html=True
+    )
+    st.markdown("**Affiliated Signals**")
+
+    # Derive primary & pick 4 others for display
+    primary_label = st.session_state.get("ticker_label", PRETTY.get("NVDA","NVDA"))
+    primary_ticker = {v:k for k,v in PRETTY.items()}.get(primary_label, "NVDA")
+    others = [t for t in DISPLAY_ORDER if t != primary_ticker][:4]
+
+    for t in others:
+        if t not in prices.columns:
+            continue
+        s = prices[t].dropna().astype(float)
+        if s.empty:
+            continue
+        chg = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
+        color = GREEN if chg >= 0 else ORANGE
+        label = PRETTY.get(t, t)
+        tail = s.tail(120)
+
+        st.markdown(
+            f"<div class='sig-row'><div class='sig-name'>{label}</div>"
+            f"<div class='sig-val' style='color:{color}'>{chg:+.2f}%</div></div>",
+            unsafe_allow_html=True
+        )
+        st.plotly_chart(spark(tail / tail.iloc[0] if len(tail) else tail),
+                        use_container_width=True, theme=None)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 # --- MIDDLE COLUMN (controls → metrics → chart) --------------------------------
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
@@ -450,7 +512,7 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    # Controls row (NOW wrapped so select & radio share the same 44px baseline)
+    # Controls row (select & radio share the same 44px baseline)
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([0.60, 1.28], gap="small")
 
@@ -624,28 +686,8 @@ with tab1:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor=CARD, plot_bgcolor=CARD,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False))
-    return f
-
 with tab2:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Affiliated Signals**")
-    rng = np.random.default_rng(42)
-    for name in ["TSMC","ASML","Cadence","Synopsys"]:
-        val = float(rng.normal(0.0, 0.5))
-        st.markdown(
-            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
-            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
-            unsafe_allow_html=True,
-        )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
-                        use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
-
+    # (Affiliated Signals moved to right column under LightGBM + Predict)
     st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)

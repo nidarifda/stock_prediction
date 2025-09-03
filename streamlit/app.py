@@ -103,23 +103,6 @@ st.markdown(
         padding:0 16px !important;
       }}
 
-      /* Right column signals card sized to match Watchlist height */
-      .right-stack {{
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(0,0,0,.22);
-        padding: 10px 12px;
-        overflow: auto;
-      }}
-      .sig-row {{
-        display:flex; align-items:center; justify-content:space-between;
-        padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
-      }}
-      .sig-row:last-child {{ border-bottom:0; }}
-      .sig-name {{ color: var(--text); font-weight:600; }}
-      .sig-val  {{ color: var(--muted); font-weight:700; }}
-
       /* Header */
       .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
@@ -177,37 +160,13 @@ st.markdown(
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:12px;
+        margin-top:12px;   /* space below the metric boxes */
         box-shadow:0 6px 18px rgba(0,0,0,.22);
-      }}
-
-      /* ── NEW: make select+radio share the exact same baseline (44px) ────── */
-      .toprow {{ display:flex; align-items:center; gap:12px; }}
-      .toprow .seg-wrap{{ height:44px; display:flex; align-items:center; width:100%; }}
-      .toprow .seg-wrap [data-testid="stRadio"]{{
-        height:44px; display:flex; align-items:center; margin:0 !important;
-        padding:6px 10px; border-radius:12px; width:100%;
-      }}
-      .toprow .seg-wrap [data-testid="stRadio"] [role="radiogroup"]{{
-        display:flex; align-items:center; gap:14px; height:100%;
-      }}
-      .toprow .control-wrap [data-testid="stSelectbox"] > div > div{{
-        height:44px; display:flex; align-items:center; padding:0 10px !important;
       }}
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-# ────────────────────────────────────────────────────────────────────────────────
-# Helpers (sparkline used in right column)
-# ────────────────────────────────────────────────────────────────────────────────
-def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor=CARD, plot_bgcolor=CARD,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False))
-    return f
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame (keep DATETIME index for plotting)
@@ -442,7 +401,7 @@ top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Watchlist height for symmetry calculations
+# Approximate Watchlist pixel height so the right chart matches it
 WL_HEADER  = 56   # title + paddings
 WL_ROW_H   = 45   # each .watch-row height (approx)
 WL_PADDING = 30   # inner/bottom paddings
@@ -468,37 +427,11 @@ with top_right:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # --- Affiliated Signals panel (match left Watchlist total height) ---
-    signals_height_px = max(220, watchlist_height_px - 44 - 16)
-    st.markdown(
-        f"<div class='right-stack' style='height:{signals_height_px}px; margin-top:12px;'>",
-        unsafe_allow_html=True
-    )
-    st.markdown("**Affiliated Signals**")
 
-    # Derive primary & pick 4 others for display
-    primary_label = st.session_state.get("ticker_label", PRETTY.get("NVDA","NVDA"))
-    primary_ticker = {v:k for k,v in PRETTY.items()}.get(primary_label, "NVDA")
-    others = [t for t in DISPLAY_ORDER if t != primary_ticker][:4]
-
-    for t in others:
-        if t not in prices.columns:
-            continue
-        s = prices[t].dropna().astype(float)
-        if s.empty:
-            continue
-        chg = 100.0 * (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] if len(s) > 1 and s.iloc[-2] != 0 else 0.0
-        color = GREEN if chg >= 0 else ORANGE
-        label = PRETTY.get(t, t)
-        tail = s.tail(120)
-
-        st.markdown(
-            f"<div class='sig-row'><div class='sig-name'>{label}</div>"
-            f"<div class='sig-val' style='color:{color}'>{chg:+.2f}%</div></div>",
-            unsafe_allow_html=True
-        )
-        st.plotly_chart(spark(tail / tail.iloc[0] if len(tail) else tail),
-                        use_container_width=True, theme=None)
+    with btn_col:
+        st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
+        do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -511,12 +444,10 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    # Controls row (select & radio share the same 44px baseline)
+    # Controls row
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([0.60, 1.28], gap="small")
-
     with sel_col:
-        st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         sel_label = st.selectbox(
             "",
             ticker_labels,
@@ -526,10 +457,8 @@ with top_mid:
         )
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with seg_col:
-        st.markdown("<div class='seg-wrap'>", unsafe_allow_html=True)
         seg_choice = st.radio(
             "",
             ["Next day", "1D", "1W", "1M"],
@@ -537,12 +466,9 @@ with top_mid:
             key="segmented_hz",
             label_visibility="collapsed",
         )
-        st.markdown("</div>", unsafe_allow_html=True)
-
+        next_day = (seg_choice == "Next day")
+        horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
-
-    next_day = (seg_choice == "Next day")
-    horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
@@ -593,7 +519,7 @@ with top_mid:
     # Inline summary chart — DATETIME axis with readable ticks
     s = prices[ticker].dropna()
     if len(s) >= 15:
-        now_x = s.index[-1]
+        now_x = s.index[-1]                 # datetime index
         last_val = float(s.iloc[-1])
 
         target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
@@ -633,7 +559,7 @@ with top_mid:
         # layout — readable ticks on dark bg
         fig_inline.update_layout(
             height=watchlist_height_px,                  # match Watchlist height
-            margin=dict(l=52, r=16, t=8, b=40),
+            margin=dict(l=52, r=16, t=8, b=40),          # room for ticks
             paper_bgcolor=CARD, plot_bgcolor=CARD,
             hovermode="x unified",
             font=dict(color=TEXT, size=12),
@@ -685,8 +611,28 @@ with tab1:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+def spark(series: pd.Series) -> go.Figure:
+    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
+    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
+                    paper_bgcolor=CARD, plot_bgcolor=CARD,
+                    xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return f
+
 with tab2:
-    # (Affiliated Signals moved to right column under LightGBM + Predict)
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("**Affiliated Signals**")
+    rng = np.random.default_rng(42)
+    for name in ["TSMC","ASML","Cadence","Synopsys"]:
+        val = float(rng.normal(0.0, 0.5))
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
+            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
+            unsafe_allow_html=True,
+        )
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
+                        use_container_width=True, theme=None)
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)

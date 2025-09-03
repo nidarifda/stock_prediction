@@ -43,8 +43,6 @@ st.markdown(
         padding:14px 16px;
         box-shadow:0 6px 18px rgba(0,0,0,.25);
       }}
-      .tile .label {{ color:{MUTED}; font-size:13px; margin-bottom:6px; }}
-      .tile .value {{ font-size:40px; font-weight:800; letter-spacing:.2px; }}
 
       /* Inputs baseline */
       [data-testid="stTextInput"] > div > div,
@@ -66,7 +64,7 @@ st.markdown(
       [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
       [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
-      /* Radio container */
+      /* Radio container pill */
       [data-testid="stRadio"] {{
         background:{CARD};
         border:1px solid rgba(255,255,255,.10);
@@ -94,27 +92,24 @@ st.markdown(
         padding:0 16px !important;
       }}
 
-      /* —— NEW: make the Select + Radio sit right next to each other ——— */
-      /* target only the horizontal block that contains a selectbox (your row) */
-      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) {{
-        gap: 6px !important;                      /* kill the big gutter */
+      /* ── MAKE SELECT + RADIO TOUCH ───────────────────────────────────────── */
+      .toprow-kiss [data-testid="stHorizontalBlock"] {{
+        gap:0 !important; column-gap:0 !important; row-gap:0 !important;
       }}
-      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="column"] {{
-        padding-left: 0 !important;               /* remove column padding on both sides */
-        padding-right: 0 !important;
+      .toprow-kiss [data-testid="column"] {{
+        padding-left:0 !important; padding-right:0 !important;
       }}
-      /* trim the pills themselves a touch */
-      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stSelectbox"] > div > div {{
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-        margin: 0 !important;
+      .toprow-kiss [data-testid="stSelectbox"],
+      .toprow-kiss [data-testid="stRadio"] {{ margin:0 !important; }}
+      /* pull radio over the select’s right rounding; tweak -14px if needed */
+      .toprow-kiss [data-testid="stRadio"] {{ margin-left:-14px !important; }}
+      /* slightly slimmer select pill so edges line up */
+      .toprow-kiss [data-testid="stSelectbox"] > div > div {{
+        padding-left:10px !important; padding-right:10px !important;
       }}
-      [data-testid="stHorizontalBlock"]:has([data-testid="stSelectbox"]) [data-testid="stRadio"] {{
-        padding: 6px 8px !important;
-        margin: 0 !important;
-      }}
+      /* ───────────────────────────────────────────────────────────────────── */
 
-      /* Footer */
+      /* Footer (unchanged) */
       .footer-wrap {{ position: sticky; bottom: 8px; z-index: 50; }}
       .footer-inner {{ width: calc(100% - var(--footer-safe)); margin-right: var(--footer-safe); }}
       .statusbar {{
@@ -226,7 +221,7 @@ def load_prices_from_root_last_5y(
     return out
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Features & (optional) model loading
+# Feature helpers & models
 # ────────────────────────────────────────────────────────────────────────────────
 def feat_block(s: pd.Series) -> list[float]:
     s = s.astype(float)
@@ -288,7 +283,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer
+# Watchlist
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -352,7 +347,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title + TOP ROW
+# Title
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -364,19 +359,20 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+            unsafe_allow_html=True)
 
 with st.spinner("Loading price history…"):
     prices = load_prices_from_root_last_5y(ALIASES)
 
-# Layout for the top row
+# ────────────────────────────────────────────────────────────────────────────────
+# Top row
+# ────────────────────────────────────────────────────────────────────────────────
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
-# LEFT: Watchlist
 with top_left:
     render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# MIDDLE: Ticker + Horizon  (these two now sit very close)
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
@@ -385,24 +381,21 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='toprow'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")   # ratios only; gap gets nuked by CSS above
-
+    st.markdown("<div class='toprow toprow-kiss'>", unsafe_allow_html=True)
+    sel_col, seg_col = st.columns([1.0, 1.35], gap="small")
     with sel_col:
         sel_label = st.selectbox("", ticker_labels, index=_default_idx,
                                  key="ticker_select", label_visibility="collapsed")
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
     with seg_col:
         seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
-                              horizontal=True, index=1, key="segmented_hz",
-                              label_visibility="collapsed")
+                              horizontal=True, index=1,
+                              key="segmented_hz", label_visibility="collapsed")
         next_day = (seg_choice == "Next day")
         horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
 
-# RIGHT: Model + Predict
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -446,7 +439,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, pill-style boxes
+# Metrics (pills)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -476,23 +469,14 @@ with top_mid:
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     st.markdown(f"""
     <div class="metric-row">
-      <div class="metric-slot">
-        <div class="m-label">Predicted Close</div>
-        <div class="m-value">{pred_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">80% interval</div>
-        <div class="m-value">{inter_text}</div>
-      </div>
-      <div class="metric-slot">
-        <div class="m-label">Confidence</div>
-        <div class="m-value">{conf_text}</div>
-      </div>
+      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">{pred_text}</div></div>
+      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">{inter_text}</div></div>
+      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">{conf_text}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Tabs (optional)
+# Tabs (plots & extras)
 # ────────────────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 
@@ -541,17 +525,6 @@ with tab2:
         st.markdown(bar(0.8), unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
-        st.markdown("**Error distribution**")
-        rng = np.random.default_rng(9)
-        e = rng.normal(0, 1, 220)
-        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
-        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
-                           paper_bgcolor=CARD, plot_bgcolor=CARD,
-                           xaxis=dict(visible=False), yaxis=dict(visible=False))
-        st.plotly_chart(hist, use_container_width=True, theme=None)
-        st.markdown("</div>", unsafe_allow_html=True)
-
     with c2:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
@@ -578,7 +551,7 @@ with tab3:
             f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
             unsafe_allow_html=True,
         )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))) ,
+        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
                         use_container_width=True, theme=None)
     st.markdown("</div>", unsafe_allow_html=True)
 

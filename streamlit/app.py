@@ -577,7 +577,6 @@ with top_mid:
             tickfont=dict(color=MUTED), automargin=True
         )
 
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
     else:

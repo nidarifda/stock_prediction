@@ -103,10 +103,6 @@ st.markdown(
         padding:0 16px !important;
       }}
 
-      /* Header */
-      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
-      .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
-
       /* Tighter select+radio row */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
@@ -140,16 +136,20 @@ st.markdown(
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
 
-      /* ── Signals card styling ───────────────────────────────────────────── */
+      /* Signals card styling */
       .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
       .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
+
+      /* Header */
+      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
+      .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root) → aligned 5Y DataFrame (keep DATETIME index for plotting)
+# CSV loader (root) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -221,22 +221,19 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
-    # align to business days and forward fill
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
-    # 5Y window
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
-    # keep DATETIME index for plotting
     out = merged.copy()
     out.index.name = "Date"
     out = out.reindex(columns=list(aliases.keys()))
     return out
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Features & (optional) model loading
+# Feature & model helpers
 # ────────────────────────────────────────────────────────────────────────────────
 def feat_block(s: pd.Series) -> list[float]:
     s = s.astype(float)
@@ -260,7 +257,7 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     feats = []
     for t in order:
         feats.extend(feat_block(df[t].dropna()) if t in df.columns else [0.0]*6)
-    feats.append(1.0)  # bias
+    feats.append(1.0)
     note = None
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
@@ -367,36 +364,31 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 # ────────────────────────────────────────────────────────────────────────────────
 # Tiny sparkline + signals card helpers
 # ────────────────────────────────────────────────────────────────────────────────
-def mini_spark(values: np.ndarray, color:str = ACCENT, height:int = 28) -> go.Figure:
-    fig = go.Figure(go.Scatter(
-        x=np.arange(len(values)), y=values, mode="lines",
-        line=dict(width=2, color=color)
-    ))
-    fig.update_layout(
-        height=height, margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor=CARD, plot_bgcolor=CARD,
-        xaxis=dict(visible=False), yaxis=dict(visible=False)
-    )
+def mini_spark(values: np.ndarray, color: str = ACCENT, height: int = 28) -> go.Figure:
+    fig = go.Figure(go.Scatter(x=np.arange(len(values)), y=values, mode="lines",
+                               line=dict(width=2, color=color)))
+    fig.update_layout(height=height, margin=dict(l=0, r=0, t=0, b=0),
+                      paper_bgcolor=CARD, plot_bgcolor=CARD,
+                      xaxis=dict(visible=False), yaxis=dict(visible=False))
     return fig
 
-def series_for(ticker: str, lookback:int = 36) -> np.ndarray:
-    """Return a normalized series for the sparkline."""
+def series_for(ticker: str, lookback: int = 36) -> np.ndarray:
     if ticker not in prices.columns: return np.zeros(lookback)
     s = prices[ticker].dropna().tail(lookback)
     if s.empty: return np.zeros(lookback)
     base = s.iloc[0]
-    vals = (s / base - 1.0) * 100.0   # % from start
-    return vals.values
+    return ((s / base - 1.0) * 100.0).values
 
-def pct_change_days(ticker: str, days:int = 20) -> float:
+def pct_change_days(ticker: str, days: int = 20) -> float:
     if ticker not in prices.columns: return 0.0
     s = prices[ticker].dropna()
     if len(s) <= days: return 0.0
     return float((s.iloc[-1] / s.iloc[-days] - 1.0) * 100.0)
 
-def render_signals_card(title: str, items: list[tuple[str, float, np.ndarray]]):
-    """items: list of (label, value, spark_values)."""
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
+def render_signals_card(title: str, items: list[tuple[str, float, np.ndarray]], height: int | None = None):
+    """items: list of (label, value, spark_values). If height is set, the card is fixed-height and scrollable."""
+    style = f"style='height:{height}px; overflow:auto;'" if height else ""
+    st.markdown(f"<div class='card' {style}>", unsafe_allow_html=True)
     st.markdown(f"<div class='signals-title'>{title}</div>", unsafe_allow_html=True)
     for i, (label, value, vals) in enumerate(items):
         c1, c2, c3 = st.columns([1.0, 0.45, 1.2])
@@ -413,7 +405,7 @@ def render_signals_card(title: str, items: list[tuple[str, float, np.ndarray]]):
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Title
+# Title & data
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
@@ -429,53 +421,44 @@ top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
+# Compute a canonical height and reuse it for symmetry (left, middle, right)
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Affiliated Signals (signals card height = watchlist height - controls)
+# RIGHT: Model + Predict + ONE fixed-height signals card (matches watchlist/chart)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
-
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
-        model_name = st.selectbox(
-            " ", ["LightGBM", "RandomForest", "XGBoost"],
-            index=0, key="model_name", label_visibility="collapsed"
-        )
+        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
+                                  index=0, key="model_name", label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
-
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ⟶ Place the signals right under the controls, beside the main chart
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-    # First card: related tickers
+    # Signals card height equals watchlist/chart height for perfect symmetry
+    signals_height_px = watchlist_height_px
     related = ["TSMC", "ASML", "CDNS", "SNPS"]
     items = []
     for t in related:
-        val = pct_change_days(t, days=20)  # ~1M change %
+        val = pct_change_days(t, days=20)
         spk = series_for(t, lookback=36)
         items.append((PRETTY.get(t, t), val, spk))
-    render_signals_card("Affiliated Signals", items)
-
-    # Second card example (single headline + 3 tiny extra lines)
-    # Replace with your own signals if needed
-    rng = np.random.default_rng(7)
-    ts1_main = np.cumsum(rng.normal(0, 0.6, 36))
-    render_signals_card("Affiliated Signals", [("TS1", 0.57, ts1_main)])
+    render_signals_card("Affiliated Signals", items, height=signals_height_px)
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER
 label_to_ticker = {PRETTY.get(t, t): t for t in TICKERS}
 ticker_labels   = list(label_to_ticker.keys())
 _default_label  = st.session_state.get("ticker_label", PRETTY.get("NVDA", "NVDA"))
-if _default_label not in ticker_labels: _default_label = ticker_labels[0]
+if _default_label not in ticker_labels:
+    _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
@@ -490,9 +473,10 @@ with top_mid:
         seg_choice = st.radio("", ["Next day", "1D", "1W", "1M"],
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
-        next_day = (seg_choice == "Next day")
-        horizon  = seg_choice if seg_choice != "Next day" else "1D"
     st.markdown("</div>", unsafe_allow_html=True)
+
+    next_day = (seg_choice == "Next day")
+    horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
@@ -615,29 +599,8 @@ with tab1:
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-def spark(series: pd.Series) -> go.Figure:
-    f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
-    f.update_layout(height=54, margin=dict(l=0, r=0, t=0, b=0),
-                    paper_bgcolor=CARD, plot_bgcolor=CARD,
-                    xaxis=dict(visible=False), yaxis=dict(visible=False))
-    return f
-
 with tab2:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Affiliated Signals**")
-    rng = np.random.default_rng(42)
-    for name in ["TSMC","ASML","Cadence","Synopsys"]:
-        val = float(rng.normal(0.0, 0.5))
-        st.markdown(
-            f"<div style='display:flex;justify-content:space-between;align-items:center;margin:6px 0;'>"
-            f"<div>{name}</div><div style='color:{ORANGE}'>{val:+.2f}</div></div>",
-            unsafe_allow_html=True,
-        )
-        st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
-                        use_container_width=True, theme=None)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)

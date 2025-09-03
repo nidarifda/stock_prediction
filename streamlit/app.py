@@ -84,7 +84,7 @@ st.markdown(
       /* Make Model and Predict perfectly aligned */
       .toprow .control-wrap,
       .toprow .btn-wrap {{
-        height:44px;
+        height:40px;
         display:flex;
         align-items:center;
         width:100%;
@@ -100,7 +100,7 @@ st.markdown(
         height:44px; line-height:44px; width:100% !important;
         border-radius:12px !important; border:0 !important;
         font-weight:700 !important; background: var(--accent) !important; color:white !important;
-        padding:0 16px !important;
+        padding:0 10px !important;
       }}
 
       /* Tighter select+radio row */

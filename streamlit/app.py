@@ -502,68 +502,72 @@ with top_mid:
     """, unsafe_allow_html=True)
 
     # Inline summary chart — DATETIME axis with readable ticks
-    s = prices[ticker].dropna()
-    if len(s) >= 15:
-        now_x = s.index[-1]
-        last_val = float(s.iloc[-1])
+s = prices[ticker].dropna()
+if len(s) >= 15:
+    now_x = s.index[-1]                 # datetime index
+    last_val = float(s.iloc[-1])
 
-        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
-        proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
-        proj_y = np.linspace(last_val, target, len(proj_x))
+    target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
+    proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
+    proj_y = np.linspace(last_val, target, len(proj_x))
 
-        fig_inline = go.Figure()
+    fig_inline = go.Figure()
 
-        # history
-        fig_inline.add_trace(go.Scatter(
-            x=s.index, y=s.values, mode="lines",
-            line=dict(width=2, color="#70B3FF"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
+    # history
+    fig_inline.add_trace(go.Scatter(
+        x=s.index, y=s.values, mode="lines",
+        line=dict(width=2, color="#70B3FF"),
+        hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+        showlegend=False
+    ))
 
-        # current point
-        fig_inline.add_trace(go.Scatter(
-            x=[now_x], y=[last_val], mode="markers",
-            marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
+    # current point
+    fig_inline.add_trace(go.Scatter(
+        x=[now_x], y=[last_val], mode="markers",
+        marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
+        hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+        showlegend=False
+    ))
 
-        # projection
-        fig_inline.add_trace(go.Scatter(
-            x=proj_x, y=proj_y, mode="lines",
-            line=dict(width=2, dash="dot", color="#F08A3C"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
-        ))
+    # projection
+    fig_inline.add_trace(go.Scatter(
+        x=proj_x, y=proj_y, mode="lines",
+        line=dict(width=2, dash="dot", color="#F08A3C"),
+        hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+        showlegend=False
+    ))
 
-        # guide + forecast zone
-        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+    # guide + forecast zone
+    fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+    fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
-        # layout — match Watchlist height & show readable ticks
-        fig_inline.update_layout(
-            height=watchlist_height_px,
-            margin=dict(l=10, r=10, t=6, b=6),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            hovermode="x unified"
-        )
-        fig_inline.update_xaxes(
-            showgrid=True, gridcolor="rgba(255,255,255,.06)",
-            showticklabels=True, tickformat="%b %Y", dtick="M3",
-            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.25)"
-        )
-        fig_inline.update_yaxes(
-            showgrid=True, gridcolor="rgba(255,255,255,.08)",
-            tickformat=",.0f",
-            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.25)"
-        )
+    # layout — show ticks clearly (bigger margins + light tick colors)
+    fig_inline.update_layout(
+        height=watchlist_height_px,
+        margin=dict(l=52, r=16, t=8, b=40),  # more room for y/x tick labels
+        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        hovermode="x unified",
+        font=dict(color=TEXT, size=12)       # global text color on dark bg
+    )
+    fig_inline.update_xaxes(
+        showgrid=True, gridcolor="rgba(255,255,255,.08)",
+        showticklabels=True, tickformat="%b %Y", dtick="M3",
+        ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+        tickfont=dict(color=MUTED), automargin=True
+    )
+    fig_inline.update_yaxes(
+        showgrid=True, gridcolor="rgba(255,255,255,.10)",
+        tickformat=",.0f",
+        ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
+        tickfont=dict(color=MUTED), automargin=True
+    )
 
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
-        st.plotly_chart(fig_inline, use_container_width=True, theme=None)
-        st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        st.info("Not enough history to render the summary chart.")
+    st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
+    st.plotly_chart(fig_inline, use_container_width=True, theme=None)
+    st.markdown("</div>", unsafe_allow_html=True)
+else:
+    st.info("Not enough history to render the summary chart.")
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (optional demo content)

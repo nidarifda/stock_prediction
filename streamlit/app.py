@@ -32,14 +32,9 @@ st.markdown(
         --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
         --footer-safe: 160px;
       }}
-
       .stApp {{ background:var(--bg); color:var(--text); }}
-
-      /* more top padding so the title isn't cropped */
-      .block-container {{
-        padding-top: 1.6rem !important;   /* ↑ was 0.7rem */
-        padding-bottom: 1.0rem;
-      }}
+      /* more top padding so the title isn't cut */
+      .block-container {{ padding-top:1.2rem; padding-bottom:1.0rem; }}
 
       /* Generic cards */
       .card {{
@@ -97,7 +92,7 @@ st.markdown(
       }}
 
       /* Header */
-      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:0 0 6px 0; }}
+      .app-header {{ display:flex; align-items:center; gap:.6rem; margin:2px 0 10px 0; }}
       .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
 
       /* Footer */
@@ -124,23 +119,20 @@ st.markdown(
         .statusbar::-webkit-scrollbar {{ display:none; }}
       }}
 
-      /* ── Tighter select+radio row (kill the big horizontal gap) ─────────── */
+      /* ── Tighter select+radio row (kill the gap) ─────────────────────────── */
       .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
       .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
       .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
       .toprow-tight [data-testid="stRadio"]{{ padding:6px 8px !important; }}
       .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* ── Metric row: pull it closer to the row above ────────────────────── */
-      .metric-row {{ margin-top: 4px !important; }}     /* ↓ was 8px */
-
-      /* ── Inline chart card: give it a bit more top air ──────────────────── */
-      .chart-card {{
+      /* ── Inline chart card ──────────────────────────────────────────────── */
+      .chart-card{{
         background:var(--card);
         border:1px solid rgba(255,255,255,.08);
         border-radius:12px;
         padding:8px 10px;
-        margin-top:18px;     /* ↑ was 12px */
+        margin-top:12px;   /* little breathing room below the metric boxes */
         box-shadow:0 6px 18px rgba(0,0,0,.22);
       }}
     </style>
@@ -149,7 +141,7 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CSV loader (root) → aligned 5Y DataFrame
+# CSV loader (root) → aligned 5Y DataFrame (keep DATETIME index for plotting)
 # ────────────────────────────────────────────────────────────────────────────────
 ALIASES = {
     "NVDA":       ["NVDA"],
@@ -221,14 +213,17 @@ def load_prices_from_root_last_5y(
     if merged.empty:
         return pd.DataFrame(columns=list(aliases.keys()))
 
+    # align to business days and forward fill
     bidx = pd.bdate_range(merged.index.min(), merged.index.max(), name="Date")
     merged = merged.reindex(bidx).ffill().dropna(how="all")
 
+    # 5Y window
     cutoff = pd.Timestamp.today().normalize() - pd.DateOffset(years=years)
     merged = merged.loc[merged.index >= cutoff]
 
+    # keep DATETIME index for plotting
     out = merged.copy()
-    out.index = pd.RangeIndex(1, len(out) + 1, name="t")
+    out.index.name = "Date"
     out = out.reindex(columns=list(aliases.keys()))
     return out
 
@@ -374,14 +369,14 @@ with st.spinner("Loading price history…"):
 # ────────────────────────────────────────────────────────────────────────────────
 top_left, top_mid, top_right = st.columns([1.05, 1.6, 1.35], gap="large")
 
-# LEFT: Watchlist (we’ll capture row count to size the chart)
+# LEFT: Watchlist (capture row count to size the chart)
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# approximate the pixel height of the Watchlist so the right chart matches it
+# Approximate Watchlist pixel height so the right chart matches it
 WL_HEADER  = 56   # title + paddings
 WL_ROW_H   = 45   # each .watch-row height (approx)
-WL_PADDING = 30   # inner/bottom paddings + shadow breathing room
+WL_PADDING = 30   # inner/bottom paddings
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
 # MIDDLE: Ticker + Horizon (tight)
@@ -469,6 +464,7 @@ st.markdown("""
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
+  margin-top:6px; /* keep these closer to the row above */
 }
 .metric-slot{
   background:var(--card);
@@ -487,7 +483,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with top_mid:
-    # Metric pills (pulled closer via CSS above)
+    # Metric pills
     st.markdown(f"""
     <div class="metric-row">
       <div class="metric-slot">
@@ -505,45 +501,64 @@ with top_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart — height matched to Watchlist, wrapped in .chart-card
+    # Inline summary chart — DATETIME axis with readable ticks
     s = prices[ticker].dropna()
     if len(s) >= 15:
-        now_x = int(s.index[-1])
+        now_x = s.index[-1]
         last_val = float(s.iloc[-1])
+
         target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
-        proj_x = np.arange(now_x, now_x + 12)
+        proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
         proj_y = np.linspace(last_val, target, len(proj_x))
 
         fig_inline = go.Figure()
+
+        # history
         fig_inline.add_trace(go.Scatter(
             x=s.index, y=s.values, mode="lines",
             line=dict(width=2, color="#70B3FF"),
-            hoverinfo="skip", showlegend=False
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
         ))
+
+        # current point
         fig_inline.add_trace(go.Scatter(
             x=[now_x], y=[last_val], mode="markers",
             marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-            hoverinfo="skip", showlegend=False
+            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
         ))
+
+        # projection
         fig_inline.add_trace(go.Scatter(
             x=proj_x, y=proj_y, mode="lines",
             line=dict(width=2, dash="dot", color="#F08A3C"),
-            hoverinfo="skip", showlegend=False
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
+            showlegend=False
         ))
-        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig_inline.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
 
+        # guide + forecast zone
+        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+        fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
+        # layout — match Watchlist height & show readable ticks
         fig_inline.update_layout(
             height=watchlist_height_px,
             margin=dict(l=10, r=10, t=6, b=6),
             paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(showgrid=False, tickfont=dict(color="#7C8DA5", size=11),
-                       zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,.06)",
-                       tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
+            hovermode="x unified"
+        )
+        fig_inline.update_xaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.06)",
+            showticklabels=True, tickformat="%b %Y", dtick="M3",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.25)"
+        )
+        fig_inline.update_yaxes(
+            showgrid=True, gridcolor="rgba(255,255,255,.08)",
+            tickformat=",.0f",
+            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.25)"
         )
 
-        # add chart wrapper to create extra spacing from pills
         st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -570,11 +585,24 @@ with tab1:
         st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
         st.markdown(bar(0.8), unsafe_allow_html=True)
 
+        st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
+        st.markdown("**Error distribution**")
+        rng = np.random.default_rng(9)
+        e = rng.normal(0, 1, 220)
+        hist = go.Figure(go.Histogram(x=e, nbinsx=28, marker=dict(line=dict(width=0))))
+        hist.update_layout(height=180, margin=dict(l=6, r=6, t=4, b=4),
+                           paper_bgcolor=CARD, plot_bgcolor=CARD,
+                           xaxis=dict(visible=False), yaxis=dict(visible=False))
+        st.plotly_chart(hist, use_container_width=True, theme=None)
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with c2:
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
         st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 def spark(series: pd.Series) -> go.Figure:
     f = go.Figure(go.Scatter(x=np.arange(len(series)), y=series.values, mode="lines", line=dict(width=2)))
@@ -584,6 +612,7 @@ def spark(series: pd.Series) -> go.Figure:
     return f
 
 with tab2:
+    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("**Affiliated Signals**")
     rng = np.random.default_rng(42)
     for name in ["TSMC","ASML","Cadence","Synopsys"]:
@@ -595,11 +624,14 @@ with tab2:
         )
         st.plotly_chart(spark(pd.Series(np.cumsum(rng.normal(0,0.6,24)))),
                         use_container_width=True, theme=None)
+    st.markdown("</div>", unsafe_allow_html=True)
 
+    st.markdown("<div class='card' style='margin-top:14px'>", unsafe_allow_html=True)
     st.markdown("**Trade idea**")
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
     st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Footer

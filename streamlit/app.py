@@ -350,6 +350,75 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
     )
 
 # ────────────────────────────────────────────────────────────────────────────────
+# Compact forecast chart helper (shows y-axis numbers)
+# (enhanced to optionally aim the dotted projection at a target price)
+# ────────────────────────────────────────────────────────────────────────────────
+def plot_compact_forecast(prices: pd.DataFrame, base_tkr: str, target: float | None = None) -> go.Figure:
+    s = prices[base_tkr].dropna().astype(float)
+    if s.empty:
+        f = go.Figure()
+        f.update_layout(height=220, paper_bgcolor=CARD, plot_bgcolor=CARD, margin=dict(l=12, r=12, t=8, b=28))
+        return f
+
+    x = s.index
+    y = s.values
+    now_x = x[-1]
+    last_val = float(y[-1])
+
+    f = go.Figure()
+    # main line
+    f.add_trace(go.Scatter(
+        x=x, y=y, mode="lines",
+        line=dict(width=2, color="#74B2FF"),
+        name=base_tkr, showlegend=False,
+        hovertemplate="%{y:,.2f}<extra></extra>"
+    ))
+
+    # projection to target (prediction) if provided, else gentle +1%
+    if target is None:
+        target = last_val * 1.01
+    proj_x = np.arange(now_x, now_x + 12)
+    proj_y = np.linspace(last_val, float(target), len(proj_x))
+
+    f.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5", opacity=0.9)
+    f.add_vrect(x0=now_x, x1=now_x + 11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
+    f.add_trace(go.Scatter(
+        x=proj_x, y=proj_y, mode="lines",
+        line=dict(width=2, dash="dot", color="#d6d6d6"),
+        showlegend=False, hoverinfo="skip"
+    ))
+
+    # highlight last value
+    f.add_trace(go.Scatter(
+        x=[now_x], y=[last_val], mode="markers",
+        marker=dict(size=8, color=TEXT, line=dict(width=2, color=BG)),
+        showlegend=False, hovertemplate="Last: %{y:,.2f}<extra></extra>"
+    ))
+    f.add_annotation(
+        x=now_x, y=last_val, text=f"{last_val:,.2f}",
+        showarrow=False, yshift=16,
+        font=dict(color=TEXT, size=12),
+        bgcolor="rgba(255,255,255,.06)",
+        bordercolor="rgba(255,255,255,.18)", borderwidth=1, borderpad=4
+    )
+
+    # layout
+    f.update_layout(
+        height=220,
+        margin=dict(l=12, r=12, t=8, b=28),
+        paper_bgcolor=CARD, plot_bgcolor=CARD,
+        hovermode="x unified"
+    )
+    f.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
+    f.update_yaxes(
+        showgrid=False, zeroline=False,
+        tickfont=dict(size=11, color=MUTED),
+        tickformat=",.0f"
+    )
+    return f
+
+# ────────────────────────────────────────────────────────────────────────────────
 # Title
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
@@ -376,13 +445,13 @@ _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
-    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")  # squeezed
+    sel_col, seg_col = st.columns([1.0, 1.28], gap="small")
     with sel_col:
         sel_label = st.selectbox(
             "",
             ticker_labels,
             index=_default_idx,
-            key="ticker_select",                 # used ONCE
+            key="ticker_select",
             label_visibility="collapsed",
         )
         ticker = label_to_ticker[sel_label]
@@ -392,7 +461,7 @@ with top_mid:
             "",
             ["Next day", "1D", "1W", "1M"],
             horizontal=True, index=1,
-            key="segmented_hz",                  # used ONCE
+            key="segmented_hz",
             label_visibility="collapsed",
         )
         next_day = (seg_choice == "Next day")
@@ -443,7 +512,7 @@ inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,i
 conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART
+# METRICS — inline, pill-style boxes + INLINE SUMMARY CHART (using helper)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -489,46 +558,12 @@ with top_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Inline summary chart directly under the pills (with y-axis numbers)
-    s = prices[ticker].dropna()
-    if len(s) >= 15:
-        now_x = int(s.index[-1])
-        last_val = float(s.iloc[-1])
-
-        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
-        proj_x = np.arange(now_x, now_x + 12)
-        proj_y = np.linspace(last_val, target, len(proj_x))
-
-        fig_inline = go.Figure()
-        fig_inline.add_trace(go.Scatter(
-            x=s.index, y=s.values, mode="lines",
-            line=dict(width=2, color="#70B3FF"),
-            hoverinfo="skip", showlegend=False
-        ))
-        fig_inline.add_trace(go.Scatter(
-            x=[now_x], y=[last_val], mode="markers",
-            marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-            hoverinfo="skip", showlegend=False
-        ))
-        fig_inline.add_trace(go.Scatter(
-            x=proj_x, y=proj_y, mode="lines",
-            line=dict(width=2, dash="dot", color="#F08A3C"),
-            hoverinfo="skip", showlegend=False
-        ))
-        fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-        fig_inline.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-        fig_inline.update_layout(
-            height=230,
-            margin=dict(l=10, r=10, t=6, b=6),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(showgrid=False, tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
-            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,.06)", tickfont=dict(color="#7C8DA5", size=11), zeroline=False),
-        )
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
-        st.plotly_chart(fig_inline, use_container_width=True, theme=None, config={"displayModeBar": False})
-        st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        st.info("Not enough history to render the summary chart.")
+    # Inline summary chart directly under the pills (y-axis visible). Aim projection at pred if available.
+    tgt = float(pred) if isinstance(pred, (float, int)) else None
+    fig_inline = plot_compact_forecast(prices, ticker, target=tgt)
+    st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
+    st.plotly_chart(fig_inline, use_container_width=True, theme=None, config={"displayModeBar": False})
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Tabs (optional demo content)
@@ -537,21 +572,31 @@ tab1, tab2, tab3 = st.tabs(["Tab 1", "Tab 2", "Tab 3"])
 
 with tab1:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-
     if not prices.empty:
-        # pick the active ticker or fall back
+        long = prices.reset_index(names="t").melt("t", value_name="price", var_name="ticker")
+        fig = px.line(long, x="t", y="price", color="ticker",
+                      labels={"t":"","price":"","ticker":""},
+                      color_discrete_sequence=["#70B3FF","#5F8BFF","#4BB3FD","#6ED0FF","#92E0FF","#b3f1ff"],
+                      template="plotly_dark")
         base_tkr = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
-
-        fig = plot_compact_forecast(prices, base_tkr)
-
-        # clean mode bar for this compact chart
-        st.plotly_chart(fig, use_container_width=True, theme=None,
-                        config={"displayModeBar": False})
+        now_x = prices.index[-1]
+        last_val = float(prices[base_tkr].dropna().iloc[-1])
+        proj_x = np.arange(now_x, now_x+12)
+        proj_y = np.linspace(last_val, (last_val*1.01), len(proj_x))
+        fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines",
+                                 line=dict(width=2, dash="dot", color="#d6d6d6"),
+                                 name="projection", showlegend=False))
+        fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+        fig.add_vrect(x0=now_x, x1=now_x+11, fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+        fig.update_layout(height=420, margin=dict(l=10, r=10, t=8, b=8),
+                          paper_bgcolor=CARD, plot_bgcolor=CARD,
+                          legend=dict(orientation="h", y=-0.24, font=dict(size=12)),
+                          xaxis=dict(showgrid=False, showticklabels=False),
+                          yaxis=dict(showgrid=False, showticklabels=False))
+        st.plotly_chart(fig, use_container_width=True, theme=None)
     else:
         st.info("No price data found. Please add your CSVs to the repo root.")
-
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 with tab2:
     c1, c2 = st.columns([1.2, 1.0], gap="large")

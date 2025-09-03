@@ -102,7 +102,7 @@ st.markdown(
       .toprow-kiss [data-testid="stSelectbox"],
       .toprow-kiss [data-testid="stRadio"] {{ margin:0 !important; }}
       /* pull radio over the select’s right rounding; tweak -14px if needed */
-      .toprow-kiss [data-testid="stRadio"] {{ margin-left:-14px !important; }}
+      .toprow-kiss [data-testid="stRadio"] {{ margin-left:-10px !important; }}
       /* slightly slimmer select pill so edges line up */
       .toprow-kiss [data-testid="stSelectbox"] > div > div {{
         padding-left:10px !important; padding-right:10px !important;

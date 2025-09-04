@@ -4,11 +4,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import pickle
+from textwrap import dedent
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from textwrap import dedent
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Page & theme
@@ -102,21 +103,16 @@ st.markdown(
     padding:0 10px !important;
   }}
 
-  /* Tight controls row (left/middle) */
-  .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; margin-bottom:0 !important; }}
+  /* Tight controls row */
+  .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
   .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
   .toprow-tight .element-container{{ margin-bottom:0 !important; }}
+  .toprow-tight [data-testid="stHorizontalBlock"]{{ margin-bottom:0 !important; }}
   .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
   .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
   .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-  /* Right controls row (LightGBM + Predict) — kill the default gap beneath */
-  .right-controls .element-container{{ margin-bottom:0 !important; }}
-  .right-controls [data-testid="stHorizontalBlock"]{{ margin-bottom:0 !important; }}
-
   /* Metric row (sit tight under controls) */
-  .metric-wrap [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .metric-wrap .element-container{{ margin-bottom:6px !important; }}
   .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px; padding:0; }}
   .metric-slot{{
     background:var(--card);
@@ -133,29 +129,36 @@ st.markdown(
   .chart-card{{ background:var(--card); border:1px solid rgba(255,255,255,.08);
                border-radius:12px; padding:0 10px; margin-top:12px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
 
-  /* Signals area (right) — stack cards tight under controls */
+  /* Header with extra top padding so title isn't cut */
+  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
+  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# Spacing fixes for signals + signals card styling (scoped)
+st.markdown(
+    f"""
+<style>
+  /* Signals area scope */
   .signals-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
   .signals-scope .element-container{{ margin-bottom:0 !important; }}
+
   .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{{
     background: var(--card);
     border: 1px solid rgba(255,255,255,.08);
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,.22);
-    padding: 12px 14px;
-    margin-top: 6px;
+    padding: 12px 14px;      /* inner padding */
+    margin-top: 6px;         /* sit close to controls above */
     margin-bottom: 0;
   }}
 
-  /* Small helper styles */
-  .signals-title{{ font-weight:800; color:var(--text); margin-bottom:6px; }}
+  .signals-title{{ font-weight:800; color: var(--text); margin-bottom:6px; }}
   .sig-divider{{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
   .meter{{ width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; }}
-  .meter > span{{ display:block; height:100%; background: var(--accent); }}
-  .micro-note{{ margin:4px 0 4px 0; font-size:12.5px; color:{MUTED}; display:flex; gap:6px; align-items:center; }}
-
-  /* Header with extra top padding so title isn't cut */
-  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
-  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+  .meter > span{{ display:block; height:100%; background: {ACCENT}; }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -308,7 +311,74 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Helpers for signals
+# Watchlist renderer (DEFINE BEFORE USE)
+# ────────────────────────────────────────────────────────────────────────────────
+def _badge_html(pct: float, side: str = "left") -> str:
+    cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
+    arrow = "↑" if pct > 0 else ("↓" if pct < 0 else "•")
+    sign  = "+" if pct > 0 else ""
+    return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
+
+def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist") -> int:
+    WATCHLIST_CSS = dedent(f"""
+    <style>
+      .watch-card {{
+        background:{CARD}; border:2px solid rgba(255,255,255,.06);
+        border-radius:18px; padding:16px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+        margin-bottom:16px;
+      }}
+      .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}
+      .watch-row {{
+        display:grid; grid-template-columns: 1fr auto; align-items:center;
+        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
+      }}
+      .watch-row:last-child {{ border-bottom:0; }}
+      .ticker {{ font-weight:600; color:{TEXT}; }}
+      .last {{ font-weight:700; color:{TEXT}; }}
+      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
+                 font-size:13px; margin-top:4px; }}
+      .badge {{ display:flex; gap:6px; align-items:center; }}
+      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
+      .arrow {{ font-weight:700; }}
+    </style>
+    """)
+    st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
+
+    rows = []
+    real_rows = 0
+    for t in tickers:
+        if t not in prices_df.columns: continue
+        s = prices_df[t].dropna().astype(float)
+        if s.empty: continue
+        real_rows += 1
+        last = float(s.iloc[-1])
+        chg_left  = 100*(s.iloc[-1]-s.iloc[-6])/s.iloc[-6] if len(s)>6 and s.iloc[-6]!=0 else 0.0
+        chg_right = 100*(s.iloc[-1]-s.iloc[-2])/s.iloc[-2] if len(s)>1 and s.iloc[-2]!=0 else 0.0
+        label = PRETTY.get(t, t)
+        rows.append(dedent(f"""
+        <div class="watch-row">
+          <div class="ticker">{label}</div>
+          <div class="last">{last:,.2f}</div>
+          <div class="badges">
+            {_badge_html(chg_left, side="left")}
+            {_badge_html(chg_right, side="right")}
+          </div>
+        </div>
+        """))
+
+    st.markdown(
+        dedent(f"""
+        <div class="watch-card">
+          <div class="watch-title">{title}</div>
+          {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
+        </div>
+        """),
+        unsafe_allow_html=True,
+    )
+    return real_rows
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Small spark helpers for signals
 # ────────────────────────────────────────────────────────────────────────────────
 def mini_spark(values: np.ndarray, color: str = ACCENT, height: int = 28) -> go.Figure:
     fig = go.Figure(go.Scatter(x=np.arange(len(values)), y=values, mode="lines",
@@ -364,7 +434,6 @@ watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDI
 
 # RIGHT: Model + Predict + Signals (stacked)
 with top_right:
-    st.markdown('<div class="right-controls">', unsafe_allow_html=True)
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
 
@@ -379,9 +448,8 @@ with top_right:
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)  # end .right-controls
 
-    # Signals area (tight stack)
+    # Signals area
     st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
 
     # Card 1 — peers with mini-sparks
@@ -452,9 +520,6 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    # Wrap the mid controls + metrics to squash default gaps
-    st.markdown('<div class="metric-wrap">', unsafe_allow_html=True)
-
     st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
 
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
@@ -473,15 +538,14 @@ with top_mid:
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)  # end toprow
+    st.markdown("</div>", unsafe_allow_html=True)
 
     next_day = (seg_choice == "Next day")
     horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
-    note = None
-    if 'do_predict' in locals() and do_predict:
+    if do_predict:
         try:
             reg, y_scaler = load_artifacts()
             if reg is not None and ticker in prices.columns:
@@ -491,8 +555,8 @@ with top_mid:
                 pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
                 lo, hi = pred*0.98, pred*1.02
                 conf = 0.78
-                if scaled:
-                    st.info("Returned in scaled space; y_scaler.pkl missing.")
+                if note: st.caption(f"⚠️ {note}")
+                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
             else:
                 base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
                 s_tmp = prices[base_t].dropna()
@@ -502,10 +566,6 @@ with top_mid:
                     conf = 0.65
         except Exception as e:
             st.error(f"Prediction failed: {e}")
-
-    # tiny note that doesn't create a huge gap
-    if note:
-        st.markdown(f"<div class='micro-note'>⚠️ {note}</div>", unsafe_allow_html=True)
 
     pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
@@ -522,7 +582,6 @@ with top_mid:
         """,
         unsafe_allow_html=True
     )
-    st.markdown('</div>', unsafe_allow_html=True)  # end .metric-wrap
 
     # Inline summary chart
     s = prices[ticker].dropna()

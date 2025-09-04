@@ -24,140 +24,146 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
+# Global styles
 st.markdown(
     f"""
-    <style>
-      :root {{
-        --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px;
-      }}
-      .stApp {{ background:var(--bg); color:var(--text); }}
+<style>
+  :root {{
+    --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
+    --footer-safe: 160px;
+  }}
+  .stApp {{ background:var(--bg); color:var(--text); }}
 
-      /* page container spacing */
-      .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
+  /* page container spacing */
+  .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
 
-      /* Generic cards */
-      .card {{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.06);
-        border-radius:18px;
-        padding:14px 16px;
-        box-shadow:0 6px 18px rgba(0,0,0,.25);
-      }}
+  /* Generic cards */
+  .card {{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px;
+    padding:14px 16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }}
 
-      /* Inputs baseline */
-      [data-testid="stTextInput"] > div > div,
-      [data-testid="stNumberInput"]> div > div {{
-        background:var(--card) !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        color:{TEXT} !important;
-      }}
+  /* Inputs baseline */
+  [data-testid="stTextInput"] > div > div,
+  [data-testid="stNumberInput"]> div > div {{
+    background:var(--card) !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    border-radius:12px !important;
+    color:{TEXT} !important;
+  }}
 
-      /* Selectboxes as dark pills + white text */
-      [data-testid="stSelectbox"] {{ margin:0 !important; }}
-      [data-testid="stSelectbox"] > div > div {{
-        background:{CARD} !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        height:44px;
-      }}
-      [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
-      [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
+  /* Selectboxes as dark pills + white text */
+  [data-testid="stSelectbox"] {{ margin:0 !important; }}
+  [data-testid="stSelectbox"] > div > div {{
+    background:{CARD} !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    border-radius:12px !important;
+    height:44px;
+  }}
+  [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
+  [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
-      /* Radio as dark segmented control */
-      [data-testid="stRadio"] {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
-      }}
-      [data-testid="stRadio"] svg {{ display:none !important; }}
-      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      [data-testid="stRadio"], [data-testid="stRadio"] * {{ color:{TEXT} !important; opacity:1 !important; }}
-      [data-testid="stRadio"] label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
-      }}
+  /* Radio as dark segmented control */
+  [data-testid="stRadio"] {{
+    background:{CARD};
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:12px;
+    padding:6px 10px;
+    height:44px;
+    display:flex; align-items:center;
+  }}
+  [data-testid="stRadio"] svg {{ display:none !important; }}
+  [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
+  [data-testid="stRadio"], [data-testid="stRadio"] * {{ color:{TEXT} !important; opacity:1 !important; }}
+  [data-testid="stRadio"] label[aria-checked="true"]::after {{
+    content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
+  }}
 
-      /* ──────────────────────────────────────────────────────────────────
-         CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
-         ────────────────────────────────────────────────────────────────── */
-      .toprow {{
-        display:flex; align-items:center; gap:6px; margin-top:6px;
-      }}
-      .toprow .control-wrap,
-      .toprow .seg-wrap,
-      .toprow .btn-wrap {{
-        height:44px; display:flex; align-items:center; width:100%;
-      }}
-      .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
-      .toprow [data-testid="stRadio"] {{
-        height:44px; display:flex; align-items:center; margin:0 !important;
-        padding:0 0; border-radius:12px;
-      }}
+  /* CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset */
+  .toprow {{ display:flex; align-items:center; gap:6px; margin-top:6px; }}
+  .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap {{
+    height:44px; display:flex; align-items:center; width:100%;
+  }}
+  .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
+  .toprow [data-testid="stRadio"] {{
+    height:44px; display:flex; align-items:center; margin:0 !important;
+    padding:0 0; border-radius:12px;
+  }}
 
-      /* Predict button */
-      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
-      .toprow .btn-wrap .stButton > button {{
-        height:44px; line-height:44px; width:100% !important;
-        border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background: var(--accent) !important; color:white !important;
-        padding:0 10px !important;
-      }}
+  /* Predict button */
+  .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
+  .toprow .btn-wrap .stButton > button {{
+    height:44px; line-height:44px; width:100% !important;
+    border-radius:12px !important; border:0 !important;
+    font-weight:700 !important; background: var(--accent) !important; color:white !important;
+    padding:0 10px !important;
+  }}
 
-      /* Tight controls row */
-      .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
-      .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
-      .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
-      .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
-      .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
+  /* Tight controls row */
+  .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
+  .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
+  .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
+  .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
+  .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-      /* Metric row (sits tight under the controls) */
-      .metric-row{{
-        display:grid; grid-template-columns:repeat(3,1fr);
-        gap:10px; margin-top:0; padding:0;
-      }}
-      .metric-slot{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        height:44px; padding:0 40px;
-        display:flex; align-items:center; justify-content:space-between;
-      }}
-      .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
-      .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
-      @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
+  /* Metric row (sit tight under controls) */
+  .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px; padding:0; }}
+  .metric-slot{{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:12px;
+    height:44px; padding:0 40px;
+    display:flex; align-items:center; justify-content:space-between;
+  }}
+  .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
+  .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
+  @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
-      /* Inline chart card */
-      .chart-card{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.08);
-        border-radius:12px;
-        padding:0 10px;
-        margin-top:12px;
-        box-shadow:0 6px 18px rgba(0,0,0,.22);
-      }}
+  /* Inline chart card */
+  .chart-card{{ background:var(--card); border:1px solid rgba(255,255,255,.08);
+               border-radius:12px; padding:0 10px; margin-top:12px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
 
-      /* Signals cards + little meter */
-      .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
-      .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
-      .meter {{
-        width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden;
-      }}
-      .meter > span {{
-        display:block; height:100%; background:{ACCENT};
-      }}
+  /* Header with extra top padding so title isn't cut */
+  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
+  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
-      /* Header with extra top padding so title isn't cut */
-      .app-header {{
-        display:flex; align-items:center; gap:.6rem;
-        padding-top:50px; margin:0 0 10px 0;
-      }}
-      .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
-    </style>
-    """,
+# Spacing fixes for controls/metrics + Signals card styling (scoped)
+st.markdown(
+    """
+<style>
+  /* remove Streamlit's default spacing below widgets in this row */
+  .toprow-tight .element-container{ margin-bottom:0 !important; }
+  .toprow-tight [data-testid="stHorizontalBlock"]{ margin-bottom:0 !important; }
+
+  /* Signals area scope */
+  .signals-scope [data-testid="stVerticalBlock"]{
+    padding-top:0 !important; padding-bottom:0 !important;
+  }
+  .signals-scope .element-container{ margin-bottom:0 !important; }
+
+  .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.22);
+    padding: 12px 14px;      /* inner padding */
+    margin-top: 6px;         /* sit close to controls above */
+    margin-bottom: 0;
+  }
+
+  .signals-title{ font-weight:800; color: var(--text); margin-bottom:6px; }
+  .sig-divider{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }
+  .meter{ width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; }
+  .meter > span{ display:block; height:100%; background: var(--accent); }
+</style>
+""",
     unsafe_allow_html=True,
 )
 
@@ -275,11 +281,9 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
         if len(feats) < n_expected:
-            feats = feats + [0.0]*(n_expected-base)
-            note = f"Padded features from {base} to {n_expected}."
+            feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
         else:
-            feats = feats[:n_expected]
-            note = f"Truncated features from {base} to {n_expected}."
+            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
     return np.asarray([feats], dtype=np.float32), note
 
 @st.cache_resource
@@ -401,7 +405,7 @@ def pct_change_days(ticker: str, days: int = 20) -> float:
     return float((s.iloc[-1] / s.iloc[-days] - 1.0) * 100.0)
 
 def tsi_score(ticker: str) -> float:
-    """Lightweight TSI-like score around -1..+1."""
+    """Simple TSI-like score around -1..+1."""
     if ticker not in prices.columns: return 0.0
     s = prices[ticker].dropna()
     if len(s) < 30: return 0.0
@@ -431,7 +435,7 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals
+# RIGHT: Model + Predict + Signals (stacked)
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
@@ -446,81 +450,65 @@ with top_right:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Style signals containers as cards (no forced min-height so we can stack two cards)
-    st.markdown(
-        f"""
-        <style>
-          .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
-            background:{CARD};
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:12px;
-            box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:12px 14px;
-            margin-top:0; margin-bottom:0;
-          }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    # Signals area
     st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
 
     # Card 1 — peers with mini-sparks
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
-        related = ["TSMC", "ASML", "CDNS", "SNPS"]
+        related = ["TSMC","ASML","CDNS","SNPS"]
         for i, t in enumerate(related):
-            label = PRETTY.get(t, t)
+            label  = PRETTY.get(t, t)
             change = pct_change_days(t, 20)
-            vals = series_for(t, 36)
+            vals   = series_for(t, 36)
 
             c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
-            with c1:
-                st.markdown(label)
+            with c1: st.markdown(label)
             with c2:
                 color = GREEN if change >= 0 else ORANGE
                 st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
             with c3:
-                st.plotly_chart(mini_spark(vals, color=(ACCENT if change>=0 else ORANGE)),
-                                use_container_width=True, theme=None)
+                st.plotly_chart(
+                    mini_spark(vals, color=(ACCENT if change >= 0 else ORANGE)),
+                    use_container_width=True, theme=None
+                )
             if i < len(related) - 1:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-    # Card 2 — TSI block like the reference screenshot
+    # Card 2 — TSI block
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
 
-        # Top TSI row
-        tsi_val = tsi_score("NVDA")
+        # TSI row
+        tsi_val   = tsi_score("NVDA")
         tsi_color = GREEN if tsi_val >= 0 else ORANGE
         t1, t2, t3 = st.columns([1.0, 0.5, 1.5])
-        with t1:
-            st.markdown("TSI")
-        with t2:
-            st.markdown(f"<div style='font-weight:700;color:{tsi_color}'>{tsi_val:+.2f}</div>", unsafe_allow_html=True)
+        with t1: st.markdown("TSI")
+        with t2: st.markdown(f"<div style='font-weight:700;color:{tsi_color}'>{tsi_val:+.2f}</div>", unsafe_allow_html=True)
         with t3:
-            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))  # 0..100
+            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))  # map -1..+1 → 0..100
             st.markdown(f"<div class='meter'><span style='width:{width_pct}%'></span></div>", unsafe_allow_html=True)
 
         st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
 
-        # Three small subordinate signals with tiny sparks
+        # Three subordinate signals with tiny sparks (demo)
         rng = np.random.default_rng(123)
         for j, name in enumerate(["Signal A", "Signal B", "Signal C"]):
-            val = float(rng.normal(0.0, 0.4))
+            val   = float(rng.normal(0.0, 0.4))
             spark = np.cumsum(rng.normal(0, 0.6, 24))
             cA, cB = st.columns([0.6, 1.9])
             with cA:
                 color = GREEN if val >= 0 else ORANGE
                 st.markdown(f"<div style='font-weight:700;color:{color}'>{val:+.2f}</div>", unsafe_allow_html=True)
             with cB:
-                st.plotly_chart(mini_spark(pd.Series(spark).values, color=(ACCENT if val>=0 else ORANGE), height=42),
-                                use_container_width=True, theme=None)
+                st.plotly_chart(
+                    mini_spark(pd.Series(spark).values, color=(ACCENT if val>=0 else ORANGE), height=42),
+                    use_container_width=True, theme=None
+                )
             if j < 2:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
 

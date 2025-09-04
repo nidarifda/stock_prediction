@@ -1,0 +1,159 @@
+/* ========== Theme variables ========== */
+:root{
+  --bg:#0B1220;
+  --card:#0F1A2B;
+  --text:#E6F0FF;
+  --muted:#8AA1C7;
+  --accent:#496BFF;
+  --orange:#F08A3C;
+  --green:#5CF2B8;
+  --footer-safe:160px;
+}
+
+/* ========== Page base ========== */
+.stApp{ background:var(--bg); color:var(--text); }
+.block-container{ padding-top:1.0rem; padding-bottom:1.0rem; }
+
+/* ========== Generic card ========== */
+.card{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  padding:14px 16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+
+/* ========== Inputs ========== */
+[data-testid="stTextInput"] > div > div,
+[data-testid="stNumberInput"]> div > div{
+  background:var(--card)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:12px!important;
+  color:var(--text)!important;
+}
+
+/* Selectbox as dark pill */
+[data-testid="stSelectbox"]{ margin:0!important; }
+[data-testid="stSelectbox"] > div > div{
+  background:var(--card)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:12px!important;
+  height:44px;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] *{ color:var(--text)!important; }
+[data-baseweb="menu"] *{ color:var(--text)!important; }
+
+/* Radio segmented */
+[data-testid="stRadio"]{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  padding:6px 10px;
+  height:44px;
+  display:flex; align-items:center;
+  margin:0!important;
+}
+[data-testid="stRadio"] svg{ display:none!important; }
+[data-testid="stRadio"] [data-baseweb="radio"]{ display:flex; align-items:center; }
+[data-testid="stRadio"], [data-testid="stRadio"] *{ color:var(--text)!important; opacity:1!important; }
+[data-testid="stRadio"] label[aria-checked="true"]::after{
+  content:""; display:block; height:3px; border-radius:3px; background:var(--accent); margin-top:6px;
+}
+
+/* ========== Control rows ========== */
+.toprow{ display:flex; align-items:center; gap:6px; margin-top:6px; }
+.toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap{
+  height:44px; display:flex; align-items:center; width:100%;
+}
+.toprow [data-testid="stSelectbox"] > div > div{ height:44px; }
+.toprow [data-testid="stRadio"]{
+  height:44px; display:flex; align-items:center; border-radius:12px; padding:0 0;
+}
+
+/* Predict button */
+.toprow .btn-wrap .stButton{ width:100%; margin:0!important; }
+.toprow .btn-wrap .stButton > button{
+  height:44px; line-height:44px; width:100%!important;
+  border-radius:12px!important; border:0!important;
+  font-weight:700!important; background:var(--accent)!important; color:white!important;
+  padding:0 10px!important;
+}
+
+/* Extra compact layout for the top row */
+.toprow-tight [data-testid="stHorizontalBlock"]{ gap:4px!important; }
+.toprow-tight [data-testid="column"]{ padding-left:6px!important; padding-right:6px!important; }
+.toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{ margin:0!important; }
+.toprow-tight [data-testid="stRadio"]{ padding:6px 4px!important; }
+.toprow-tight [data-testid="stSelectbox"] > div > div{ padding-left:10px!important; padding-right:10px!important; }
+
+/* Kill default Streamlit gaps where we want tight stacking */
+.controls-tight [data-testid="stVerticalBlock"]{ padding-top:0!important; padding-bottom:0!important; }
+.controls-tight .element-container{ margin-bottom:0!important; }
+
+/* ========== Metric row (directly under controls) ========== */
+.metric-row{
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; margin-top:0; padding:0;
+}
+.metric-slot{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  height:44px; padding:0 40px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.metric-slot .m-label{ color:var(--muted); font-size:13px; }
+.metric-slot .m-value{ color:var(--text); font-weight:700; font-size:16px; }
+@media (max-width: 900px){ .metric-row{ grid-template-columns:1fr; } }
+
+/* ========== Inline chart card ========== */
+.chart-card{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:0 10px;
+  margin-top:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+}
+
+/* ========== Signals area (cards & spacings) ========== */
+.signals-title{ font-weight:800; color:var(--text); margin-bottom:6px; }
+.sig-divider{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }
+
+.signals-scope [data-testid="stVerticalBlock"]{ padding-top:0!important; padding-bottom:0!important; }
+.signals-scope .element-container{ margin-bottom:0!important; }
+.signals-scope [data-testid="stVerticalBlockBorderWrapper"]{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+  padding:12px 14px;
+  margin-top:0; margin-bottom:0;
+}
+
+/* Tiny meter bar (for TSI-like block) */
+.meter{ width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; }
+.meter > span{ display:block; height:100%; background:var(--accent); }
+
+/* ========== Watchlist (global; no Python injection needed) ========== */
+.watch-card{
+  background:var(--card); border:2px solid rgba(255,255,255,.06);
+  border-radius:18px; padding:16px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+  margin-bottom:16px;
+}
+.watch-title{ font-weight:900; color:var(--text); margin:0 0 10px 0; }
+.watch-row{
+  display:grid; grid-template-columns: 1fr auto; align-items:center;
+  padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
+}
+.watch-row:last-child{ border-bottom:0; }
+.ticker{ font-weight:600; color:var(--text); }
+.last{ font-weight:700; color:var(--text); }
+.badges{ grid-column:1 / span 2; display:flex; justify-content:space-between; font-size:13px; margin-top:4px; }
+.badge{ display:flex; gap:6px; align-items:center; }
+.up{ color:var(--green); } .down{ color:var(--orange); } .neut{ color:#3DE4E0; }
+.arrow{ font-weight:700; }
+
+/* ========== Header ========== */
+.app-header{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }
+.app-header .title{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }

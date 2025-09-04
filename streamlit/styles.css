@@ -61,7 +61,7 @@
 }
 
 /* ========== Control rows ========== */
-.toprow{ display:flex; align-items:center; gap:6px; margin-top:6px; }
+.toprow{ display:flex; align-items:center; gap:6px; margin-top:0px; }
 .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap{
   height:44px; display:flex; align-items:center; width:100%;
 }

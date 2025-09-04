@@ -152,7 +152,7 @@ st.markdown(
 <style>
   /* Middle stack: controls + metric pills right under it */
   .mid-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .mid-scope .element-container{{ margin-bottom:4px !important; }}
+  .mid-scope .element-container{{ margin-bottom:0px !important; }}
   .mid-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
 
   /* Right stack: model/predict + signals */
@@ -188,7 +188,7 @@ st.markdown("""
   .mid-scope .element-container{ margin-bottom:0 !important; }
 
   /* Override the earlier .metric-row margin so it sits tight under controls */
-  .mid-scope .metric-row{ margin-top:-2px !important; }
+  .mid-scope .metric-row{ margin-top:-10px !important; }
 </style>
 """, unsafe_allow_html=True)
 

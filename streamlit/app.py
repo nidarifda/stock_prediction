@@ -15,6 +15,7 @@ from textwrap import dedent
 # ────────────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
+# Python-side colors (for charts/text we inject from Python)
 BG       = "#0B1220"
 CARD     = "#0F1A2B"
 TEXT     = "#E6F0FF"
@@ -24,142 +25,18 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
-st.markdown(
-    f"""
-    <style>
-      :root {{
-        --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
-        --footer-safe: 160px;
-      }}
-      .stApp {{ background:var(--bg); color:var(--text); }}
+def inject_local_css(filename: str = "styles.css"):
+    try:
+        base = Path(__file__).parent
+    except NameError:
+        base = Path(".")
+    css_path = base / filename
+    if css_path.exists():
+        st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
+    else:
+        st.warning(f"Could not find {filename} next to app.py")
 
-      /* page container spacing */
-      .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
-
-      /* Generic cards */
-      .card {{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.06);
-        border-radius:18px;
-        padding:14px 16px;
-        box-shadow:0 6px 18px rgba(0,0,0,.25);
-      }}
-
-      /* Inputs baseline */
-      [data-testid="stTextInput"] > div > div,
-      [data-testid="stNumberInput"]> div > div {{
-        background:var(--card) !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        color:{TEXT} !important;
-      }}
-
-      /* Selectboxes as dark pills + white text */
-      [data-testid="stSelectbox"] {{ margin:0 !important; }}
-      [data-testid="stSelectbox"] > div > div {{
-        background:{CARD} !important;
-        border:1px solid rgba(255,255,255,.10) !important;
-        border-radius:12px !important;
-        height:44px;
-      }}
-      [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
-      [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
-
-      /* Radio as dark segmented control */
-      [data-testid="stRadio"] {{
-        background:{CARD};
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        padding:6px 10px;
-        height:44px;
-        display:flex; align-items:center;
-      }}
-      [data-testid="stRadio"] svg {{ display:none !important; }}
-      [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
-      [data-testid="stRadio"], [data-testid="stRadio"] * {{ color:{TEXT} !important; opacity:1 !important; }}
-      [data-testid="stRadio"] label[aria-checked="true"]::after {{
-        content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
-      }}
-
-      /* ──────────────────────────────────────────────────────────────────
-         CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset
-         ────────────────────────────────────────────────────────────────── */
-      .toprow {{
-        display:flex; align-items:center; gap:6px; margin-top:6px;
-      }}
-      .toprow .control-wrap,
-      .toprow .seg-wrap,
-      .toprow .btn-wrap {{
-        height:44px; display:flex; align-items:center; width:100%;
-      }}
-      .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
-      .toprow [data-testid="stRadio"] {{
-        height:44px; display:flex; align-items:center; margin:0 !important;
-        padding:0 0; border-radius:12px;
-      }}
-
-      /* Predict button */
-      .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
-      .toprow .btn-wrap .stButton > button {{
-        height:44px; line-height:44px; width:100% !important;
-        border-radius:12px !important; border:0 !important;
-        font-weight:700 !important; background: var(--accent) !important; color:white !important;
-        padding:0 10px !important;
-      }}
-
-      /* Tight controls row */
-      .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
-      .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
-      .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
-      .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
-      .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
-
-      /* Metric row (sits tight under the controls) */
-      .metric-row{{
-        display:grid; grid-template-columns:repeat(3,1fr);
-        gap:10px; margin-top:0; padding:0;
-      }}
-      .metric-slot{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.10);
-        border-radius:12px;
-        height:44px; padding:0 40px;
-        display:flex; align-items:center; justify-content:space-between;
-      }}
-      .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
-      .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
-      @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
-
-      /* Inline chart card */
-      .chart-card{{
-        background:var(--card);
-        border:1px solid rgba(255,255,255,.08);
-        border-radius:12px;
-        padding:0 10px;
-        margin-top:12px;
-        box-shadow:0 6px 18px rgba(0,0,0,.22);
-      }}
-
-      /* Signals cards + little meter */
-      .signals-title {{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
-      .sig-divider {{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
-      .meter {{
-        width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden;
-      }}
-      .meter > span {{
-        display:block; height:100%; background:{ACCENT};
-      }}
-
-      /* Header with extra top padding so title isn't cut */
-      .app-header {{
-        display:flex; align-items:center; gap:.6rem;
-        padding-top:50px; margin:0 0 10px 0;
-      }}
-      .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+inject_local_css()  # ← loads styles.css
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame
@@ -275,11 +152,9 @@ def build_features(df: pd.DataFrame, primary: str, n_expected: int | None):
     if n_expected is not None and len(feats) != n_expected:
         base = len(feats)
         if len(feats) < n_expected:
-            feats = feats + [0.0]*(n_expected-base)
-            note = f"Padded features from {base} to {n_expected}."
+            feats = feats + [0.0]*(n_expected-base); note = f"Padded features from {base} to {n_expected}."
         else:
-            feats = feats[:n_expected]
-            note = f"Truncated features from {base} to {n_expected}."
+            feats = feats[:n_expected]; note = f"Truncated features from {base} to {n_expected}."
     return np.asarray([feats], dtype=np.float32), note
 
 @st.cache_resource
@@ -310,7 +185,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer
+# Watchlist renderer (CSS classes come from styles.css)
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -319,32 +194,7 @@ def _badge_html(pct: float, side: str = "left") -> str:
     return f"<span class='badge {cls}'><span class='arrow'>{arrow}</span> {sign}{pct:.2f}%</span>"
 
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist") -> int:
-    WATCHLIST_CSS = dedent(f"""
-    <style>
-      .watch-card {{
-        background:{CARD}; border:2px solid rgba(255,255,255,.06);
-        border-radius:18px; padding:16px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
-        margin-bottom:16px;
-      }}
-      .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}
-      .watch-row {{
-        display:grid; grid-template-columns: 1fr auto; align-items:center;
-        padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06);
-      }}
-      .watch-row:last-child {{ border-bottom:0; }}
-      .ticker {{ font-weight:600; color:{TEXT}; }}
-      .last {{ font-weight:700; color:{TEXT}; }}
-      .badges {{ grid-column:1 / span 2; display:flex; justify-content:space-between;
-                 font-size:13px; margin-top:4px; }}
-      .badge {{ display:flex; gap:6px; align-items:center; }}
-      .up {{ color:{GREEN}; }} .down {{ color:{ORANGE}; }} .neut {{ color:#3DE4E0; }}
-      .arrow {{ font-weight:700; }}
-    </style>
-    """)
-    st.markdown(WATCHLIST_CSS, unsafe_allow_html=True)
-
-    rows = []
-    real_rows = 0
+    rows, real_rows = [], 0
     for t in tickers:
         if t not in prices_df.columns: continue
         s = prices_df[t].dropna().astype(float)
@@ -362,22 +212,19 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
             {_badge_html(chg_left, side="left")}
             {_badge_html(chg_right, side="right")}
           </div>
-        </div>
-        """))
-
+        </div>"""))
     st.markdown(
         dedent(f"""
         <div class="watch-card">
           <div class="watch-title">{title}</div>
           {''.join(rows) if rows else '<div class="ticker" style="opacity:.7">No data</div>'}
-        </div>
-        """),
+        </div>"""),
         unsafe_allow_html=True,
     )
     return real_rows
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Small spark helpers for signals
+# Sparks & helper metrics
 # ────────────────────────────────────────────────────────────────────────────────
 def mini_spark(values: np.ndarray, color: str = ACCENT, height: int = 28) -> go.Figure:
     fig = go.Figure(go.Scatter(x=np.arange(len(values)), y=values, mode="lines",
@@ -408,7 +255,7 @@ def tsi_score(ticker: str) -> float:
     r = s.pct_change().dropna().tail(30)
     mu, sd = float(r.mean()), float(r.std()) or 1e-6
     z = mu / sd
-    return max(-1.5, min(1.5, z))  # clamp
+    return max(-1.5, min(1.5, z))
 
 # ────────────────────────────────────────────────────────────────────────────────
 # Title & data
@@ -427,7 +274,7 @@ top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
-# Canonical height for symmetry
+# Height for symmetry
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
@@ -435,51 +282,28 @@ watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDI
 with top_right:
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
-
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
-        model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
-                                  index=0, key="model_name", label_visibility="collapsed")
+        st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"], index=0,
+                     key="model_name", label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
-
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Style signals containers as cards (no forced min-height so we can stack two cards)
-    st.markdown(
-        f"""
-        <style>
-          .signals-scope [data-testid="stVerticalBlockBorderWrapper"] {{
-            background:{CARD};
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:12px;
-            box-shadow:0 6px 18px rgba(0,0,0,.22);
-            padding:12px 14px;
-            margin-top:0; margin-bottom:0;
-          }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    # Signals scope (two stacked cards)
     st.markdown("<div class='signals-scope'>", unsafe_allow_html=True)
 
-    # Card 1 — peers with mini-sparks
+    # Card 1 — peers mini-sparks
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
         related = ["TSMC", "ASML", "CDNS", "SNPS"]
         for i, t in enumerate(related):
-            label = PRETTY.get(t, t)
-            change = pct_change_days(t, 20)
-            vals = series_for(t, 36)
-
+            label = PRETTY.get(t, t); change = pct_change_days(t, 20); vals = series_for(t, 36)
             c1, c2, c3 = st.columns([1.0, 0.5, 1.3])
-            with c1:
-                st.markdown(label)
+            with c1: st.markdown(label)
             with c2:
                 color = GREEN if change >= 0 else ORANGE
                 st.markdown(f"<div style='font-weight:700;color:{color}'>{change:+.2f}</div>", unsafe_allow_html=True)
@@ -491,27 +315,20 @@ with top_right:
 
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-    # Card 2 — TSI block like the reference screenshot
+    # Card 2 — compact TSI-like block
     with st.container(border=True):
         st.markdown("<div class='signals-title'>Affiliated Signals</div>", unsafe_allow_html=True)
-
-        # Top TSI row
-        tsi_val = tsi_score("NVDA")
-        tsi_color = GREEN if tsi_val >= 0 else ORANGE
+        tsi_val = tsi_score("NVDA"); tsi_color = GREEN if tsi_val >= 0 else ORANGE
         t1, t2, t3 = st.columns([1.0, 0.5, 1.5])
-        with t1:
-            st.markdown("TSI")
-        with t2:
-            st.markdown(f"<div style='font-weight:700;color:{tsi_color}'>{tsi_val:+.2f}</div>", unsafe_allow_html=True)
+        with t1: st.markdown("TSI")
+        with t2: st.markdown(f"<div style='font-weight:700;color:{tsi_color}'>{tsi_val:+.2f}</div>", unsafe_allow_html=True)
         with t3:
-            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))  # 0..100
+            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))
             st.markdown(f"<div class='meter'><span style='width:{width_pct}%'></span></div>", unsafe_allow_html=True)
 
         st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
-
-        # Three small subordinate signals with tiny sparks
         rng = np.random.default_rng(123)
-        for j, name in enumerate(["Signal A", "Signal B", "Signal C"]):
+        for j in range(3):
             val = float(rng.normal(0.0, 0.4))
             spark = np.cumsum(rng.normal(0, 0.6, 24))
             cA, cB = st.columns([0.6, 1.9])
@@ -524,7 +341,7 @@ with top_right:
             if j < 2:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope
+    st.markdown("</div>", unsafe_allow_html=True)  # end signals-scope
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER
@@ -535,8 +352,10 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+    # Wrap in controls-tight to collapse Streamlit's default spacing
+    st.markdown("<div class='controls-tight'>", unsafe_allow_html=True)
 
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
     with sel_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
@@ -545,48 +364,24 @@ with top_mid:
         st.markdown("</div>", unsafe_allow_html=True)
         ticker = label_to_ticker[sel_label]
         st.session_state["ticker_label"] = sel_label
-
     with seg_col:
         st.markdown("<div class='seg-wrap'>", unsafe_allow_html=True)
         seg_choice = st.radio("", ["Next day", "1D", "1W", "1M", "1y"],
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # end toprow
 
     next_day = (seg_choice == "Next day")
     horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
-    # Prediction (triggered by button on the right)
+    # Prediction (dummy if no model)
     pred = lo = hi = conf = None
-    if do_predict:
-        try:
-            reg, y_scaler = load_artifacts()
-            if reg is not None and ticker in prices.columns:
-                n_exp = expected_n_feats(reg) or 31
-                X, note = build_features(prices, ticker, n_exp)
-                y_scaled = float(reg.predict(X)[0])
-                pred, scaled = inverse_if_scaled(y_scaled, y_scaler)
-                lo, hi = pred*0.98, pred*1.02
-                conf = 0.78
-                if note: st.caption(f"⚠️ {note}")
-                if scaled: st.info("Returned in scaled space; y_scaler.pkl missing.")
-            else:
-                base_t = ticker if ticker in prices.columns else ("NVDA" if "NVDA" in prices.columns else prices.columns[0])
-                s_tmp = prices[base_t].dropna()
-                if len(s_tmp) >= 6:
-                    pred = float(s_tmp.iloc[-1] * (1 + s_tmp.pct_change().iloc[-5:].mean()))
-                    lo, hi = pred*0.98, pred*1.02
-                    conf = 0.65
-        except Exception as e:
-            st.error(f"Prediction failed: {e}")
-
     pred_text  = f"${pred:,.2f}" if isinstance(pred, (float, int)) else "—"
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # Metric pills (tight under the controls)
+    # Tight metric pills
     st.markdown(
         f"""
         <div class="metric-row">
@@ -598,12 +393,10 @@ with top_mid:
         unsafe_allow_html=True
     )
 
-    # Inline summary chart
+    # Inline chart
     s = prices[ticker].dropna()
     if len(s) >= 15:
-        now_x = s.index[-1]
-        last_val = float(s.iloc[-1])
-        target = float(pred) if isinstance(pred, (float, int)) else last_val * 1.005
+        now_x = s.index[-1]; last_val = float(s.iloc[-1]); target = last_val * 1.005
         proj_x = pd.bdate_range(start=now_x, periods=12, freq="B")
         proj_y = np.linspace(last_val, target, len(proj_x))
 
@@ -611,20 +404,17 @@ with top_mid:
         fig_inline.add_trace(go.Scatter(
             x=s.index, y=s.values, mode="lines",
             line=dict(width=2, color="#70B3FF"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>", showlegend=False
         ))
         fig_inline.add_trace(go.Scatter(
             x=[now_x], y=[last_val], mode="markers",
             marker=dict(size=9, color="#70B3FF", line=dict(color="#FFFFFF", width=2)),
-            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
+            hovertemplate="Now • %{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>", showlegend=False
         ))
         fig_inline.add_trace(go.Scatter(
             x=proj_x, y=proj_y, mode="lines",
             line=dict(width=2, dash="dot", color="#F08A3C"),
-            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>",
-            showlegend=False
+            hovertemplate="%{x|%b %d, %Y}<br>%{y:,.2f}<extra></extra>", showlegend=False
         ))
         fig_inline.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
         fig_inline.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
@@ -633,8 +423,7 @@ with top_mid:
             height=watchlist_height_px,
             margin=dict(l=52, r=16, t=8, b=40),
             paper_bgcolor=CARD, plot_bgcolor=CARD,
-            hovermode="x unified",
-            font=dict(color=TEXT, size=12),
+            hovermode="x unified", font=dict(color=TEXT, size=12),
         )
         fig_inline.update_xaxes(
             showgrid=True, gridcolor="rgba(255,255,255,.08)",
@@ -644,9 +433,8 @@ with top_mid:
         )
         fig_inline.update_yaxes(
             showgrid=True, gridcolor="rgba(255,255,255,.10)",
-            tickformat=",.0f",
-            ticks="outside", ticklen=6, tickcolor="rgba(255,255,255,.35)",
-            tickfont=dict(color=MUTED), automargin=True
+            tickformat=",.0f", ticks="outside", ticklen=6,
+            tickcolor="rgba(255,255,255,.35)", tickfont=dict(color=MUTED), automargin=True
         )
 
         st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
@@ -655,55 +443,16 @@ with top_mid:
     else:
         st.info("Not enough history to render the summary chart.")
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Tabs (demo)
-# ────────────────────────────────────────────────────────────────────────────────
-tab1, tab2 = st.tabs(["Tab 1", "Tab 2"])
-
-with tab1:
-    c1, c2 = st.columns([1.2, 1.0], gap="large")
-    with c1:
-        st.markdown("**Error metrics**")
-        mae, rmse, confu = 1.31, 2.06, 0.91
-        def bar(v: float) -> str:
-            width = max(0, min(100, int(v*70)))
-            return f"<div style='height:6px;background:linear-gradient(90deg,{ACCENT} {width}%,rgba(255,255,255,.12) {width}%);border-radius:6px'></div>"
-        st.markdown(f"MAE&nbsp;&nbsp;&nbsp;<b>{mae:.2f}</b>", unsafe_allow_html=True)
-        st.markdown(bar(0.6), unsafe_allow_html=True)
-        st.markdown(f"<div style='margin-top:6px'>RMSE&nbsp;<b>{rmse:.2f}</b></div>", unsafe_allow_html=True)
-        st.markdown(bar(0.4), unsafe_allow_html=True)
-        st.markdown(f"<div style='margin-top:6px'>Confu.&nbsp;<b>{confu:.2f}</b></div>", unsafe_allow_html=True)
-
-    with c2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("**SHAP**")
-        st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
-        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)
-        st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>452.00</b></div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-with tab2:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("**Trade idea**")
-    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>A 25.00</b></div>", unsafe_allow_html=True)
-    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Stop</div><b>A 17.00</b></div>", unsafe_allow_html=True)
-    st.markdown("<div style='display:flex;justify-content:space-between;'><div>Target</div><b>A 36.00</b></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # end controls-tight
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Footer
+# Footer (optional)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
     <div class="footer-wrap">
       <div class="footer-inner">
-        <div class="statusbar">
-          <div class="status-item"><span class="status-label">Model version</span><span class="status-value">v1.2</span></div>
-          <div class="status-item"><span class="status-label">Training window</span><span class="status-value">1 year</span></div>
-          <div class="status-item"><span class="status-label">Data last updated</span><span class="status-value">30 min</span></div>
-          <div class="status-item"><span class="status-label">Latency</span><span class="status-value">~140 ms</span></div>
-          <div class="status-item"><span class="status-label">API status</span><span class="dot"></span><span>All systems operational</span></div>
-        </div>
+        <div class="statusbar" style="display:none"></div>
       </div>
     </div>
     """,

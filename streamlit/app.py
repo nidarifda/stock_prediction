@@ -32,6 +32,8 @@ st.markdown(
   :root {{
     --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
     --footer-safe: 160px;
+    /* NEW: single source of truth for top offset so Watchlist aligns with controls */
+    --row-top-offset: 6px;
   }}
   .stApp {{ background:var(--bg); color:var(--text); }}
 
@@ -84,7 +86,11 @@ st.markdown(
   }}
 
   /* CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset */
-  .toprow {{ display:flex; align-items:center; gap:6px; margin-top:6px; }}
+  .toprow {{
+    display:flex; align-items:center; gap:6px;
+    /* CHANGED: use shared var so we can match Watchlist top edge */
+    margin-top: var(--row-top-offset);
+  }}
   .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap {{
     height:44px; display:flex; align-items:center; width:100%;
   }}
@@ -132,6 +138,9 @@ st.markdown(
   /* Header with extra top padding so title isn't cut */
   .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
   .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+
+  /* NEW: give Watchlist the same top offset as the controls row */
+  .watchlist-wrap {{ margin-top: var(--row-top-offset); }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -428,9 +437,11 @@ with st.spinner("Loading price history…"):
 # ────────────────────────────────────────────────────────────────────────────────
 top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 
-# LEFT: Watchlist
+# LEFT: Watchlist — wrapped so its top edge matches the controls row
 with top_left:
+    st.markdown("<div class='watchlist-wrap'>", unsafe_allow_html=True)
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Canonical height for symmetry
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 10
@@ -551,8 +562,7 @@ with top_mid:
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
 
-    # NOTE: do_predict is created in the right column. Provide a default here so code
-    # still runs when the button hasn't been rendered yet.
+    # Provide default so code runs before the Predict button exists
     if "do_predict" not in locals():
         do_predict = False
 

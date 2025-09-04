@@ -137,28 +137,32 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Spacing fixes for signals + signals card styling (scoped)
+# Extra scopes to kill vertical gaps between stacked blocks
 st.markdown(
     f"""
 <style>
-  /* Signals area scope */
+  /* Middle stack: controls + metric pills right under it */
+  .mid-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
+  .mid-scope .element-container{{ margin-bottom:4px !important; }}
+  .mid-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
+
+  /* Right stack: model/predict + signals */
+  .right-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
+  .right-scope .element-container{{ margin-bottom:4px !important; }}
+  .right-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
+
+  /* Signals cards (also slightly reduce top margin so it hugs controls) */
   .signals-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
   .signals-scope .element-container{{ margin-bottom:0 !important; }}
-
   .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{{
-    background: var(--card);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.22);
-    padding: 12px 14px;      /* inner padding */
-    margin-top: 6px;         /* sit close to controls above */
-    margin-bottom: 0;
+    background:{CARD}; border:1px solid rgba(255,255,255,.08);
+    border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.22);
+    padding:12px 14px; margin-top:2px; margin-bottom:0;
   }}
-
-  .signals-title{{ font-weight:800; color: var(--text); margin-bottom:6px; }}
+  .signals-title{{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
   .sig-divider{{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
   .meter{{ width:100%; height:6px; background:rgba(255,255,255,.12); border-radius:6px; overflow:hidden; }}
-  .meter > span{{ display:block; height:100%; background: {ACCENT}; }}
+  .meter > span{{ display:block; height:100%; background:{ACCENT}; }}
 </style>
 """,
     unsafe_allow_html=True,
@@ -311,7 +315,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer (DEFINE BEFORE USE)
+# Watchlist renderer (define BEFORE use)
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -432,17 +436,17 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (stacked)
+# RIGHT: Model + Predict + Signals (stacked, no gap)
 with top_right:
+    st.markdown("<div class='right-scope'>", unsafe_allow_html=True)
+
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
     model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
-
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],
                                   index=0, key="model_name", label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
-
     with btn_col:
         st.markdown("<div class='btn-wrap'>", unsafe_allow_html=True)
         do_predict = st.button("Predict", use_container_width=True, type="primary", key="predict_btn")
@@ -487,7 +491,7 @@ with top_right:
         with t1: st.markdown("TSI")
         with t2: st.markdown(f"<div style='font-weight:700;color:{tsi_color}'>{tsi_val:+.2f}</div>", unsafe_allow_html=True)
         with t3:
-            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))  # map -1..+1 → 0..100
+            width_pct = int(round((min(max(tsi_val, -1.0), 1.0) + 1.0) * 50))
             st.markdown(f"<div class='meter'><span style='width:{width_pct}%'></span></div>", unsafe_allow_html=True)
 
         st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
@@ -509,7 +513,8 @@ with top_right:
             if j < 2:
                 st.markdown("<div class='sig-divider'></div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)  # end .signals-scope
+    st.markdown("</div>", unsafe_allow_html=True)   # end .signals-scope
+    st.markdown("</div>", unsafe_allow_html=True)   # end .right-scope
 
 # --- MIDDLE: controls → metrics → chart ---------------------------------------
 TICKERS = DISPLAY_ORDER
@@ -520,8 +525,9 @@ if _default_label not in ticker_labels: _default_label = ticker_labels[0]
 _default_idx = ticker_labels.index(_default_label)
 
 with top_mid:
-    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
+    st.markdown("<div class='mid-scope'>", unsafe_allow_html=True)
 
+    st.markdown("<div class='toprow toprow-tight'>", unsafe_allow_html=True)
     sel_col, seg_col = st.columns([0.50, 1.25], gap="small")
     with sel_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
@@ -537,14 +543,19 @@ with top_mid:
                               horizontal=True, index=1, key="segmented_hz",
                               label_visibility="collapsed")
         st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # close toprow
 
     next_day = (seg_choice == "Next day")
     horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
+
+    # NOTE: do_predict is created in the right column. Provide a default here so code
+    # still runs when the button hasn't been rendered yet.
+    if "do_predict" not in locals():
+        do_predict = False
+
     if do_predict:
         try:
             reg, y_scaler = load_artifacts()
@@ -582,6 +593,8 @@ with top_mid:
         """,
         unsafe_allow_html=True
     )
+
+    st.markdown("</div>", unsafe_allow_html=True)  # end .mid-scope
 
     # Inline summary chart
     s = prices[ticker].dropna()

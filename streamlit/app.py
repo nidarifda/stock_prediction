@@ -433,7 +433,7 @@ with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
 
 # Canonical height for symmetry
-WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
+WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 10
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
 # RIGHT: Model + Predict + Signals (stacked, no gap)

@@ -54,7 +54,7 @@ st.markdown(
   [data-testid="stNumberInput"]> div > div {{
     background:var(--card) !important;
     border:1px solid rgba(255,255,255,.10) !important;
-    border-radius:12px !important;
+    border-radius:16px !important;
     color:{TEXT} !important;
   }}
 

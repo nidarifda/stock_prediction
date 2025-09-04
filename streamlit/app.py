@@ -33,7 +33,7 @@ st.markdown(
     --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
     --footer-safe: 160px;
     /* NEW: single source of truth for top offset so Watchlist aligns with controls */
-    --row-top-offset: 8px;
+    --row-top-offset: 12px;
   }}
   .stApp {{ background:var(--bg); color:var(--text); }}
 

@@ -176,6 +176,22 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+# ↓ put this AFTER your existing CSS blocks (e.g., right after the "Extra scopes" <style>)
+st.markdown("""
+<style>
+  /* Pull the metric pills up closer to the top controls */
+  .mid-scope .toprow{ margin-bottom:0 !important; }
+  .mid-scope [data-testid="stVerticalBlock"]{
+    padding-top:0 !important; padding-bottom:0 !important;
+  }
+  .mid-scope [data-testid="stHorizontalBlock"]{ margin-bottom:0 !important; }
+  .mid-scope .element-container{ margin-bottom:0 !important; }
+
+  /* Override the earlier .metric-row margin so it sits tight under controls */
+  .mid-scope .metric-row{ margin-top:2px !important; }
+</style>
+""", unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame

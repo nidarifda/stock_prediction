@@ -188,7 +188,7 @@ st.markdown("""
   .mid-scope .element-container{ margin-bottom:0 !important; }
 
   /* Override the earlier .metric-row margin so it sits tight under controls */
-  .mid-scope .metric-row{ margin-top:2px !important; }
+  .mid-scope .metric-row{ margin-top:-2px !important; }
 </style>
 """, unsafe_allow_html=True)
 

@@ -127,7 +127,7 @@ def ui_segmented(label: str, options: list[str], default: str):
     return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
   return st.radio(label, options=options, index=options.index(default), horizontal=True, label_visibility="collapsed")
 
-col1, col2, col3, colF = st.columns([1.4, 1.6, 1.4, 9], gap="small")
+col1, col2, col3, colF = st.columns([1.0, 1.4, 1.4, 4], gap="small")
 with col1:
   st.selectbox("Ticker", options=["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
 with col2:

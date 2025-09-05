@@ -167,6 +167,38 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+# ↓ drop this AFTER your other st.markdown(<style>...</style>) blocks
+st.markdown("""
+<style>
+  /* GLOBAL SIDE GUTTERS — make content hug the window edges */
+  :root { --page-pad-x: 12px; } /* try 0–16px */
+
+  /* Newer Streamlit builds: outer main container */
+  [data-testid="stAppViewContainer"] > .main {
+    padding-left: var(--page-pad-x) !important;
+    padding-right: var(--page-pad-x) !important;
+  }
+
+  /* Ensure the inner block adds no extra side padding */
+  .block-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Compatibility with some versions where the selector differs */
+  section.main > div.block-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Optional: slightly tighten column gutters too */
+  [data-testid="column"]{
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+</style>
+""", unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame

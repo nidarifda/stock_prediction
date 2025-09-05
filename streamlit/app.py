@@ -226,45 +226,53 @@ with left:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     st.markdown('</div>', unsafe_allow_html=True)
 
+# ---------------- Right column: Affiliated Signals (boxed panels) ----------------
 with right:
-  # Right side wrapped in a single card so the whole panel reads like a box
-  st.markdown('<div class="card" style="padding:16px">', unsafe_allow_html=True)
 
-  def sparkline(values: pd.Series|np.ndarray, key: str):
+  def sparkline(values: pd.Series | np.ndarray, key: str):
     x = list(range(len(values)))
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=values, mode="lines", line=dict(width=2)))
     fig.update_layout(
-      height=36,
-      margin=dict(l=0, r=0, t=0, b=0),
+      height=36, margin=dict(l=0, r=0, t=0, b=0),
       paper_bgcolor=CARD, plot_bgcolor=CARD,
-      xaxis=dict(visible=False), yaxis=dict(visible=False)
+      xaxis=dict(visible=False), yaxis=dict(visible=False),
+      font=dict(color=TEXT),
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
+    st.plotly_chart(
+      fig, use_container_width=True,
+      config={"displayModeBar": False, "staticPlot": True}, key=key
+    )
 
-  def signals_block(title: str, series_names: list[str]):
-    # Each block is inside its own visible card panel
-    st.markdown('<div class="card panel">', unsafe_allow_html=True)
-    # Title inside the panel
+  def signals_panel(title: str, series_names: list[str], panel_key: str):
+    # one visible card/panel per block (title + rows)
+    st.markdown('<div class="card" style="padding:12px">', unsafe_allow_html=True)
     st.markdown(f'<div class="section-title" style="margin-bottom:6px">{title}</div>', unsafe_allow_html=True)
 
     for i, nm in enumerate(series_names):
       vals = aff[nm]
       delta = float(vals.iloc[-1] - vals.iloc[-2])
-      rowL, rowR = st.columns([1.1, 1], gap="small")
-      with rowL:
-        st.markdown(f'<div class="row"><div>{nm}</div>'
-                    f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
-                    unsafe_allow_html=True)
-      with rowR:
-        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
+
+      colL, colR = st.columns([1.1, 1], gap="small")
+      with colL:
+        st.markdown(
+          f'<div class="row"><div>{nm}</div>'
+          f'<div class="chip" style="color:{GREEN if delta >= 0 else RED}">{delta:+.2f}</div></div>',
+          unsafe_allow_html=True
+        )
+      with colR:
+        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{panel_key}_{i}")
+
       st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-  signals_block("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"])
-  st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-  signals_block("Affiliated Signals", ["TS1", "TS2", "TS3"])
+    # close the panel div (this was missing before)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-  st.markdown('</div>', unsafe_allow_html=True)
+  # two separate, clearly boxed panels
+  signals_panel("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"], panel_key="A")
+  st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+  signals_panel("Affiliated Signals", ["TS1", "TS2", "TS3"], panel_key="B")
+
 
 # ---------------------------------------------------------------
 # Bottom cards (placeholders)

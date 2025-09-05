@@ -90,6 +90,17 @@ CSS = f"""
   /* Remove plotly modebar */
   div.plot-container .modebar {{ display: none !important; }}
 
+  /* Stronger contrast for right-panel cards on dark background */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
+}
+/* bump contrast slightly for panels on the right */
+.right-panel .card { background: rgba(255,255,255,0.04); border-color: #223254; }
+
 </style>
 """
 

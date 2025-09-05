@@ -243,6 +243,8 @@ with right:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
   def signals_block(title: str, series_names: list[str]):
+    # Each block is inside its own visible card panel
+    st.markdown('<div class="card panel">', unsafe_allow_html=True)
     # Title inside the panel
     st.markdown(f'<div class="section-title" style="margin-bottom:6px">{title}</div>', unsafe_allow_html=True)
 

@@ -25,52 +25,56 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
-# ────────────────────────────────────────────────────────────────────────────────
-# Global styles (single consolidated block)
-# ────────────────────────────────────────────────────────────────────────────────
+# Global styles
 st.markdown(
     f"""
 <style>
   :root {{
-    /* theme */
     --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
     --footer-safe: 160px;
-
-    /* layout knobs (tweak here) */
-    --row-top-offset: 6px;     /* aligns Watchlist with top controls (try 4–8px) */
-    --metric-nudge: -18px;     /* pulls metric pills up (try -14…-22) */
-    --signals-nudge: -12px;    /* pulls right-column signals up (try -8…-16) */
   }}
-
   .stApp {{ background:var(--bg); color:var(--text); }}
+
+  /* page container spacing */
   .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
 
-  /* Inputs / controls */
+  /* Generic cards */
+  .card {{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px;
+    padding:14px 16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }}
+
+  /* Inputs baseline */
   [data-testid="stTextInput"] > div > div,
   [data-testid="stNumberInput"]> div > div {{
     background:var(--card) !important;
     border:1px solid rgba(255,255,255,.10) !important;
-    border-radius:16px !important;
+    border-radius:12px !important;
     color:{TEXT} !important;
   }}
 
+  /* Selectboxes as dark pills + white text */
   [data-testid="stSelectbox"] {{ margin:0 !important; }}
   [data-testid="stSelectbox"] > div > div {{
     background:{CARD} !important;
     border:1px solid rgba(255,255,255,.10) !important;
     border-radius:12px !important;
-    height:40px;
+    height:44px;
   }}
   [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
   [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
+  /* Radio as dark segmented control */
   [data-testid="stRadio"] {{
     background:{CARD};
     border:1px solid rgba(255,255,255,.10);
     border-radius:12px;
-    padding:2px 6px;
-    height:40px; display:flex; align-items:center;
-    margin:0 !important;
+    padding:6px 10px;
+    height:44px;
+    display:flex; align-items:center;
   }}
   [data-testid="stRadio"] svg {{ display:none !important; }}
   [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
@@ -79,83 +83,81 @@ st.markdown(
     content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
   }}
 
-  /* Top rows & button */
-  .toprow {{
-    display:flex; align-items:center; gap:6px;
-    margin-top: var(--row-top-offset);
-    margin-bottom:0 !important;
-  }}
+  /* CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset */
+  .toprow {{ display:flex; align-items:center; gap:6px; margin-top:6px; }}
   .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap {{
-    height:40px; display:flex; align-items:center; width:100%;
+    height:44px; display:flex; align-items:center; width:100%;
   }}
+  .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
+  .toprow [data-testid="stRadio"] {{
+    height:44px; display:flex; align-items:center; margin:0 !important;
+    padding:0 0; border-radius:12px;
+  }}
+
+  /* Predict button */
   .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
   .toprow .btn-wrap .stButton > button {{
-    height:40px; line-height:40px; width:100% !important;
+    height:44px; line-height:44px; width:100% !important;
     border-radius:12px !important; border:0 !important;
     font-weight:700 !important; background: var(--accent) !important; color:white !important;
     padding:0 10px !important;
   }}
+
+  /* Tight controls row */
   .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
   .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
+  .toprow-tight .element-container{{ margin-bottom:0 !important; }}
+  .toprow-tight [data-testid="stHorizontalBlock"]{{ margin-bottom:0 !important; }}
+  .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
+  .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
+  .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-  /* Cards / visuals */
-  .card {{
-    background:var(--card);
-    border:1px solid rgba(255,255,255,.06);
-    border-radius:18px;
-    padding:14px 16px;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-  }}
-  .chart-card{{
-    background:var(--card);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:12px;
-    padding:0 10px;
-    margin-top:6px;
-    box-shadow:0 6px 18px rgba(0,0,0,.22);
-  }}
-  [data-testid="stPlotlyChart"]{{ margin:0 !important; }}
-
-  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
-  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
-
-  /* Watchlist aligns to top row */
-  .watchlist-wrap {{ margin-top: var(--row-top-offset); }}
-
-  /* GAP KILLERS (middle column) */
-  .mid-scope .toprow{{ margin-bottom:0 !important; }}
-  .mid-scope [data-testid="stVerticalBlock"],
-  .mid-scope [data-testid="stHorizontalBlock"]{{ padding:0 !important; margin:0 !important; }}
-  .mid-scope > [data-testid="stVerticalBlock"] > .element-container{{ margin:0 !important; }}
-  .mid-scope [data-testid="stMarkdownContainer"] p{{ margin:0 !important; }}
-
-  .metric-row{{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
-    margin-top: var(--metric-nudge) !important; padding:0;
-  }}
+  /* Metric row (sit tight under controls) */
+  .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px; padding:0; }}
   .metric-slot{{
     background:var(--card);
     border:1px solid rgba(255,255,255,.10);
     border-radius:12px;
-    height:40px; padding:0 28px;
+    height:44px; padding:0 40px;
     display:flex; align-items:center; justify-content:space-between;
   }}
   .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
   .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
   @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
-  /* GAP KILLERS (right column) */
-  .right-scope .toprow{{ margin-bottom:0 !important; }}
-  .right-scope [data-testid="stVerticalBlock"],
-  .right-scope [data-testid="stHorizontalBlock"]{{ padding:0 !important; margin:0 !important; }}
-  .right-scope > [data-testid="stVerticalBlock"] > .element-container{{ margin:0 !important; }}
-  .right-scope [data-testid="stMarkdownContainer"] p{{ margin:0 !important; }}
+  /* Inline chart card */
+  .chart-card{{ background:var(--card); border:1px solid rgba(255,255,255,.08);
+               border-radius:12px; padding:0 10px; margin-top:12px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
 
-  .signals-scope{{ margin-top: var(--signals-nudge) !important; }}
+  /* Header with extra top padding so title isn't cut */
+  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
+  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# Extra scopes to kill vertical gaps between stacked blocks
+st.markdown(
+    f"""
+<style>
+  /* Middle stack: controls + metric pills right under it */
+  .mid-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
+  .mid-scope .element-container{{ margin-bottom:4px !important; }}
+  .mid-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
+
+  /* Right stack: model/predict + signals */
+  .right-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
+  .right-scope .element-container{{ margin-bottom:4px !important; }}
+  .right-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
+
+  /* Signals cards (also slightly reduce top margin so it hugs controls) */
+  .signals-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
+  .signals-scope .element-container{{ margin-bottom:0 !important; }}
   .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{{
     background:{CARD}; border:1px solid rgba(255,255,255,.08);
     border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.22);
-    padding:12px 14px; margin:0;
+    padding:12px 14px; margin-top:2px; margin-bottom:0;
   }}
   .signals-title{{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
   .sig-divider{{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
@@ -313,7 +315,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer
+# Watchlist renderer (define BEFORE use)
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -327,7 +329,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
       .watch-card {{
         background:{CARD}; border:2px solid rgba(255,255,255,.06);
         border-radius:18px; padding:16px 20px; box-shadow:0 6px 18px rgba(0,0,0,.25);
-        margin-bottom:10px;
+        margin-bottom:16px;
       }}
       .watch-title {{ font-weight:900; color:{TEXT}; margin:0 0 10px 0; }}
       .watch-row {{
@@ -426,17 +428,15 @@ with st.spinner("Loading price history…"):
 # ────────────────────────────────────────────────────────────────────────────────
 top_left, top_mid, top_right = st.columns([0.90, 1.6, 1.35], gap="small")
 
-# LEFT: Watchlist — wrapped so its top edge matches the controls row
+# LEFT: Watchlist
 with top_left:
-    st.markdown("<div class='watchlist-wrap'>", unsafe_allow_html=True)
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
-    st.markdown("</div>", unsafe_allow_html=True)
 
-# Canonical height for symmetry (chart matches watchlist card height)
-WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 10
+# Canonical height for symmetry
+WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 30
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (stacked)
+# RIGHT: Model + Predict + Signals (stacked, no gap)
 with top_right:
     st.markdown("<div class='right-scope'>", unsafe_allow_html=True)
 
@@ -550,6 +550,9 @@ with top_mid:
 
     # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
+
+    # NOTE: do_predict is created in the right column. Provide a default here so code
+    # still runs when the button hasn't been rendered yet.
     if "do_predict" not in locals():
         do_predict = False
 
@@ -579,7 +582,7 @@ with top_mid:
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # Metric pills (hug the controls)
+    # Metric pills (tight under the controls)
     st.markdown(
         f"""
         <div class="metric-row">

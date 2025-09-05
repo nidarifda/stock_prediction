@@ -136,8 +136,6 @@ with left:
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   # OPEN the card wrapper (prevents orphan closer + empty boxes)
-  st.markdown('<div class="card">', unsafe_allow_html=True)
-
   fig = go.Figure()
   fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
   fig.add_trace(go.Scatter(x=list(forecast_dates) + list(forecast_dates[::-1]),
@@ -172,7 +170,6 @@ with right:
                     config={"displayModeBar": False, "staticPlot": True}, key=key)
 
   # Whole panel in one card (title + rows)
-  st.markdown('<div class="card" style="padding:14px">', unsafe_allow_html=True)
   st.markdown('<div class="section-title" style="margin-bottom:10px">Affiliated Signals</div>', unsafe_allow_html=True)
 
   for i, nm in enumerate(["TSMC", "ASML", "Cadence", "Synopsys"]):

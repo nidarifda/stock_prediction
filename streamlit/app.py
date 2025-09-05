@@ -48,14 +48,11 @@ CSS = f"""
 
   .stApp {{ background: var(--bg); color: var(--text); }}
   header[data-testid="stHeader"] {{ background: transparent; }}
-  /* Tight page padding */
   .block-container {{ padding-top: 0.4rem; padding-left: 0.9rem; padding-right: 0.9rem; }}
 
-  /* Hide default divider look */
   [data-testid="stDivider"] {{ display: none; }}
   .spacer {{ height: 8px; }}
 
-  /* Base card */
   .card {{
     background: var(--card);
     border: 1px solid var(--border);
@@ -63,44 +60,20 @@ CSS = f"""
     padding: 14px 16px;
     box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
   }}
-  .subcard {{
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 6px 8px;
-  }}
-
-  /* KPI tile */
   .tile .label {{ font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }}
   .tile .value {{ font-weight: 700; font-size: 2rem; letter-spacing: 0.4px; }}
   .tile .unit  {{ font-size: 0.9rem; color: var(--muted); margin-left: 6px; }}
 
-  /* Section titles */
   .section-title {{ font-size: 1rem; font-weight: 700; color: var(--text); }}
   .section-sub   {{ font-size: 0.85rem; color: var(--muted); }}
 
-  /* Mini list rows */
   .row {{ display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }}
   .row + .row {{ margin-top: 10px; }}
   .chip {{ font-weight: 700; }}
 
-  /* Compact selectboxes */
   div[data-baseweb="select"] > div {{ background: var(--card); border-radius: 10px; border: 1px solid var(--border); }}
 
-  /* Remove plotly modebar */
   div.plot-container .modebar {{ display: none !important; }}
-
-  /* Stronger contrast for right-panel cards on dark background */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 16px;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
-}
-/* bump contrast slightly for panels on the right */
-.right-panel .card { background: rgba(255,255,255,0.04); border-color: #223254; }
-
 </style>
 """
 
@@ -126,7 +99,6 @@ def make_affiliate_series(k: int = 60, seed: int = 1):
     steps = rng.normal(0, 1, size=k).cumsum()
     s = 100 + steps + rng.normal(0, 0.5, size=k)
     data[name] = pd.Series(s)
-  # extra signals block
   for j in range(3):
     nm = f"TS{j+1}"
     steps = rng.normal(0, 1, size=k).cumsum()
@@ -136,7 +108,6 @@ def make_affiliate_series(k: int = 60, seed: int = 1):
 hist = make_series()
 aff  = make_affiliate_series()
 
-# forecast (toy): flat-to-slight dip with CI
 f_days = 20
 last_val = hist["price"].iloc[-1]
 forecast_dates = pd.date_range(hist["date"].iloc[-1] + pd.Timedelta(days=1), periods=f_days)
@@ -144,20 +115,16 @@ trend = np.linspace(last_val, last_val - 12, f_days)
 ci_low = trend - 6
 ci_high = trend + 4
 
-# KPIs (demo numbers to match screenshot)
 predicted_close = 424.58
 interval_low, interval_high = 415, 434
 confidence = 0.78
 
 # ---------------------------------------------------------------
-# Widgets — top bar
+# Top bar
 # ---------------------------------------------------------------
-# Backward-compatible segmented control (falls back to horizontal radio if not available)
-
 def ui_segmented(label: str, options: list[str], default: str):
   if hasattr(st, "segmented_control"):
     return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
-  # Fallback for older Streamlit versions
   return st.radio(label, options=options, index=options.index(default), horizontal=True, label_visibility="collapsed")
 
 col1, col2, col3, colF = st.columns([1.4, 1.6, 1.4, 4], gap="small")
@@ -168,125 +135,77 @@ with col2:
 with col3:
   model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
 with colF:
-  st.write("")  # spacer to align
+  st.write("")
 
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
-# KPI row (moved inside LEFT column so widths match the main chart)
-# ---------------------------------------------------------------
-
-# (intentionally left empty here — rendered inside the left column below)
-
-# ---------------------------------------------------------------
-# Main chart + right signals panel
+# Main chart + KPIs + Affiliated Signals
 # ---------------------------------------------------------------
 left, right = st.columns([2.1, 1], gap="small")
 
 with left:
-  # KPI tiles aligned to the same width as the main chart
   k1, k2, k3 = st.columns([1,1,1], gap="small")
   def kpi_card(label: str, value: str, unit: str = ""):
     st.markdown('<div class="card tile">' +
                 f'<div class="label">{label}</div>' +
                 f'<div class="value">{value}' + (f'<span class="unit">{unit}</span>' if unit else '') + '</div>' +
                 '</div>', unsafe_allow_html=True)
-  with k1:
-    kpi_card("Predicted Close", f"{predicted_close:,.2f}")
-  with k2:
-    kpi_card("80% interval", f"{interval_low} – {interval_high}")
-  with k3:
-    kpi_card("Confidence", f"{confidence:.2f}")
+  with k1: kpi_card("Predicted Close", f"{predicted_close:,.2f}")
+  with k2: kpi_card("80% interval", f"{interval_low} – {interval_high}")
+  with k3: kpi_card("Confidence", f"{confidence:.2f}")
 
-  # add a little space between the KPI row and the line chart
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   with st.container(border=False):
     st.markdown('<div class="card">', unsafe_allow_html=True)
-
-    # Build price + forecast plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
-
-    # CI band (forecast)
     fig.add_trace(go.Scatter(x=list(forecast_dates) + list(forecast_dates[::-1]),
                              y=list(ci_high) + list(ci_low[::-1]),
                              fill="toself", fillcolor="rgba(73,107,255,0.15)",
                              line=dict(width=0), showlegend=False, name="80% CI"))
-
-    # Forecast dotted
-    fig.add_trace(go.Scatter(x=forecast_dates, y=trend, mode="lines", name="Forecast",
-                             line=dict(dash="dot")))
-
-    # Marker at split
-    split_date = hist["date"].iloc[-1]
-    split_val  = last_val
-    fig.add_trace(go.Scatter(x=[split_date], y=[split_val], mode="markers", name="now",
-                             marker=dict(size=10)))
-
-    fig.update_layout(
-      margin=dict(l=16, r=12, t=8, b=8),
-      height=320,
-      paper_bgcolor=CARD, plot_bgcolor=CARD,
-      font=dict(color=TEXT),
-      xaxis=dict(showgrid=False, zeroline=False),
-      yaxis=dict(showgrid=True, gridcolor="#1a2742"),
-      legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
-
+    fig.add_trace(go.Scatter(x=forecast_dates, y=trend, mode="lines", name="Forecast", line=dict(dash="dot")))
+    fig.add_trace(go.Scatter(x=[hist["date"].iloc[-1]], y=[last_val], mode="markers", name="now", marker=dict(size=10)))
+    fig.update_layout(margin=dict(l=16, r=12, t=8, b=8), height=320,
+                      paper_bgcolor=CARD, plot_bgcolor=CARD,
+                      font=dict(color=TEXT),
+                      xaxis=dict(showgrid=False, zeroline=False),
+                      yaxis=dict(showgrid=True, gridcolor="#1a2742"),
+                      legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- Right column: Affiliated Signals (boxed panels) ----------------
 with right:
-
-  def sparkline(values: pd.Series | np.ndarray, key: str):
+  def sparkline(values: pd.Series|np.ndarray, key: str):
     x = list(range(len(values)))
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=values, mode="lines", line=dict(width=2)))
-    fig.update_layout(
-      height=36, margin=dict(l=0, r=0, t=0, b=0),
-      paper_bgcolor=CARD, plot_bgcolor=CARD,
-      xaxis=dict(visible=False), yaxis=dict(visible=False),
-      font=dict(color=TEXT),
-    )
-    st.plotly_chart(
-      fig, use_container_width=True,
-      config={"displayModeBar": False, "staticPlot": True}, key=key
-    )
+    fig.update_layout(height=36, margin=dict(l=0, r=0, t=0, b=0),
+                      paper_bgcolor=CARD, plot_bgcolor=CARD,
+                      xaxis=dict(visible=False), yaxis=dict(visible=False))
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
-  def signals_panel(title: str, series_names: list[str], panel_key: str):
-    # one visible card/panel per block (title + rows)
+  def signals_panel(title: str, names: list[str], key: str):
     st.markdown('<div class="card" style="padding:12px">', unsafe_allow_html=True)
     st.markdown(f'<div class="section-title" style="margin-bottom:6px">{title}</div>', unsafe_allow_html=True)
-
-    for i, nm in enumerate(series_names):
-      vals = aff[nm]
-      delta = float(vals.iloc[-1] - vals.iloc[-2])
-
-      colL, colR = st.columns([1.1, 1], gap="small")
-      with colL:
-        st.markdown(
-          f'<div class="row"><div>{nm}</div>'
-          f'<div class="chip" style="color:{GREEN if delta >= 0 else RED}">{delta:+.2f}</div></div>',
-          unsafe_allow_html=True
-        )
-      with colR:
-        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{panel_key}_{i}")
-
+    for i, nm in enumerate(names):
+      vals = aff[nm]; delta = float(vals.iloc[-1] - vals.iloc[-2])
+      c1, c2 = st.columns([1.1, 1], gap="small")
+      with c1:
+        st.markdown(f'<div class="row"><div>{nm}</div>'
+                    f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>', unsafe_allow_html=True)
+      with c2:
+        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{key}_{i}")
       st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # close the panel div (this was missing before)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-  # two separate, clearly boxed panels
-  signals_panel("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"], panel_key="A")
+  signals_panel("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"], "A")
   st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-  signals_panel("Affiliated Signals", ["TS1", "TS2", "TS3"], panel_key="B")
-
+  signals_panel("Affiliated Signals", ["TS1", "TS2", "TS3"], "B")
 
 # ---------------------------------------------------------------
-# Bottom cards (placeholders)
+# Bottom cards
 # ---------------------------------------------------------------
 bc1, bc2, bc3 = st.columns([1.2, 1.2, 1], gap="small")
 
@@ -294,7 +213,6 @@ with bc1:
   st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">RMSE 2.31 · MAE 1.78 · MAPE 0.46%</div>', unsafe_allow_html=True)
-  import plotly.graph_objects as go
   bar = go.Figure(data=[go.Bar(x=["RMSE","MAE","MAPE%"], y=[2.31,1.78,0.46])])
   bar.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor=CARD, plot_bgcolor=CARD, font=dict(color=TEXT))
   st.plotly_chart(bar, use_container_width=True, config={"displayModeBar": False})
@@ -320,11 +238,9 @@ with bc3:
 # Notes
 # ---------------------------------------------------------------
 with st.expander("How to wire real data (read me)"):
-  st.markdown(
-    """
+  st.markdown("""
     - Replace `make_series()` with your historical price dataframe (`date`, `price`).\
     - Replace `make_affiliate_series()` with your own features to render in the *Affiliated Signals* panels.\
     - Feed *predicted_close*, interval, and confidence from your model outputs.\
     - The right panel sparklines accept any 1D series (last 40 shown).
-    """
-  )
+    """)

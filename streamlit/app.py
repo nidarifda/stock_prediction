@@ -441,7 +441,7 @@ with top_right:
     st.markdown("<div class='right-scope'>", unsafe_allow_html=True)
 
     st.markdown("<div class='toprow'>", unsafe_allow_html=True)
-    model_col, btn_col = st.columns([1.0, 1.0], gap="medium")
+    model_col, btn_col = st.columns([1.0, 0.80], gap="medium")
     with model_col:
         st.markdown("<div class='control-wrap'>", unsafe_allow_html=True)
         model_name = st.selectbox(" ", ["LightGBM", "RandomForest", "XGBoost"],

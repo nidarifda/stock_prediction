@@ -128,11 +128,19 @@ confidence = 0.78
 # ---------------------------------------------------------------
 # Widgets — top bar
 # ---------------------------------------------------------------
+# Backward-compatible segmented control (falls back to horizontal radio if not available)
+
+def ui_segmented(label: str, options: list[str], default: str):
+  if hasattr(st, "segmented_control"):
+    return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
+  # Fallback for older Streamlit versions
+  return st.radio(label, options=options, index=options.index(default), horizontal=True, label_visibility="collapsed")
+
 col1, col2, col3, colF = st.columns([1.4, 1.6, 1.4, 4], gap="small")
 with col1:
   st.selectbox("Ticker", options=["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
 with col2:
-  horizon = st.segmented_control("Forecast horizon", options=["Next day", "1D", "1W", "1M"], default="1D", label_visibility="collapsed")
+  horizon = ui_segmented("Forecast horizon", ["Next day", "1D", "1W", "1M"], "1D")
 with col3:
   model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
 with colF:

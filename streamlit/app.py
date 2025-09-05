@@ -26,32 +26,26 @@ GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Global styles (consolidated)
+# Global styles (single consolidated block)
 # ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     f"""
 <style>
   :root {{
+    /* theme */
     --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
     --footer-safe: 160px;
-    /* single source of truth so Watchlist aligns with top row */
-    --row-top-offset: 0px;
-  }}
-  .stApp {{ background:var(--bg); color:var(--text); }}
 
-  /* page container spacing */
+    /* layout knobs (tweak here) */
+    --row-top-offset: 6px;     /* aligns Watchlist with top controls (try 4–8px) */
+    --metric-nudge: -18px;     /* pulls metric pills up (try -14…-22) */
+    --signals-nudge: -12px;    /* pulls right-column signals up (try -8…-16) */
+  }}
+
+  .stApp {{ background:var(--bg); color:var(--text); }}
   .block-container {{ padding-top:1.0rem; padding-bottom:1.0rem; }}
 
-  /* Generic cards */
-  .card {{
-    background:var(--card);
-    border:1px solid rgba(255,255,255,.06);
-    border-radius:18px;
-    padding:14px 16px;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-  }}
-
-  /* Inputs baseline */
+  /* Inputs / controls */
   [data-testid="stTextInput"] > div > div,
   [data-testid="stNumberInput"]> div > div {{
     background:var(--card) !important;
@@ -60,18 +54,16 @@ st.markdown(
     color:{TEXT} !important;
   }}
 
-  /* Selectboxes as dark pills + white text */
   [data-testid="stSelectbox"] {{ margin:0 !important; }}
   [data-testid="stSelectbox"] > div > div {{
     background:{CARD} !important;
     border:1px solid rgba(255,255,255,.10) !important;
     border-radius:12px !important;
-    height:40px;  /* tighter */
+    height:40px;
   }}
   [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
   [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
 
-  /* Radio as dark segmented control */
   [data-testid="stRadio"] {{
     background:{CARD};
     border:1px solid rgba(255,255,255,.10);
@@ -87,17 +79,15 @@ st.markdown(
     content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
   }}
 
-  /* CONTROL ROWS — keep BOTH rows aligned */
+  /* Top rows & button */
   .toprow {{
     display:flex; align-items:center; gap:6px;
     margin-top: var(--row-top-offset);
-    margin-bottom: 0 !important;
+    margin-bottom:0 !important;
   }}
   .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap {{
     height:40px; display:flex; align-items:center; width:100%;
   }}
-
-  /* Predict button */
   .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
   .toprow .btn-wrap .stButton > button {{
     height:40px; line-height:40px; width:100% !important;
@@ -105,17 +95,44 @@ st.markdown(
     font-weight:700 !important; background: var(--accent) !important; color:white !important;
     padding:0 10px !important;
   }}
-
-  /* Tight controls row */
   .toprow-tight [data-testid="stHorizontalBlock"]{{ gap:4px !important; }}
   .toprow-tight [data-testid="column"]{{ padding-left:6px !important; padding-right:6px !important; }}
-  .toprow-tight .element-container{{ margin-bottom:0 !important; }}
-  .toprow-tight [data-testid="stHorizontalBlock"]{{ margin-bottom:0 !important; }}
-  .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
-  .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-  /* Metric row — hug the controls */
-  .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:-10px; padding:0; }}
+  /* Cards / visuals */
+  .card {{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px;
+    padding:14px 16px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }}
+  .chart-card{{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    padding:0 10px;
+    margin-top:6px;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
+  }}
+  [data-testid="stPlotlyChart"]{{ margin:0 !important; }}
+
+  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
+  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
+
+  /* Watchlist aligns to top row */
+  .watchlist-wrap {{ margin-top: var(--row-top-offset); }}
+
+  /* GAP KILLERS (middle column) */
+  .mid-scope .toprow{{ margin-bottom:0 !important; }}
+  .mid-scope [data-testid="stVerticalBlock"],
+  .mid-scope [data-testid="stHorizontalBlock"]{{ padding:0 !important; margin:0 !important; }}
+  .mid-scope > [data-testid="stVerticalBlock"] > .element-container{{ margin:0 !important; }}
+  .mid-scope [data-testid="stMarkdownContainer"] p{{ margin:0 !important; }}
+
+  .metric-row{{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-top: var(--metric-nudge) !important; padding:0;
+  }}
   .metric-slot{{
     background:var(--card);
     border:1px solid rgba(255,255,255,.10);
@@ -127,35 +144,18 @@ st.markdown(
   .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
   @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
-  /* Inline chart card — tighter above */
-  .chart-card{{ background:var(--card); border:1px solid rgba(255,255,255,.08);
-               border-radius:12px; padding:0 10px; margin-top:6px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
-  [data-testid="stPlotlyChart"]{{ margin:0 !important; }}
+  /* GAP KILLERS (right column) */
+  .right-scope .toprow{{ margin-bottom:0 !important; }}
+  .right-scope [data-testid="stVerticalBlock"],
+  .right-scope [data-testid="stHorizontalBlock"]{{ padding:0 !important; margin:0 !important; }}
+  .right-scope > [data-testid="stVerticalBlock"] > .element-container{{ margin:0 !important; }}
+  .right-scope [data-testid="stMarkdownContainer"] p{{ margin:0 !important; }}
 
-  /* Header */
-  .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
-  .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
-
-  /* Watchlist aligns to top row */
-  .watchlist-wrap {{ margin-top: var(--row-top-offset); }}
-
-  /* Middle stack: controls + metric pills right under it (kill residuals) */
-  .mid-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .mid-scope .element-container{{ margin:0 !important; }}
-  .mid-scope [data-testid="stHorizontalBlock"]{{ margin:0 !important; }}
-
-  /* Right stack: model/predict + signals tight */
-  .right-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .right-scope .element-container{{ margin-bottom:4px !important; }}
-  .right-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
-
-  /* Signals card styling */
-  .signals-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .signals-scope .element-container{{ margin-bottom:0 !important; }}
+  .signals-scope{{ margin-top: var(--signals-nudge) !important; }}
   .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{{
     background:{CARD}; border:1px solid rgba(255,255,255,.08);
     border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.22);
-    padding:12px 14px; margin-top:4px; margin-bottom:0;
+    padding:12px 14px; margin:0;
   }}
   .signals-title{{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
   .sig-divider{{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
@@ -165,28 +165,6 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-
-# put this AFTER your existing CSS blocks
-st.markdown("""
-<style>
-  /* Kill the invisible spacing Streamlit inserts after the first row */
-  .mid-scope .toprow { margin-bottom:0 !important; }
-  .right-scope .toprow { margin-bottom:0 !important; }
-
-  /* Streamlit wraps each element in .element-container. Zero it out here. */
-  .mid-scope > [data-testid="stVerticalBlock"] > .element-container { margin:0 !important; }
-  .right-scope > [data-testid="stVerticalBlock"] > .element-container { margin:0 !important; }
-
-  /* Pull the metric pills up to hug the controls (tune -12…-18 if you want tighter) */
-  .mid-scope .metric-row { margin-top:-16px !important; }
-
-  /* Make the first signals card sit directly under Model/Predict */
-  .right-scope .signals-scope [data-testid="stVerticalBlockBorderWrapper"]:first-of-type {
-    margin-top:0 !important;
-  }
-</style>
-""", unsafe_allow_html=True)
-
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame
@@ -454,7 +432,7 @@ with top_left:
     wl_rows = render_watchlist_from_prices(prices, DISPLAY_ORDER, title="Watchlist")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Canonical height for symmetry
+# Canonical height for symmetry (chart matches watchlist card height)
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 10
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
@@ -570,6 +548,7 @@ with top_mid:
     next_day = (seg_choice == "Next day")
     horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
+    # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
     if "do_predict" not in locals():
         do_predict = False

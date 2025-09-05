@@ -94,23 +94,35 @@ predicted_close = 424.58
 interval_low, interval_high = 415, 434
 confidence = 0.78
 
-# ---------------- Top bar ----------------
+# ---------------- Top bar (ticker • horizon • model • Predict) ----------------
 def ui_segmented(label: str, options: list[str], default: str):
-  if hasattr(st, "segmented_control"):
-    return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
-  return st.radio(label, options=options, index=options.index(default), horizontal=True, label_visibility="collapsed")
+    if hasattr(st, "segmented_control"):
+        return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
+    # fallback to radio styled like pills
+    return st.radio(label, options=options, index=options.index(default),
+                    horizontal=True, label_visibility="collapsed")
 
-c1, c2, c3, c4 = st.columns([1.4, 1.6, 1.4, 4], gap="small")
-with c1:
-  st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
-with c2:
-  horizon = ui_segmented("Forecast horizon", ["Next day", "1D", "1W", "1M"], "1D")
-with c3:
-  st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
-with c4:
-  st.write("")
+# Layout: ticker | horizon pills | model | predict | spacer
+tb1, tb2, tb3, tb4, tb_sp = st.columns([1.1, 2.2, 1.1, 0.9, 4], gap="small")
+
+with tb1:
+    ticker = st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
+
+with tb2:
+    horizon = ui_segmented("Horizon", ["Next day", "1D", "1W", "1M", "1Y"], "1D")
+
+with tb3:
+    model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
+
+with tb4:
+    predict_clicked = st.button("Predict", use_container_width=True)
+
+# (Optional) handle click
+if predict_clicked:
+    st.toast(f"Predicting {ticker} • {horizon} with {model}…", icon="🔮")
 
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
+
 
 # ---------------- Layout ----------------
 left, right = st.columns([2.1, 1], gap="small")

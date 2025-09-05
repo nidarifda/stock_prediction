@@ -227,6 +227,9 @@ with left:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with right:
+  # Right side wrapped in a single card so the whole panel reads like a box
+  st.markdown('<div class="card" style="padding:16px">', unsafe_allow_html=True)
+
   def sparkline(values: pd.Series|np.ndarray, key: str):
     x = list(range(len(values)))
     fig = go.Figure()
@@ -240,28 +243,26 @@ with right:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
   def signals_block(title: str, series_names: list[str]):
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
-    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    # Title inside the panel
+    st.markdown(f'<div class="section-title" style="margin-bottom:6px">{title}</div>', unsafe_allow_html=True)
 
     for i, nm in enumerate(series_names):
       vals = aff[nm]
       delta = float(vals.iloc[-1] - vals.iloc[-2])
-      # Row layout without HTML wrapper to avoid empty pills
-      colA, colB = st.columns([1.1, 1], gap="small")
-      with colA:
+      rowL, rowR = st.columns([1.1, 1], gap="small")
+      with rowL:
         st.markdown(f'<div class="row"><div>{nm}</div>'
                     f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
                     unsafe_allow_html=True)
-      with colB:
+      with rowR:
         sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
-      st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
+      st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
   signals_block("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"])
-  st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+  st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
   signals_block("Affiliated Signals", ["TS1", "TS2", "TS3"])
+
+  st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
 # Bottom cards (placeholders)

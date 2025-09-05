@@ -193,7 +193,7 @@ st.markdown("""
 
   /* Optional: slightly tighten column gutters too */
   [data-testid="column"]{
-    padding-left: 6px !important;
+    padding-left: 10px !important;
     padding-right: 6px !important;
   }
 </style>

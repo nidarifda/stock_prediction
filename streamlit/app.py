@@ -1,4 +1,4 @@
-# app.py — Dark Stock Dashboard (enhanced, no empty boxes)
+# app.py — Dark Stock Dashboard (enhanced top bar & no empty boxes)
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 BORDER   = "#1B2740"
 
+# Base CSS
 CSS = f"""
 <style>
   :root {{
@@ -49,10 +50,40 @@ CSS = f"""
   .row {{ display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }}
   .chip {{ font-weight: 700; }}
 
-  div[data-baseweb="select"] > div {{ background: var(--card); border-radius: 10px; border: 1px solid var(--border); }}
+  /* Compact select boxes */
+  div[data-baseweb="select"] > div {{ background: var(--card); border-radius: 10px; border: 1px solid var(--border); min-height:40px; }}
+
+  /* Hide plotly toolbar */
   div.plot-container .modebar {{ display: none !important; }}
 </style>
 """
+
+# Top bar styling (pills + red Predict)
+CSS += """
+<style>
+  /* Pills (segmented control or radio fallback) */
+  [data-testid="stSegmentedControl"] { background: var(--card); border:1px solid var(--border); border-radius:10px; }
+  [data-testid="stSegmentedControl"] button { padding: 6px 10px; }
+  [data-baseweb="radio"] > div { background: var(--card); border: 1px solid var(--border); border-radius:10px; padding:6px 10px; }
+
+  /* Predict button */
+  .stButton > button {
+    background:#FF5C5C; color:#fff; border:none; border-radius:10px;
+    height:40px; padding:10px 22px; font-weight:700;
+    box-shadow:0 6px 18px rgba(255,92,92,.25);
+  }
+  .stButton > button:hover { filter:brightness(1.05); }
+</style>
+"""
+
+# Compact Affiliated Signals spacing (optional)
+CSS += """
+<style>
+  .signals-scope [data-testid="stMarkdownContainer"] p { margin:0 !important; line-height:1.05 !important; }
+  .signals-scope [data-testid="stPlotlyChart"]{ margin:0 !important; }
+</style>
+"""
+
 st.markdown(CSS, unsafe_allow_html=True)
 
 # ---------------- Demo data ----------------
@@ -96,38 +127,31 @@ confidence = 0.78
 
 # ---------------- Top bar (ticker • horizon • model • Predict) ----------------
 def ui_segmented(label: str, options: list[str], default: str):
-    if hasattr(st, "segmented_control"):
-        return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
-    # fallback to radio styled like pills
-    return st.radio(label, options=options, index=options.index(default),
-                    horizontal=True, label_visibility="collapsed")
+  if hasattr(st, "segmented_control"):
+    return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
+  return st.radio(label, options=options, index=options.index(default),
+                  horizontal=True, label_visibility="collapsed")
 
 # Layout: ticker | horizon pills | model | predict | spacer
 tb1, tb2, tb3, tb4, tb_sp = st.columns([1.1, 2.2, 1.1, 0.9, 4], gap="small")
-
 with tb1:
-    ticker = st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
-
+  ticker = st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
 with tb2:
-    horizon = ui_segmented("Horizon", ["Next day", "1D", "1W", "1M", "1Y"], "1D")
-
+  horizon = ui_segmented("Horizon", ["Next day", "1D", "1W", "1M", "1Y"], "1D")
 with tb3:
-    model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
-
+  model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
 with tb4:
-    predict_clicked = st.button("Predict", use_container_width=True)
+  predict_clicked = st.button("Predict", use_container_width=True)
 
-# (Optional) handle click
 if predict_clicked:
-    st.toast(f"Predicting {ticker} • {horizon} with {model}…", icon="🔮")
+  st.toast(f"Predicting {ticker} • {horizon} with {model}…", icon="🔮")
 
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
-
 
 # ---------------- Layout ----------------
 left, right = st.columns([2.1, 1], gap="small")
 
-# ----- Left: KPIs + main chart (chart wrapped in a matching card) -----
+# ----- Left: KPIs + main chart (chart wrapped in a proper card) -----
 with left:
   k1, k2, k3 = st.columns([1, 1, 1], gap="small")
 
@@ -147,7 +171,8 @@ with left:
 
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-  # OPEN the card wrapper (prevents orphan closer + empty boxes)
+  # Chart inside a card
+  st.markdown('<div class="card">', unsafe_allow_html=True)
   fig = go.Figure()
   fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
   fig.add_trace(go.Scatter(x=list(forecast_dates) + list(forecast_dates[::-1]),
@@ -162,12 +187,11 @@ with left:
                     yaxis=dict(showgrid=True, gridcolor="#1a2742"),
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
   st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-  # CLOSE the card wrapper (now paired correctly)
   st.markdown("</div>", unsafe_allow_html=True)
 
-# ----- Right: Affiliated Signals inside a single boxed card -----
+# ----- Right: Affiliated Signals boxed panel -----
 with right:
+  st.markdown('<div class="signals-scope">', unsafe_allow_html=True)
 
   def sparkline(series: pd.Series, key: str):
     vals = series.tail(40).reset_index(drop=True)
@@ -181,7 +205,7 @@ with right:
     st.plotly_chart(fig, use_container_width=True,
                     config={"displayModeBar": False, "staticPlot": True}, key=key)
 
-  # Whole panel in one card (title + rows)
+  # Panel title + rows
   st.markdown('<div class="section-title" style="margin-bottom:10px">Affiliated Signals</div>', unsafe_allow_html=True)
 
   for i, nm in enumerate(["TSMC", "ASML", "Cadence", "Synopsys"]):
@@ -200,4 +224,4 @@ with right:
 
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-  st.markdown("</div>", unsafe_allow_html=True)  # end Affiliated Signals card
+  st.markdown("</div>", unsafe_allow_html=True)  # end signals-scope

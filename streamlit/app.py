@@ -49,7 +49,11 @@ CSS = f"""
   .stApp {{ background: var(--bg); color: var(--text); }}
   header[data-testid="stHeader"] {{ background: transparent; }}
   /* Tight page padding */
-  .block-container {{ padding-top: 0.75rem; padding-left: 0.9rem; padding-right: 0.9rem; }}
+  .block-container {{ padding-top: 0.4rem; padding-left: 0.9rem; padding-right: 0.9rem; }}
+
+  /* Hide default divider look */
+  [data-testid="stDivider"] {{ display: none; }}
+  .spacer {{ height: 8px; }}
 
   /* Base card */
   .card {{
@@ -58,6 +62,12 @@ CSS = f"""
     border-radius: 16px;
     padding: 14px 16px;
     box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
+  }}
+  .subcard {{
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 8px;
   }}
 
   /* KPI tile */
@@ -73,6 +83,9 @@ CSS = f"""
   .row {{ display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }}
   .row + .row {{ margin-top: 10px; }}
   .chip {{ font-weight: 700; }}
+
+  /* Compact selectboxes */
+  div[data-baseweb="select"] > div {{ background: var(--card); border-radius: 10px; border: 1px solid var(--border); }}
 
   /* Remove plotly modebar */
   div.plot-container .modebar {{ display: none !important; }}
@@ -146,7 +159,7 @@ with col3:
 with colF:
   st.write("")  # spacer to align
 
-st.divider()
+st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
 # KPI row
@@ -229,13 +242,17 @@ with right:
     for i, nm in enumerate(series_names):
       vals = aff[nm]
       delta = float(vals.iloc[-1] - vals.iloc[-2])
-      colA, colB = st.columns([1.4, 1], gap="small")
-      with colA:
-        st.markdown(f'<div class="row"><div>{nm}</div>'
-                    f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
-                    unsafe_allow_html=True)
-      with colB:
-        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
+      # subcard wraps each signal row to match the screenshot chips
+      with st.container():
+        st.markdown('<div class="subcard">', unsafe_allow_html=True)
+        colA, colB = st.columns([1.1, 1], gap="small")
+        with colA:
+          st.markdown(f'<div class="row"><div>{nm}</div>'
+                      f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
+                      unsafe_allow_html=True)
+        with colB:
+          sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -252,8 +269,10 @@ with bc1:
   st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">RMSE 2.31 · MAE 1.78 · MAPE 0.46%</div>', unsafe_allow_html=True)
-  st.write("\n")
-  st.bar_chart(pd.DataFrame({"RMSE":[2.31], "MAE":[1.78], "MAPE":[0.46]}))
+  import plotly.graph_objects as go
+  bar = go.Figure(data=[go.Bar(x=["RMSE","MAE","MAPE%"], y=[2.31,1.78,0.46])])
+  bar.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor=CARD, plot_bgcolor=CARD, font=dict(color=TEXT))
+  st.plotly_chart(bar, use_container_width=True, config={"displayModeBar": False})
   st.markdown('</div>', unsafe_allow_html=True)
 
 with bc2:

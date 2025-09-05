@@ -290,7 +290,7 @@ with bc3:
   st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">SHAP</div>', unsafe_allow_html=True)
   shap_df = pd.DataFrame({"Feature":["TSMC", "ASML", "Momentum", "Volatility", "Synopsys"],
-                          "Impact":[0.39, 0.33, 0.22, 0.18, 0.16]}
+                          "Impact":[0.39, 0.33, 0.22, 0.18, 0.16]})
   st.dataframe(shap_df, hide_index=True, use_container_width=True)
   st.markdown('</div>', unsafe_allow_html=True)
 

@@ -162,22 +162,10 @@ with colF:
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
-# KPI row
+# KPI row (moved inside LEFT column so widths match the main chart)
 # ---------------------------------------------------------------
-kc1, kc2, kc3, _sp = st.columns([1,1,1,3.2])
 
-def kpi_card(label: str, value: str, unit: str = ""):
-  st.markdown('<div class="card tile">' +
-              f'<div class="label">{label}</div>' +
-              f'<div class="value">{value}' + (f'<span class="unit">{unit}</span>' if unit else '') + '</div>' +
-              '</div>', unsafe_allow_html=True)
-
-with kc1:
-  kpi_card("Predicted Close", f"{predicted_close:,.2f}")
-with kc2:
-  kpi_card("80% interval", f"{interval_low} – {interval_high}")
-with kc3:
-  kpi_card("Confidence", f"{confidence:.2f}")
+# (intentionally left empty here — rendered inside the left column below)
 
 # ---------------------------------------------------------------
 # Main chart + right signals panel
@@ -185,7 +173,26 @@ with kc3:
 left, right = st.columns([2.1, 1], gap="small")
 
 with left:
+  # KPI tiles aligned to the same width as the main chart
+  k1, k2, k3 = st.columns([1,1,1], gap="small")
+  def kpi_card(label: str, value: str, unit: str = ""):
+    st.markdown('<div class="card tile">' +
+                f'<div class="label">{label}</div>' +
+                f'<div class="value">{value}' + (f'<span class="unit">{unit}</span>' if unit else '') + '</div>' +
+                '</div>', unsafe_allow_html=True)
+  with k1:
+    kpi_card("Predicted Close", f"{predicted_close:,.2f}")
+  with k2:
+    kpi_card("80% interval", f"{interval_low} – {interval_high}")
+  with k3:
+    kpi_card("Confidence", f"{confidence:.2f}")
+
+  # add a little space between the KPI row and the line chart
+  st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+
   with st.container(border=False):
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
     # Build price + forecast plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
@@ -233,6 +240,7 @@ with right:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
   def signals_block(title: str, series_names: list[str]):
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 

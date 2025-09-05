@@ -191,6 +191,8 @@ with left:
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   with st.container(border=False):
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
     # Build price + forecast plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
@@ -245,17 +247,15 @@ with right:
     for i, nm in enumerate(series_names):
       vals = aff[nm]
       delta = float(vals.iloc[-1] - vals.iloc[-2])
-      # subcard wraps each signal row to match the screenshot chips
-      with st.container():
-        st.markdown('<div class="subcard">', unsafe_allow_html=True)
-        colA, colB = st.columns([1.1, 1], gap="small")
-        with colA:
-          st.markdown(f'<div class="row"><div>{nm}</div>'
-                      f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
-                      unsafe_allow_html=True)
-        with colB:
-          sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
-        st.markdown('</div>', unsafe_allow_html=True)
+      # Row layout without HTML wrapper to avoid empty pills
+      colA, colB = st.columns([1.1, 1], gap="small")
+      with colA:
+        st.markdown(f'<div class="row"><div>{nm}</div>'
+                    f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>',
+                    unsafe_allow_html=True)
+      with colB:
+        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{title}_{i}")
+      st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -290,7 +290,7 @@ with bc3:
   st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">SHAP</div>', unsafe_allow_html=True)
   shap_df = pd.DataFrame({"Feature":["TSMC", "ASML", "Momentum", "Volatility", "Synopsys"],
-                          "Impact":[0.39, 0.33, 0.22, 0.18, 0.16]})
+                          "Impact":[0.39, 0.33, 0.22, 0.18, 0.16]}
   st.dataframe(shap_df, hide_index=True, use_container_width=True)
   st.markdown('</div>', unsafe_allow_html=True)
 

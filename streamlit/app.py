@@ -166,6 +166,28 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# put this AFTER your existing CSS blocks
+st.markdown("""
+<style>
+  /* Kill the invisible spacing Streamlit inserts after the first row */
+  .mid-scope .toprow { margin-bottom:0 !important; }
+  .right-scope .toprow { margin-bottom:0 !important; }
+
+  /* Streamlit wraps each element in .element-container. Zero it out here. */
+  .mid-scope > [data-testid="stVerticalBlock"] > .element-container { margin:0 !important; }
+  .right-scope > [data-testid="stVerticalBlock"] > .element-container { margin:0 !important; }
+
+  /* Pull the metric pills up to hug the controls (tune -12…-18 if you want tighter) */
+  .mid-scope .metric-row { margin-top:-16px !important; }
+
+  /* Make the first signals card sit directly under Model/Predict */
+  .right-scope .signals-scope [data-testid="stVerticalBlockBorderWrapper"]:first-of-type {
+    margin-top:0 !important;
+  }
+</style>
+""", unsafe_allow_html=True)
+
+
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame
 # ────────────────────────────────────────────────────────────────────────────────

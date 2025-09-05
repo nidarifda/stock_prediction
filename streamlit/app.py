@@ -191,8 +191,6 @@ with left:
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   with st.container(border=False):
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-
     # Build price + forecast plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))

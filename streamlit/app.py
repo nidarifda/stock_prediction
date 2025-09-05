@@ -186,8 +186,6 @@ left, right = st.columns([2.1, 1], gap="small")
 
 with left:
   with st.container(border=False):
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-
     # Build price + forecast plot
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
@@ -235,7 +233,6 @@ with right:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
   def signals_block(title: str, series_names: list[str]):
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown(f'<div class="section-title">{title}</div>', unsafe_allow_html=True)
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 

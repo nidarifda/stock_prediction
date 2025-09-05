@@ -158,6 +158,7 @@ with left:
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   with st.container(border=False):
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
     fig.add_trace(go.Scatter(x=list(forecast_dates) + list(forecast_dates[::-1]),
@@ -175,59 +176,33 @@ with left:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- Right column: Affiliated Signals (boxed, dual-line) ----------------
 with right:
+  def sparkline(values: pd.Series|np.ndarray, key: str):
+    x = list(range(len(values)))
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=x, y=values, mode="lines", line=dict(width=2)))
+    fig.update_layout(height=36, margin=dict(l=0, r=0, t=0, b=0),
+                      paper_bgcolor=CARD, plot_bgcolor=CARD,
+                      xaxis=dict(visible=False), yaxis=dict(visible=False))
+    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "staticPlot": True}, key=key)
 
-    def sparkline_dual(series: pd.Series, key: str):
-        """Tiny chart: blue = raw, orange = rolling mean."""
-        vals = series.tail(50).reset_index(drop=True)
-        smooth = vals.rolling(8, min_periods=1).mean()
+  def signals_panel(title: str, names: list[str], key: str):
+    st.markdown('<div class="card" style="padding:12px">', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title" style="margin-bottom:6px">{title}</div>', unsafe_allow_html=True)
+    for i, nm in enumerate(names):
+      vals = aff[nm]; delta = float(vals.iloc[-1] - vals.iloc[-2])
+      c1, c2 = st.columns([1.1, 1], gap="small")
+      with c1:
+        st.markdown(f'<div class="row"><div>{nm}</div>'
+                    f'<div class="chip" style="color:{GREEN if delta>=0 else RED}">{delta:+.2f}</div></div>', unsafe_allow_html=True)
+      with c2:
+        sparkline(vals.tail(40).reset_index(drop=True), key=f"sp_{key}_{i}")
+      st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-        x = list(range(len(vals)))
-        fig = go.Figure()
-        # blue (default)
-        fig.add_trace(go.Scatter(x=x, y=vals, mode="lines", line=dict(width=2)))
-        # orange (default second color)
-        fig.add_trace(go.Scatter(x=x, y=smooth, mode="lines", line=dict(width=2)))
-
-        fig.update_layout(
-            height=46, margin=dict(l=0, r=0, t=0, b=0),
-            paper_bgcolor=CARD, plot_bgcolor=CARD,
-            xaxis=dict(visible=False), yaxis=dict(visible=False),
-            showlegend=False,
-        )
-        st.plotly_chart(
-            fig, use_container_width=True,
-            config={"displayModeBar": False, "staticPlot": True}, key=key
-        )
-
-    # One card that contains the whole panel (title + rows)
-    st.markdown('<div class="card" style="padding:14px">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title" style="margin-bottom:10px">Affiliated Signals</div>', unsafe_allow_html=True)
-
-    # Rows (label + delta + sparkline) – replicate the look from your screenshot
-    for i, nm in enumerate(["TSMC", "ASML", "Cadence", "Synopsys"]):
-        series = aff[nm]
-        delta = float(series.iloc[-1] - series.iloc[-2]) if len(series) > 1 else 0.0
-        delta_color = GREEN if delta >= 0 else RED
-
-        left_col, right_col = st.columns([1.0, 1.2], gap="small")
-
-        with left_col:
-            # build HTML with .format to avoid f-string backslash issues
-            row_html = '<div class="row"><div>{}</div><div class="chip" style="color:{}">{:+.2f}</div></div>'.format(
-                nm, delta_color, delta
-            )
-            st.markdown(row_html, unsafe_allow_html=True)
-
-        with right_col:
-            sparkline_dual(series, key=f"sig_{i}")
-
-        # small vertical spacing between rows
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)  # close the panel card
-
+  signals_panel("Affiliated Signals", ["TSMC", "ASML", "Cadence", "Synopsys"], "A")
+  st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+  signals_panel("Affiliated Signals", ["TS1", "TS2", "TS3"], "B")
 
 # ---------------------------------------------------------------
 # Bottom cards
@@ -235,6 +210,7 @@ with right:
 bc1, bc2, bc3 = st.columns([1.2, 1.2, 1], gap="small")
 
 with bc1:
+  st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">RMSE 2.31 · MAE 1.78 · MAPE 0.46%</div>', unsafe_allow_html=True)
   bar = go.Figure(data=[go.Bar(x=["RMSE","MAE","MAPE%"], y=[2.31,1.78,0.46])])
@@ -243,6 +219,7 @@ with bc1:
   st.markdown('</div>', unsafe_allow_html=True)
 
 with bc2:
+  st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">Cross-validated (k=5)</div>', unsafe_allow_html=True)
   grid = pd.DataFrame({"Fold":[1,2,3,4,5], "RMSE":[2.4,2.2,2.5,2.3,2.2]})

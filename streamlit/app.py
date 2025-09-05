@@ -1,11 +1,4 @@
 # app.py — Dark Stock Dashboard (enhanced, no empty boxes)
-# ---------------------------------------------------------------
-# - Compact top bar (ticker / horizon / model)
-# - KPI tiles (equal width)
-# - Main price chart (inside a proper card)
-# - Right panel: "Affiliated Signals" inside a boxed card
-# - Clean CSS and no orphan HTML <div>s (fixes empty rounded pills)
-# ---------------------------------------------------------------
 
 from __future__ import annotations
 
@@ -47,10 +40,8 @@ CSS = f"""
     box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset, 0 8px 24px rgba(0,0,0,.35);
   }}
 
-  /* KPI tile */
   .tile .label {{ font-size: .85rem; color: var(--muted); margin-bottom: 4px; }}
   .tile .value {{ font-weight: 700; font-size: 2rem; letter-spacing: .4px; }}
-  .tile .unit  {{ font-size: .9rem; color: var(--muted); margin-left: 6px; }}
 
   .section-title {{ font-size: 1rem; font-weight: 700; color: var(--text); }}
   .section-sub   {{ font-size: .85rem; color: var(--muted); }}
@@ -58,10 +49,7 @@ CSS = f"""
   .row {{ display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }}
   .chip {{ font-weight: 700; }}
 
-  /* Cleaner selects */
   div[data-baseweb="select"] > div {{ background: var(--card); border-radius: 10px; border: 1px solid var(--border); }}
-
-  /* Hide plotly toolbar */
   div.plot-container .modebar {{ display: none !important; }}
 </style>
 """
@@ -132,10 +120,11 @@ with left:
   k1, k2, k3 = st.columns([1, 1, 1], gap="small")
 
   def kpi_card(label: str, value: str, unit: str = ""):
+    unit_html = f'<span class="unit">{unit}</span>' if unit else ''
     html = (
       '<div class="card tile">'
       f'<div class="label">{label}</div>'
-      f'<div class="value">{value}{("<span class=\'unit\'>" + unit + "</span>") if unit else ""}</div>'
+      f'<div class="value">{value}{unit_html}</div>'
       '</div>'
     )
     st.markdown(html, unsafe_allow_html=True)
@@ -203,5 +192,3 @@ with right:
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
   st.markdown("</div>", unsafe_allow_html=True)  # end Affiliated Signals card
-
-# (Optional) More right-side panels can follow here...

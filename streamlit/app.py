@@ -158,7 +158,6 @@ with left:
   st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
   with st.container(border=False):
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=hist["date"], y=hist["price"], mode="lines", name="Price"))
     fig.add_trace(go.Scatter(x=list(forecast_dates) + list(forecast_dates[::-1]),
@@ -236,7 +235,6 @@ with right:
 bc1, bc2, bc3 = st.columns([1.2, 1.2, 1], gap="small")
 
 with bc1:
-  st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">RMSE 2.31 · MAE 1.78 · MAPE 0.46%</div>', unsafe_allow_html=True)
   bar = go.Figure(data=[go.Bar(x=["RMSE","MAE","MAPE%"], y=[2.31,1.78,0.46])])
@@ -245,7 +243,6 @@ with bc1:
   st.markdown('</div>', unsafe_allow_html=True)
 
 with bc2:
-  st.markdown('<div class="card">', unsafe_allow_html=True)
   st.markdown('<div class="section-title">Error metrics</div>', unsafe_allow_html=True)
   st.markdown('<div class="section-sub">Cross-validated (k=5)</div>', unsafe_allow_html=True)
   grid = pd.DataFrame({"Fold":[1,2,3,4,5], "RMSE":[2.4,2.2,2.5,2.3,2.2]})

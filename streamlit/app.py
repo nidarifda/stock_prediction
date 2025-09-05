@@ -25,15 +25,17 @@ ORANGE   = "#F08A3C"
 GREEN    = "#5CF2B8"
 RED      = "#FF7A7A"
 
-# Global styles
+# ────────────────────────────────────────────────────────────────────────────────
+# Global styles (consolidated)
+# ────────────────────────────────────────────────────────────────────────────────
 st.markdown(
     f"""
 <style>
   :root {{
     --bg:{BG}; --card:{CARD}; --text:{TEXT}; --muted:{MUTED}; --accent:{ACCENT};
     --footer-safe: 160px;
-    /* NEW: single source of truth for top offset so Watchlist aligns with controls */
-    --row-top-offset: 12px;
+    /* single source of truth so Watchlist aligns with top row */
+    --row-top-offset: 6px;
   }}
   .stApp {{ background:var(--bg); color:var(--text); }}
 
@@ -64,7 +66,7 @@ st.markdown(
     background:{CARD} !important;
     border:1px solid rgba(255,255,255,.10) !important;
     border-radius:12px !important;
-    height:44px;
+    height:40px;  /* tighter */
   }}
   [data-testid="stSelectbox"] [data-baseweb="select"] * {{ color:{TEXT} !important; }}
   [data-baseweb="menu"] * {{ color:{TEXT} !important; }}
@@ -74,9 +76,9 @@ st.markdown(
     background:{CARD};
     border:1px solid rgba(255,255,255,.10);
     border-radius:12px;
-    padding:6px 10px;
-    height:44px;
-    display:flex; align-items:center;
+    padding:2px 6px;
+    height:40px; display:flex; align-items:center;
+    margin:0 !important;
   }}
   [data-testid="stRadio"] svg {{ display:none !important; }}
   [data-testid="stRadio"] [data-baseweb="radio"] {{ display:flex; align-items:center; }}
@@ -85,25 +87,20 @@ st.markdown(
     content:""; display:block; height:3px; border-radius:3px; background:{ACCENT}; margin-top:6px;
   }}
 
-  /* CONTROL ROWS — keep BOTH rows on a 44px baseline & same offset */
+  /* CONTROL ROWS — keep BOTH rows aligned */
   .toprow {{
     display:flex; align-items:center; gap:6px;
-    /* CHANGED: use shared var so we can match Watchlist top edge */
     margin-top: var(--row-top-offset);
+    margin-bottom: 0 !important;
   }}
   .toprow .control-wrap, .toprow .seg-wrap, .toprow .btn-wrap {{
-    height:44px; display:flex; align-items:center; width:100%;
-  }}
-  .toprow [data-testid="stSelectbox"] > div > div{{ height:44px; }}
-  .toprow [data-testid="stRadio"] {{
-    height:44px; display:flex; align-items:center; margin:0 !important;
-    padding:0 0; border-radius:12px;
+    height:40px; display:flex; align-items:center; width:100%;
   }}
 
   /* Predict button */
   .toprow .btn-wrap .stButton {{ width:100%; margin:0 !important; }}
   .toprow .btn-wrap .stButton > button {{
-    height:44px; line-height:44px; width:100% !important;
+    height:40px; line-height:40px; width:100% !important;
     border-radius:12px !important; border:0 !important;
     font-weight:700 !important; background: var(--accent) !important; color:white !important;
     padding:0 10px !important;
@@ -115,58 +112,50 @@ st.markdown(
   .toprow-tight .element-container{{ margin-bottom:0 !important; }}
   .toprow-tight [data-testid="stHorizontalBlock"]{{ margin-bottom:0 !important; }}
   .toprow-tight [data-testid="stSelectbox"], .toprow-tight [data-testid="stRadio"]{{ margin:0 !important; }}
-  .toprow-tight [data-testid="stRadio"]{{ padding:6px 4px !important; }}
   .toprow-tight [data-testid="stSelectbox"] > div > div{{ padding-left:10px !important; padding-right:10px !important; }}
 
-  /* Metric row (sit tight under controls) */
-  .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px; padding:0; }}
+  /* Metric row — hug the controls */
+  .metric-row{{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:-10px; padding:0; }}
   .metric-slot{{
     background:var(--card);
     border:1px solid rgba(255,255,255,.10);
     border-radius:12px;
-    height:44px; padding:0 40px;
+    height:40px; padding:0 28px;
     display:flex; align-items:center; justify-content:space-between;
   }}
   .metric-slot .m-label{{ color:{MUTED}; font-size:13px; }}
   .metric-slot .m-value{{ color:{TEXT}; font-weight:700; font-size:16px; }}
   @media (max-width: 900px){{ .metric-row{{ grid-template-columns:1fr; }} }}
 
-  /* Inline chart card */
+  /* Inline chart card — tighter above */
   .chart-card{{ background:var(--card); border:1px solid rgba(255,255,255,.08);
-               border-radius:12px; padding:0 10px; margin-top:12px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
+               border-radius:12px; padding:0 10px; margin-top:6px; box-shadow:0 6px 18px rgba(0,0,0,.22); }}
+  [data-testid="stPlotlyChart"]{{ margin:0 !important; }}
 
-  /* Header with extra top padding so title isn't cut */
+  /* Header */
   .app-header {{ display:flex; align-items:center; gap:.6rem; padding-top:50px; margin:0 0 10px 0; }}
   .app-header .title {{ color:#E6F0FF; font-size:32px; font-weight:800; letter-spacing:.2px; }}
 
-  /* NEW: give Watchlist the same top offset as the controls row */
+  /* Watchlist aligns to top row */
   .watchlist-wrap {{ margin-top: var(--row-top-offset); }}
-</style>
-""",
-    unsafe_allow_html=True,
-)
 
-# Extra scopes to kill vertical gaps between stacked blocks
-st.markdown(
-    f"""
-<style>
-  /* Middle stack: controls + metric pills right under it */
+  /* Middle stack: controls + metric pills right under it (kill residuals) */
   .mid-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
-  .mid-scope .element-container{{ margin-bottom:0px !important; }}
-  .mid-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
+  .mid-scope .element-container{{ margin:0 !important; }}
+  .mid-scope [data-testid="stHorizontalBlock"]{{ margin:0 !important; }}
 
-  /* Right stack: model/predict + signals */
+  /* Right stack: model/predict + signals tight */
   .right-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
   .right-scope .element-container{{ margin-bottom:4px !important; }}
   .right-scope [data-testid="stHorizontalBlock"]{{ margin-bottom:4px !important; }}
 
-  /* Signals cards (also slightly reduce top margin so it hugs controls) */
+  /* Signals card styling */
   .signals-scope [data-testid="stVerticalBlock"]{{ padding-top:0 !important; padding-bottom:0 !important; }}
   .signals-scope .element-container{{ margin-bottom:0 !important; }}
   .signals-scope [data-testid="stVerticalBlockBorderWrapper"]{{
     background:{CARD}; border:1px solid rgba(255,255,255,.08);
     border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.22);
-    padding:12px 14px; margin-top:2px; margin-bottom:0;
+    padding:12px 14px; margin-top:4px; margin-bottom:0;
   }}
   .signals-title{{ font-weight:800; color:{TEXT}; margin-bottom:6px; }}
   .sig-divider{{ height:1px; background:rgba(255,255,255,.08); margin:6px 0; }}
@@ -176,22 +165,6 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
-# ↓ put this AFTER your existing CSS blocks (e.g., right after the "Extra scopes" <style>)
-st.markdown("""
-<style>
-  /* Pull the metric pills up closer to the top controls */
-  .mid-scope .toprow{ margin-bottom:0 !important; }
-  .mid-scope [data-testid="stVerticalBlock"]{
-    padding-top:0 !important; padding-bottom:0 !important;
-  }
-  .mid-scope [data-testid="stHorizontalBlock"]{ margin-bottom:0 !important; }
-  .mid-scope .element-container{ margin-bottom:0 !important; }
-
-  /* Override the earlier .metric-row margin so it sits tight under controls */
-  .mid-scope .metric-row{ margin-top:-10px !important; }
-</style>
-""", unsafe_allow_html=True)
-
 
 # ────────────────────────────────────────────────────────────────────────────────
 # CSV loader (root) → aligned 5Y DataFrame
@@ -340,7 +313,7 @@ def inverse_if_scaled(y_scaled: float, scaler):
     return float(scaler.inverse_transform(arr).ravel()[0]), False
 
 # ────────────────────────────────────────────────────────────────────────────────
-# Watchlist renderer (define BEFORE use)
+# Watchlist renderer
 # ────────────────────────────────────────────────────────────────────────────────
 def _badge_html(pct: float, side: str = "left") -> str:
     cls = ("neut" if pct >= 0 else "down") if side == "right" else ("up" if pct >= 0 else "down")
@@ -463,7 +436,7 @@ with top_left:
 WL_HEADER, WL_ROW_H, WL_PADDING = 56, 45, 10
 watchlist_height_px = max(340, WL_HEADER + WL_ROW_H * max(1, wl_rows) + WL_PADDING)
 
-# RIGHT: Model + Predict + Signals (stacked, no gap)
+# RIGHT: Model + Predict + Signals (stacked)
 with top_right:
     st.markdown("<div class='right-scope'>", unsafe_allow_html=True)
 
@@ -575,10 +548,7 @@ with top_mid:
     next_day = (seg_choice == "Next day")
     horizon  = seg_choice if seg_choice != "Next day" else "1D"
 
-    # Prediction (triggered by button on the right)
     pred = lo = hi = conf = None
-
-    # Provide default so code runs before the Predict button exists
     if "do_predict" not in locals():
         do_predict = False
 
@@ -608,7 +578,7 @@ with top_mid:
     inter_text = f"{int(round(lo))} – {int(round(hi))}" if (isinstance(lo,(float,int)) and isinstance(hi,(float,int))) else "—"
     conf_text  = f"{float(conf):.2f}" if isinstance(conf, (float, int)) else "—"
 
-    # Metric pills (tight under the controls)
+    # Metric pills (hug the controls)
     st.markdown(
         f"""
         <div class="metric-row">

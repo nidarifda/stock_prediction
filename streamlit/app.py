@@ -1,4 +1,4 @@
-# app.py — Dark Stock Dashboard (top bar fixed to single-line pills)
+# app.py — Dark Stock Dashboard (single-line boxed pills + clean layout)
 
 from __future__ import annotations
 
@@ -7,14 +7,15 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+# ---------------- Page config ----------------
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
-# ---- Theme ----
+# ---------------- Theme ----------------
 BG, CARD, TEXT, MUTED, ACCENT, GREEN, RED, BORDER = (
     "#0B1220", "#0F1A2B", "#E6F0FF", "#8AA1C7", "#496BFF", "#5CF2B8", "#FF7A7A", "#1B2740"
 )
 
-# ---- CSS ----
+# ---------------- CSS (build fully, then render once) ----------------
 CSS = f"""
 <style>
 :root {{
@@ -40,30 +41,30 @@ div[data-baseweb="select"] > div {{
   min-height:40px; background:var(--card); border:1px solid var(--border); border-radius:10px;
 }}
 
-/* Top bar pills — force single line inside a single rounded container */
-.pills-wrap [data-baseweb="radio"] > div {{
-  display:flex !important;
-  flex-wrap:nowrap !important;         /* keep one line */
-  align-items:center !important;
-  gap:12px !important;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:6px 12px;
-  height:40px;                         /* match selects */
-  width:100%;
+/* ---- Horizon group in ONE rounded box ---- */
+.pill-card{{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  height: 40px;
+  padding: 6px 12px;
+  display: flex; align-items: center; width: 100%;
 }}
-.pills-wrap [data-baseweb="radio"] label {{
-  margin:0 !important; padding:6px 10px !important; border-radius:8px !important;
-  line-height:1 !important; white-space:nowrap !important;
+/* Radio fallback inside the box */
+.pill-card [data-baseweb="radio"] > div{{
+  background: transparent !important; border: none !important; padding: 0 !important;
+  display:flex !important; flex-wrap:nowrap !important; align-items:center !important;
+  gap:12px !important; width:100%;
 }}
-.pills-wrap [data-baseweb="radio"] svg {{ transform:translateY(1px); }}
+.pill-card [data-baseweb="radio"] label{{
+  margin:0 !important; padding:6px 8px !important; border-radius:8px !important;
+  white-space:nowrap !important; line-height:1 !important;
+}}
+.pill-card [data-baseweb="radio"] svg{{ transform: translateY(1px); }}
 
-/* If segmented_control exists, make it look the same */
-.pills-wrap [data-testid="stSegmentedControl"] {{
-  background:var(--card); border:1px solid var(--border); border-radius:10px; width:100%;
-}}
-.pills-wrap [data-testid="stSegmentedControl"] button {{ padding:6px 10px; height:40px; }}
+/* Segmented control version inside the same box */
+.pill-card [data-testid="stSegmentedControl"]{{ background:transparent !important; border:none !important; width:100%; }}
+.pill-card [data-testid="stSegmentedControl"] button{{ height:28px; padding:0 10px; }}
 
 /* Predict button */
 .stButton > button {{
@@ -76,10 +77,11 @@ div[data-baseweb="select"] > div {{
 div.plot-container .modebar {{ display:none !important; }}
 </style>
 """
+# 👉 Render CSS once (after it's fully built)
 st.markdown(CSS, unsafe_allow_html=True)
 
-# ---- Demo data ----
-@st.cache_data
+# ---------------- Demo data ----------------
+@st.cache_data(show_spinner=False)
 def make_series(n_days: int = 240, seed: int = 7):
     rng = np.random.default_rng(seed)
     base = 380
@@ -88,7 +90,7 @@ def make_series(n_days: int = 240, seed: int = 7):
     dates = pd.date_range(end=pd.Timestamp.today().normalize(), periods=n_days)
     return pd.DataFrame({"date": dates, "price": prices})
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def make_affiliate_series(k: int = 60, seed: int = 1):
     rng = np.random.default_rng(seed)
     data = {}
@@ -102,31 +104,36 @@ def make_affiliate_series(k: int = 60, seed: int = 1):
         data[nm] = 100 + steps
     return pd.DataFrame(data)
 
-hist = make_series(); aff = make_affiliate_series()
+hist = make_series()
+aff  = make_affiliate_series()
 
-# Simple forecast demo
+# simple forecast demo
 f_days = 20
 last_val = hist["price"].iloc[-1]
 forecast_dates = pd.date_range(hist["date"].iloc[-1] + pd.Timedelta(days=1), periods=f_days)
 trend = np.linspace(last_val, last_val - 12, f_days)
-ci_low = trend - 6; ci_high = trend + 4
-predicted_close = 424.58; interval_low, interval_high = 415, 434; confidence = 0.78
+ci_low = trend - 6
+ci_high = trend + 4
 
-# ---- Top bar (Ticker • Horizon pills • Model • Predict) ----
+predicted_close = 424.58
+interval_low, interval_high = 415, 434
+confidence = 0.78
+
+# ---------------- Top bar (Ticker • Horizon in box • Model • Predict) ----------------
 def ui_segmented(label: str, options: list[str], default: str):
     if hasattr(st, "segmented_control"):
         return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
     return st.radio(label, options=options, index=options.index(default),
                     horizontal=True, label_visibility="collapsed")
 
-# Widths tuned so the pill group has room and NEVER wraps
+# widths tuned so the pills have room and never wrap
 tb1, tb2, tb3, tb4, tb_sp = st.columns([1.2, 3.6, 1.2, 1.0, 3.0], gap="small")
 
 with tb1:
     ticker = st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
 
 with tb2:
-    st.markdown('<div class="pills-wrap">', unsafe_allow_html=True)
+    st.markdown('<div class="pill-card">', unsafe_allow_html=True)
     horizon = ui_segmented("Horizon", ["Next day", "1D", "1W", "1M", "1y"], "1D")
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -141,10 +148,10 @@ if predict_clicked:
 
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
-# ---- Layout ----
+# ---------------- Layout ----------------
 left, right = st.columns([2.1, 1], gap="small")
 
-# Left: KPIs + main chart
+# ----- Left: KPIs + main chart -----
 with left:
     k1, k2, k3 = st.columns([1, 1, 1], gap="small")
 
@@ -181,7 +188,7 @@ with left:
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Right: Affiliated Signals boxed list
+# ----- Right: Affiliated Signals boxed list -----
 with right:
     st.markdown('<div class="section-title" style="margin-bottom:10px">Affiliated Signals</div>', unsafe_allow_html=True)
 

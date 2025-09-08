@@ -1,4 +1,4 @@
-# app.py — Dark Stock Dashboard (single-line boxed pills + clean layout)
+# app.py — Dark Stock Dashboard (boxed single-line pills + clean layout)
 
 from __future__ import annotations
 
@@ -36,35 +36,28 @@ header[data-testid="stHeader"] {{ background: transparent; }}
 .tile .label {{ font-size:.85rem; color:var(--muted); margin-bottom:4px; }}
 .tile .value {{ font-weight:700; font-size:2rem; letter-spacing:.4px; }}
 
-/* Selects same height as pills */
+/* Selects sized to match pills */
 div[data-baseweb="select"] > div {{
   min-height:40px; background:var(--card); border:1px solid var(--border); border-radius:10px;
 }}
 
-/* ---- Horizon group in ONE rounded box ---- */
-.pill-card{{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  height: 40px;
-  padding: 6px 12px;
-  display: flex; align-items: center; width: 100%;
-}}
-/* Radio fallback inside the box */
-.pill-card [data-baseweb="radio"] > div{{
-  background: transparent !important; border: none !important; padding: 0 !important;
+/* ---- Make EVERY radio/segmented control render as a single rounded box ---- */
+[data-baseweb="radio"] > div {{
   display:flex !important; flex-wrap:nowrap !important; align-items:center !important;
   gap:12px !important; width:100%;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  height:40px; padding:6px 12px;
 }}
-.pill-card [data-baseweb="radio"] label{{
-  margin:0 !important; padding:6px 8px !important; border-radius:8px !important;
+[data-baseweb="radio"] label {{
+  margin:0 !important; padding:6px 10px !important; border-radius:8px !important;
   white-space:nowrap !important; line-height:1 !important;
 }}
-.pill-card [data-baseweb="radio"] svg{{ transform: translateY(1px); }}
+[data-baseweb="radio"] svg {{ transform: translateY(1px); }}
 
-/* Segmented control version inside the same box */
-.pill-card [data-testid="stSegmentedControl"]{{ background:transparent !important; border:none !important; width:100%; }}
-.pill-card [data-testid="stSegmentedControl"] button{{ height:28px; padding:0 10px; }}
+[data-testid="stSegmentedControl"]{{
+  background:var(--card); border:1px solid var(--border); border-radius:10px; width:100%;
+}}
+[data-testid="stSegmentedControl"] button{{ height:40px; padding:6px 10px; }}
 
 /* Predict button */
 .stButton > button {{
@@ -77,7 +70,6 @@ div[data-baseweb="select"] > div {{
 div.plot-container .modebar {{ display:none !important; }}
 </style>
 """
-# 👉 Render CSS once (after it's fully built)
 st.markdown(CSS, unsafe_allow_html=True)
 
 # ---------------- Demo data ----------------
@@ -107,7 +99,7 @@ def make_affiliate_series(k: int = 60, seed: int = 1):
 hist = make_series()
 aff  = make_affiliate_series()
 
-# simple forecast demo
+# toy forecast
 f_days = 20
 last_val = hist["price"].iloc[-1]
 forecast_dates = pd.date_range(hist["date"].iloc[-1] + pd.Timedelta(days=1), periods=f_days)
@@ -119,23 +111,21 @@ predicted_close = 424.58
 interval_low, interval_high = 415, 434
 confidence = 0.78
 
-# ---------------- Top bar (Ticker • Horizon in box • Model • Predict) ----------------
+# ---------------- Top bar (Ticker • boxed Horizon • Model • Predict) ----------------
 def ui_segmented(label: str, options: list[str], default: str):
     if hasattr(st, "segmented_control"):
         return st.segmented_control(label, options=options, default=default, label_visibility="collapsed")
     return st.radio(label, options=options, index=options.index(default),
                     horizontal=True, label_visibility="collapsed")
 
-# widths tuned so the pills have room and never wrap
+# widths tuned so pills never wrap
 tb1, tb2, tb3, tb4, tb_sp = st.columns([1.2, 3.6, 1.2, 1.0, 3.0], gap="small")
 
 with tb1:
     ticker = st.selectbox("Ticker", ["NVDA", "TSM", "ASML"], index=0, label_visibility="collapsed")
 
 with tb2:
-    st.markdown('<div class="pill-card">', unsafe_allow_html=True)
     horizon = ui_segmented("Horizon", ["Next day", "1D", "1W", "1M", "1y"], "1D")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with tb3:
     model = st.selectbox("Model", ["LightGBM", "XGBoost", "CatBoost", "DNN"], index=0, label_visibility="collapsed")
@@ -148,7 +138,7 @@ if predict_clicked:
 
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
-# ---------------- Layout ----------------
+# ---------------- Main layout ----------------
 left, right = st.columns([2.1, 1], gap="small")
 
 # ----- Left: KPIs + main chart -----

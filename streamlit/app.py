@@ -651,7 +651,6 @@ with top_mid:
             tickfont=dict(color=MUTED), automargin=True
         )
 
-        st.markdown("<div class='chart-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig_inline, use_container_width=True, theme=None)
         st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -678,7 +677,6 @@ with tab1:
         st.markdown(bar(0.8), unsafe_allow_html=True)
 
     with c2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.markdown("**SHAP**")
         st.markdown("Bias:&nbsp; <b style='color:#FFCE6B'>Mild long</b>", unsafe_allow_html=True)
         st.markdown("<div style='display:flex;justify-content:space-between;'><div>Entry</div><b>423.00</b></div>", unsafe_allow_html=True)

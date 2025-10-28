@@ -194,6 +194,21 @@ div[role="switch"] + label, /* accessibility fallback */
   border-radius:10px !important;
 }}
 
+/* ─────────────── Right Bar ─────────────── */
+.sigbar-track{{
+  width:100%;
+  height:6px;
+  background: rgba(255,255,255,0.12);
+  border-radius:6px;
+  margin-top:6px;
+  margin-bottom:6px;
+}}
+.sigbar-fill{{
+  height:100%;
+  border-radius:6px;
+  background: linear-gradient(90deg, #2E6CFF, #31D0FF);
+  transition: width .35s ease-in-out;
+}}
 
 /* ─────────────── Footer Status Bar ─────────────── */
 .statusbar {{
@@ -292,46 +307,30 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    """Render a signals card styled identically to the watchlist card."""
-    # Open card container
-    card_html = f"""
-    <div class="watchlist-card">
-        <div class="watchlist-title">{title}</div>
-    """
-    
-    # Build rows inside
+    parts = [f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>']
+
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
 
-        card_html += f"""
-        <div class="watchlist-row" style="flex-direction: column; align-items: flex-start;">
-            <div style="display:flex; width:100%; justify-content:space-between;">
-                <div class="watchlist-symbol" style="color:{color};">{t}</div>
-                <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
-            </div>
-            <div class="watchlist-sub" style="color:{TEXT}; opacity:0.85; margin-top:2px;">
-                Correlation {corr:.2f}
-            </div>
-            <div style="background-color:rgba(255,255,255,0.1);
-                        border-radius:6px;
-                        height:6px;
-                        width:100%;
-                        margin-top:4px;
-                        margin-bottom:8px;">
-                <div style="background-color:#2E6CFF;
-                            width:{corr*100}%;
-                            height:100%;
-                            border-radius:6px;
-                            transition:width 0.4s ease-in-out;"></div>
-            </div>
+        parts.append(f"""
+        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div class="watchlist-symbol" style="color:{color};">{t}</div>
+            <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
+          </div>
+          <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
+            Correlation {corr:.2f}
+          </div>
+          <div class="sigbar-track">
+            <div class="sigbar-fill" style="width:{corr*100:.0f}%;"></div>
+          </div>
         </div>
-        """
+        """)
 
-    # Close card
-    card_html += "</div>"
-    st.markdown(card_html, unsafe_allow_html=True)
+    parts.append("</div>")  # close .watchlist-card
+    st.markdown("".join(parts), unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

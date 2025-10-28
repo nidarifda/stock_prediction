@@ -23,6 +23,28 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
+/* ────────────────────────────────────────────── */
+/*  FIX HEADER CUT ISSUE                          */
+/* ────────────────────────────────────────────── */
+header[data-testid="stHeader"] {{
+  height: 0rem !important;
+  visibility: hidden !important;
+}}
+.main > div:first-child {{
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}}
+.block-container {{
+  padding-top: 0.5rem !important;
+}}
+.app-header {{
+  margin-top: 10px !important;
+  margin-bottom: 6px !important;
+}}
+
+/* ────────────────────────────────────────────── */
+/*  MAIN DASHBOARD STYLES                         */
+/* ────────────────────────────────────────────── */
 .stApp {{
   background-color:{BG};
   color:{TEXT};

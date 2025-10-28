@@ -97,6 +97,21 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
+/* ─────────────── Compact Toggle Panel ─────────────── */
+.toggle-card {{
+  background:{CARD};
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}}
+.toggle-title {{
+  font-weight: 700;
+  font-size: 15px;
+  color: {TEXT};
+  margin-bottom: 8px;
+}}
+
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;
@@ -215,6 +230,14 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 # LEFT PANEL
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
+
+    # Compact toggle card (the one you want)
+    with st.container():
+        st.markdown("<div class='toggle-card'><div class='toggle-title'>Layers</div></div>", unsafe_allow_html=True)
+        affiliated = st.toggle("Affiliated Signals", True)
+        macro = st.toggle("Macro layer", True)
+        news = st.toggle("News Sentiment", True)
+        options = st.toggle("Options flow", True)
 
 # MIDDLE PANEL
 with col_mid:

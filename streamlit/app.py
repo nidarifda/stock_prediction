@@ -332,6 +332,7 @@ def render_signals_card(title: str, tickers: list[str]):
     # Close card
     card_html += "</div>"
     st.markdown(card_html, unsafe_allow_html=True)
+
   
 # ────────────────────────────────────────────────────────────────
 # HEADER

@@ -242,23 +242,33 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Settings Card (Toggles inside)
-    with st.container():
-        st.markdown("""
+# Settings Card (Properly Styled Container)
+with st.container():
+    st.markdown("""
         <div class="settings-card">
-          <div class="settings-title">Display Layers</div>
-          <div class="toggle-container">
-        """, unsafe_allow_html=True)
+            <div class="settings-title">Display Layers</div>
+        </div>
+    """, unsafe_allow_html=True)
 
+    # Create a sub-container with padding inside card background
+    with st.container():
+        st.markdown(
+            """
+            <style>
+            div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
+                background: #0E1492 !important;
+                border-radius: 18px;
+                padding: 16px 20px;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
         affiliated = st.toggle("Affiliated Signals", True)
         macro = st.toggle("Macro layer", True)
         news = st.toggle("News Sentiment", True)
         options = st.toggle("Options Flow", True)
-
-        st.markdown("""
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
 
 # MIDDLE PANEL
 with col_mid:

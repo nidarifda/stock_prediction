@@ -96,7 +96,7 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Settings (toggle) card styling ─────────────── */
-.blue-container {
+.blue-container {{
   background: #0E1492 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -104,37 +104,31 @@ st.markdown(f"""
   padding: 16px 20px;
   margin-top: 12px;
   transition: all 0.25s ease-in-out;
-}
-.blue-container:hover {
+}}
+.blue-container:hover {{
   box-shadow: 0 10px 24px rgba(0,0,0,0.5);
-}
-
-/* Title styling */
-.container-title {
+}}
+.container-title {{
   font-weight: 800;
   font-size: 18px;
   color: #E6F0FF;
   margin-bottom: 10px;
   text-align: left;
-}
-
-/* Toggle box styling */
-.toggle-box {
+}}
+.toggle-box {{
   margin-top: 6px;
   background: transparent;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding-bottom: 6px;
-}
-.stToggle > label {
+}}
+.stToggle > label {{
   color: #E6F0FF !important;
   font-weight: 500;
-}
-</style>
-""", unsafe_allow_html=True)
+}}
 
-
+/* ─────────────── Metrics, plot, and footer ─────────────── */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -180,6 +174,7 @@ st.markdown(f"""
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
 """, unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA

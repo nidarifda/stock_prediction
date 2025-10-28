@@ -108,19 +108,26 @@ st.markdown(f"""
 }}
 
 .stToggle {{
-  margin-top: -2px !important;       /* pulls closer to the card above */
-  margin-bottom: -2px !important;    /* smaller gap between each toggle */
-  padding-left: 12px !important;     /* indent to match Watchlist padding */
+  margin-top: -4px !important;
+  margin-bottom: -2px !important;
+  padding-left: 20px !important;   /* indent toggles same as Watchlist padding */
 }}
-/* Blue toggle on */
+
+/* Adjust the switch knob so it doesn't stick too far left */
+[data-testid="stSwitch"] {{
+  margin-left: 6px !important;     /* fine-tune horizontal alignment */
+}}
+
+/* Blue toggle when ON */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
   background-color: #496BFF !important;
 }}
 
-/* Dim gray toggle off */
+/* Dim gray toggle when OFF */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
   background-color: rgba(255,255,255,0.2) !important;
 }}
+
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

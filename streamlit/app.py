@@ -233,11 +233,21 @@ with col_left:
 
     # Compact toggle card (the one you want)
     with st.container():
-        st.markdown("<div class='toggle-card'><div class='toggle-title'>Layers</div></div>", unsafe_allow_html=True)
         affiliated = st.toggle("Affiliated Signals", True)
         macro = st.toggle("Macro layer", True)
         news = st.toggle("News Sentiment", True)
         options = st.toggle("Options flow", True)
+          st.markdown(
+        f"""
+        <div style="width:100%;">
+          <div class="watchlist-card">
+            <div class="watchlist-title">{title}</div>
+            {''.join(rows)}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # MIDDLE PANEL
 with col_mid:

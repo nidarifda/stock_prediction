@@ -130,15 +130,15 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Toggle Container ─────────────── */
-div[data-testid="stVerticalBlock"] > div:has(> label[data-testid="stCheckbox"]) {
+div[data-testid="stVerticalBlock"] > div:has(> label[data-testid="stCheckbox"]) {{
   background: transparent !important;
-}
+}}
 
 /* Make toggles tighter and inside card visually */
-[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div {
+[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div {{
   margin-top: -6px !important;
   margin-bottom: -6px !important;
-}
+}}
 
 
 /* ─────────────── Metrics ─────────────── */

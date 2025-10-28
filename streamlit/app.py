@@ -99,17 +99,24 @@ st.markdown(f"""
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
 .toggle-card {{
-  background:{CARD};
+  background: #0F1A2B;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
-  padding: 16px 20px;
+  padding: 16px 20px 10px 20px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  color: #E6F0FF;
+  margin-bottom: 6px;
 }}
 .toggle-title {{
   font-weight: 700;
   font-size: 15px;
-  color: {TEXT};
+  color: #E6F0FF;
   margin-bottom: 8px;
+}}
+.stToggle label {{
+  color: #E6F0FF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -216,7 +223,25 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         """,
         unsafe_allow_html=True,
     )
+ # ────────────────────────────────────────────────────────────────
+# TOGGLELIST COMPONENT
+# ────────────────────────────────────────────────────────────────
+ 
+def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
+    """Render a styled toggle list with a title and toggles."""
+    st.markdown(
+        f"""
+        <div class="toggle-card">
+            <div class="toggle-title">{title}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
+    # Display toggles underneath inside the same visual block
+    for label, default in toggles:
+        st.toggle(label, default)
+      
 # ────────────────────────────────────────────────────────────────
 # HEADER
 # ────────────────────────────────────────────────────────────────
@@ -228,26 +253,23 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
+# LEFT PANEL
 with col_left:
+    # Top: Watchlist card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Compact toggle card (the one you want)
-    with st.container():
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options flow", True)
-          st.markdown(
-        f"""
-        <div style="width:100%;">
-          <div class="watchlist-card">
-            <div class="watchlist-title">{title}</div>
-            {''.join(rows)}
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    # Below: Toggle list card
+    render_toggle_list(
+        "Layers",
+        [
+            ("Affiliated Signals", True),
+            ("Macro layer", True),
+            ("News Sentiment", True),
+            ("Options flow", True),
+        ]
     )
+
+
 
 # MIDDLE PANEL
 with col_mid:

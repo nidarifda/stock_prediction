@@ -1,4 +1,4 @@
-# streamlit/app.py
+# streamlit_app.py
 from __future__ import annotations
 import numpy as np
 import pandas as pd
@@ -6,10 +6,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ────────────────────────────────────────────────────────────────
-# CONFIG
+# PAGE CONFIG
 # ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
+# ────────────────────────────────────────────────────────────────
+# COLOR VARIABLES
+# ────────────────────────────────────────────────────────────────
 BG = "#0B1220"
 CARD = "#0F1A2B"
 TEXT = "#E6F0FF"
@@ -71,6 +74,56 @@ header[data-testid="stHeader"] {{
   box-shadow:0 6px 18px rgba(0,0,0,.25);
   padding:14px 16px;
 }}
+
+/* ────────────────────────────────────────────── */
+/* WATCHLIST CARD                                */
+/* ────────────────────────────────────────────── */
+.watchlist-card {{
+  background: #0E1492 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}}
+.watchlist-title {{
+  font-weight: 800;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 12px;
+}}
+.watchlist-row {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}}
+.watchlist-row:last-child {{
+  border-bottom: none;
+}}
+.watchlist-symbol {{
+  font-weight: 700;
+  font-size: 15px;
+}}
+.watchlist-price {{
+  font-weight: 700;
+  color: #E6F0FF;
+}}
+.watchlist-change-up {{
+  color: #5CF2B8;
+  font-weight: 600;
+  font-size: 13px;
+}}
+.watchlist-change-down {{
+  color: #F08A3C;
+  font-weight: 600;
+  font-size: 13px;
+}}
+
+/* ────────────────────────────────────────────── */
+/* METRIC BOXES + CHART + FOOTER                 */
+/* ────────────────────────────────────────────── */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -97,13 +150,6 @@ header[data-testid="stHeader"] {{
 }}
 [data-testid="stTabs"] button[aria-selected="true"] {{
   color:{ACCENT}; border-bottom:2px solid {ACCENT};
-}}
-.right-panel {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);
-  padding:12px 14px;
 }}
 .sig-row {{
   display:flex; align-items:center; justify-content:space-between;
@@ -135,18 +181,48 @@ box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 """, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
-# DEMO DATA
+# DUMMY DATA
 # ────────────────────────────────────────────────────────────────
 dates = pd.date_range("2024-01-01", periods=200)
-price = np.cumsum(np.random.normal(0.5, 2, len(dates))) + 300
 prices = pd.DataFrame({
-    "Date": dates,
-    "NVDA": price,
-    "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
-    "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
-    "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
-    "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
-}).set_index("Date")
+    "NVDA": np.linspace(300, 380, len(dates)) + np.random.randn(len(dates))*2,
+    "TSMC": np.linspace(320, 360, len(dates)) + np.random.randn(len(dates))*2,
+    "ASML": np.linspace(340, 390, len(dates)) + np.random.randn(len(dates))*2,
+    "CDNS": np.linspace(290, 330, len(dates)) + np.random.randn(len(dates))*2,
+    "SNPS": np.linspace(300, 340, len(dates)) + np.random.randn(len(dates))*2,
+}, index=dates)
+
+# ────────────────────────────────────────────────────────────────
+# WATCHLIST RENDERER
+# ────────────────────────────────────────────────────────────────
+def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+    rows = []
+    for t in tickers:
+        if t not in prices_df.columns:
+            continue
+        s = prices_df[t].dropna()
+        if s.empty:
+            continue
+        last = s.iloc[-1]
+        chg = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100 if len(s) > 1 else 0
+        color_class = "watchlist-change-up" if chg >= 0 else "watchlist-change-down"
+        rows.append(f"""
+          <div class="watchlist-row">
+            <div>
+              <div class="watchlist-symbol">{t}</div>
+              <div class="{color_class}">{chg:+.2f}%</div>
+            </div>
+            <div class="watchlist-price">{last:,.2f}</div>
+          </div>
+        """)
+
+    html = f"""
+    <div class="watchlist-card">
+      <div class="watchlist-title">{title}</div>
+      {''.join(rows) if rows else '<div style="opacity:.7;">No data available</div>'}
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -154,23 +230,13 @@ prices = pd.DataFrame({
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
-# TOP LAYOUT (3 columns)
+# LAYOUT
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL (WATCHLIST)
 with col_left:
-    st.markdown("**Watchlist**")
-    for t in ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"]:
-        last = prices[t].iloc[-1]
-        chg = np.random.uniform(-2, 2)
-        color = GREEN if chg > 0 else ORANGE
-        st.markdown(
-            f"<div style='display:flex;justify-content:space-between'><b>{t}</b>"
-            f"<span style='color:{TEXT}'>{last:,.2f}</span></div>"
-            f"<span style='color:{color}'>{chg:+.2f}%</span>",
-            unsafe_allow_html=True,
-        )
+    render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"], title="Watchlist")
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
@@ -178,7 +244,6 @@ with col_left:
 
 # MIDDLE PANEL (CHART + METRICS)
 with col_mid:
-    # Controls
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
@@ -187,7 +252,6 @@ with col_mid:
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # Metric Boxes
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -196,7 +260,6 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Chart
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
@@ -211,7 +274,6 @@ with col_mid:
                       font=dict(color=TEXT), showlegend=False)
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
-    # Tabs (Error metrics / SHAP)
     tab1, tab2 = st.tabs(["Error metrics", "SHAP / Trade idea"])
     with tab1:
         st.markdown("<div class='card'><b>MAE</b>: 1.31<br><b>RMSE</b>: 2.06<br><b>Confu.</b>: 0.91</div>", unsafe_allow_html=True)

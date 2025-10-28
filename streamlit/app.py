@@ -303,25 +303,27 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
         st.toggle(label, default)
 
     st.markdown("</div>", unsafe_allow_html=True)
+  
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    """Render a signals card styled exactly like the watchlist."""
-    # Start the card
+    """Render a signals card perfectly aligned with the Watchlist style."""
+    # Start card container (open only once)
     st.markdown(f"""
-    <div class="watchlist-card">
+    <div class="watchlist-card" style="padding-bottom:10px;">
         <div class="watchlist-title">{title}</div>
     """, unsafe_allow_html=True)
 
-    # Render each ticker row directly as HTML (no string join)
+    # Build ticker rows
+    inner_html = ""
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
 
-        st.markdown(f"""
-        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding-bottom:10px;">
+        inner_html += f"""
+        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0 2px 0; margin-bottom:6px;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                 <div class="watchlist-symbol" style="color:{color};">{t}</div>
                 <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
@@ -333,10 +335,10 @@ def render_signals_card(title: str, tickers: list[str]):
                 <div class="sigbar-fill" style="width:{corr*100:.0f}%;"></div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
 
-    # Close the card
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Close container cleanly (render all HTML in one call)
+    st.markdown(inner_html + "</div>", unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

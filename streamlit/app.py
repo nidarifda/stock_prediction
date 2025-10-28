@@ -308,22 +308,22 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    """Render a signals card perfectly aligned with the Watchlist style."""
-    # Start card container (open only once)
-    st.markdown(f"""
-    <div class="watchlist-card" style="padding-bottom:10px;">
+    """Render the full affiliated signals block inside one cohesive card."""
+    
+    # Start full card HTML
+    html = f"""
+    <div class="watchlist-card">
         <div class="watchlist-title">{title}</div>
-    """, unsafe_allow_html=True)
+    """
 
-    # Build ticker rows
-    inner_html = ""
+    # Add each ticker block
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
 
-        inner_html += f"""
-        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0 2px 0; margin-bottom:6px;">
+        html += f"""
+        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                 <div class="watchlist-symbol" style="color:{color};">{t}</div>
                 <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
@@ -331,14 +331,25 @@ def render_signals_card(title: str, tickers: list[str]):
             <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
                 Correlation {corr:.2f}
             </div>
-            <div class="sigbar-track">
-                <div class="sigbar-fill" style="width:{corr*100:.0f}%;"></div>
+            <div style="background-color:rgba(255,255,255,0.1);
+                        border-radius:6px;
+                        height:6px;
+                        width:100%;
+                        margin-top:4px;">
+                <div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);
+                            width:{corr*100:.0f}%;
+                            height:100%;
+                            border-radius:6px;
+                            transition:width 0.4s ease-in-out;"></div>
             </div>
         </div>
         """
 
-    # Close container cleanly (render all HTML in one call)
-    st.markdown(inner_html + "</div>", unsafe_allow_html=True)
+    # Close card container
+    html += "</div>"
+
+    # Render once
+    st.markdown(html, unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

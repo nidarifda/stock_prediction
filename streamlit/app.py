@@ -128,6 +128,35 @@ st.markdown(f"""
   font-weight: 500;
 }}
 
+/* ─────────────── Radio buttons container ─────────────── */
+.radio-box {{
+  background: #F5F6FA;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}}
+.radio-inner {{
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #2A2A2A;
+  font-weight: 600;
+  font-size: 14px;
+}}
+.radio-inner span {{
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}}
+.radio-inner span:hover {{
+  color: #F08A3C;
+  transform: scale(1.05);
+}}
+
+
 /* ─────────────── Metrics, plot, and footer ─────────────── */
 .metric-row {{
   display:grid;
@@ -275,14 +304,27 @@ with col_left:
 
 
 # MIDDLE PANEL
-with col_mid:
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        st.selectbox("", ["NVDA"], label_visibility="collapsed")
-    with col2:
-        st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
-    with col3:
-        st.selectbox("", ["LightGBM"], label_visibility="collapsed")
+# Controls row (styled input boxes)
+col1, col2, col3 = st.columns([1, 1, 1])
+
+with col1:
+    st.selectbox("", ["NVDA"], label_visibility="collapsed")
+
+with col2:
+    st.markdown("""
+    <div class="radio-box">
+      <div class="radio-inner">
+        <span>Next day</span>
+        <span>1D</span>
+        <span>1W</span>
+        <span>1M</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.selectbox("", ["LightGBM"], label_visibility="collapsed")
+
 
     st.markdown("""
     <div class="metric-row">

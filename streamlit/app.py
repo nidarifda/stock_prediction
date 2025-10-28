@@ -235,23 +235,35 @@ with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Settings Card (Toggles inside)
+    # Display Layers (title box)
+    st.markdown("""
+    <div class="settings-card">
+      <div class="settings-title">Display Layers</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Fake card body for toggles
+    st.markdown("""
+    <style>
+    .toggle-wrapper {
+      background: #0E1492;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-top: none;
+      border-radius: 0 0 18px 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      padding: 12px 20px 10px 20px;
+      margin-top: -20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     with st.container():
-        st.markdown("""
-        <div class="settings-card">
-          <div class="settings-title">Display Layers</div>
-          <div class="toggle-container">
-        """, unsafe_allow_html=True)
-
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options Flow", True)
-
-        st.markdown("""
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown('<div class="toggle-wrapper">', unsafe_allow_html=True)
+        st.toggle("Affiliated Signals", True)
+        st.toggle("Macro layer", True)
+        st.toggle("News Sentiment", True)
+        st.toggle("Options Flow", True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 

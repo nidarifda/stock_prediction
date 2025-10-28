@@ -34,7 +34,8 @@ st.markdown(f"""
 .app-header {{
   display:flex;
   align-items:center;
-  margin-bottom:60px;
+  margin-top:50px;
+  margin-bottom:30px;
 }}
 .app-header .title {{
   color:{TEXT};

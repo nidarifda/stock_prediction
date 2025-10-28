@@ -97,35 +97,6 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
-/* ─────────────── Settings Card ─────────────── */
-.settings-card {{
-  background: #0F1A2B;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px 18px 0 0;
-  padding: 14px 20px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-  margin-top: 14px;
-  margin-bottom: 0;
-}}
-.settings-title {{
-  font-weight: 700;
-  font-size: 16px;
-  color: #E6F0FF;
-  margin-bottom: 0;
-}}
-
-/* ─────────────── Toggle Container ─────────────── */
-div[data-testid="stVerticalBlock"] > div:has(> label[data-testid="stCheckbox"]) {{
-  background: transparent !important;
-}}
-
-/* Make toggles tighter and inside card visually */
-[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div {{
-  margin-top: -6px !important;
-  margin-bottom: -6px !important;
-}}
-
-
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;
@@ -257,27 +228,10 @@ with st.container():
     # make toggles appear visually inside the same card
     with st.container():
         st.markdown(
-            """
-            <style>
-            /* Make the toggle group share the same background and radius */
-            div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"]:has(> label[data-testid="stWidgetLabel"]) {
-                background: #0F1A2B !important;
-                border: 1px solid rgba(255,255,255,0.08);
-                border-top: none;
-                border-radius: 0 0 18px 18px;
-                padding: 12px 20px 6px 20px;
-                box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-                margin-top: -18px !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
         affiliated = st.toggle("Affiliated Signals", True)
         macro = st.toggle("Macro layer", True)
         news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options Flow", True)
+        options = st.toggle("Options Flow", True))
 
 # MIDDLE PANEL
 with col_mid:

@@ -30,6 +30,7 @@ st.markdown(f"""
 }}
 .block-container {{ padding-top:1rem; padding-bottom:0rem; }}
 
+/* ─────────────── Header styling ─────────────── */
 .app-header {{
   display:flex;
   align-items:center;
@@ -236,35 +237,38 @@ with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Display Layers (title box)
+    # Display Layers Title (top of box)
     st.markdown("""
     <div class="settings-card">
       <div class="settings-title">Display Layers</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Fake card body for toggles
+    # Toggles inside simulated box
     st.markdown("""
     <style>
-    .toggle-wrapper {
-      background: #0E1492;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-top: none;
-      border-radius: 0 0 18px 18px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      padding: 12px 20px 10px 20px;
-      margin-top: -20px;
+    div[data-testid="stVerticalBlock"] > div.toggle-box {
+        background: #0E1492;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-top: none;
+        border-radius: 0 0 18px 18px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        padding: 14px 22px 16px 22px;
+        margin-top: -20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-    with st.container():
-        st.markdown('<div class="toggle-wrapper">', unsafe_allow_html=True)
+    # --- Start simulated card ---
+    toggle_box = st.container()
+    with toggle_box:
+        st.markdown('<div class="toggle-box">', unsafe_allow_html=True)
         st.toggle("Affiliated Signals", True)
         st.toggle("Macro layer", True)
         st.toggle("News Sentiment", True)
         st.toggle("Options Flow", True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 

@@ -1,19 +1,15 @@
-# streamlit_app.py
+# streamlit/app.py
 from __future__ import annotations
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 
 # ────────────────────────────────────────────────────────────────
-# PAGE CONFIG
+# CONFIG
 # ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layout="wide")
 
-# ────────────────────────────────────────────────────────────────
-# COLOR VARIABLES
-# ────────────────────────────────────────────────────────────────
 BG = "#0B1220"
 CARD = "#0F1A2B"
 TEXT = "#E6F0FF"
@@ -27,7 +23,9 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-/* Remove default Streamlit header gap */
+/* ────────────────────────────────────────────── */
+/*  FIX HEADER CUT ISSUE                          */
+/* ────────────────────────────────────────────── */
 header[data-testid="stHeader"] {{
   height: 0rem !important;
   visibility: hidden !important;
@@ -36,65 +34,86 @@ header[data-testid="stHeader"] {{
   padding-top: 0 !important;
   margin-top: 0 !important;
 }}
+.block-container {{
+  padding-top: 0.5rem !important;
+}}
+.app-header {{
+  margin-top: 10px !important;
+  margin-bottom: 24px !important;
+}}
 
+/* ────────────────────────────────────────────── */
+/*  MAIN DASHBOARD STYLES                         */
+/* ────────────────────────────────────────────── */
 .stApp {{
   background-color:{BG};
   color:{TEXT};
   font-family:'Inter',sans-serif;
 }}
+.block-container {{ padding-top:1rem; padding-bottom:0rem; }}
 
-/* Dashboard title */
 .app-header {{
   display:flex;
   align-items:center;
   margin-bottom:24px;
 }}
 .app-header .title {{
-  color:{TEXT};
-  font-size:34px;
-  font-weight:900;
-  letter-spacing:0.3px;
-  text-shadow:0 0 10px rgba(73,107,255,0.25);
+  color: {TEXT};
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 10px rgba(73,107,255,0.25);
 }}
-
-/* Watchlist card */
-.watchlist-card {{
-  background:#0E1492 !important;
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:18px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.3);
-  padding:16px 20px;
-  margin-bottom:18px;
-  transition:transform .2s ease, box-shadow .2s ease;
+.card {{
+  background:{CARD};
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+  padding:14px 16px;
 }}
-.watchlist-card:hover {{
-  transform:translateY(-2px);
-  box-shadow:0 10px 22px rgba(0,0,0,0.45);
-}}
-.watchlist-title {{
-  font-weight:800;
-  font-size:18px;
-  color:#E6F0FF;
-  margin-bottom:12px;
-}}
-.watchlist-row {{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  transition:background .2s ease;
-}}
-.watchlist-row:hover {{
-  background:rgba(255,255,255,0.05);
-}}
-.watchlist-row:last-child {{border-bottom:none;}}
-.watchlist-symbol {{font-weight:700;font-size:15px;}}
-.watchlist-price {{font-weight:700;color:#E6F0FF;}}
-.watchlist-change-up {{color:#5CF2B8;font-weight:600;font-size:13px;}}
-.watchlist-change-down {{color:#F08A3C;font-weight:600;font-size:13px;}}
-
-/* Metric boxes & footer */
+/* Watchlist card styling */
+.watchlist-card {
+  background: #0E1492 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}
+.watchlist-title {
+  font-weight: 800;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 12px;
+}
+.watchlist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.watchlist-row:last-child {
+  border-bottom: none;
+}
+.watchlist-symbol {
+  font-weight: 700;
+  font-size: 15px;
+}
+.watchlist-price {
+  font-weight: 700;
+  color: #E6F0FF;
+}
+.watchlist-change-up {
+  color: #5CF2B8;
+  font-weight: 600;
+  font-size: 13px;
+}
+.watchlist-change-down {
+  color: #F08A3C;
+  font-weight: 600;
+  font-size: 13px;
+}
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -109,20 +128,34 @@ header[data-testid="stHeader"] {{
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
 }}
-.metric-slot .m-label {{font-size:12px;opacity:.8;}}
-.metric-slot .m-value {{font-size:22px;font-weight:800;}}
+.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
+.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
 .js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
 }}
+[data-testid="stTabs"] button {{
+  background:transparent; border:none;
+  color:{TEXT}; font-weight:600; font-size:14px;
+}}
+[data-testid="stTabs"] button[aria-selected="true"] {{
+  color:{ACCENT}; border-bottom:2px solid {ACCENT};
+}}
+.right-panel {{
+  background:{CARD};
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+  padding:12px 14px;
+}}
 .sig-row {{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:6px 2px;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
 }}
 .sig-row:last-child{{border-bottom:0;}}
+.footer-wrap {{
+  margin-top:0.8rem;
+}}
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
@@ -133,8 +166,8 @@ header[data-testid="stHeader"] {{
   padding:8px 0;
 }}
 .status-item {{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 18px;font-size:13px;color:{MUTED};
+  display:flex; align-items:center; gap:8px;
+  padding:8px 18px; font-size:13px; color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
 }}
 .status-item:last-child{{border-right:0;}}
@@ -143,121 +176,50 @@ header[data-testid="stHeader"] {{
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
 """, unsafe_allow_html=True)
-import streamlit.components.v1 as components
-
-def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
-    rows = []
-    for t in tickers:
-        if t not in prices_df.columns:
-            continue
-        s = prices_df[t].dropna()
-        if s.empty:
-            continue
-        last = s.iloc[-1]
-        chg1 = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100 if len(s) > 1 else 0
-        chg2 = np.random.uniform(-0.5, 0.5)  # mock secondary % change (intraday or 1D)
-        color1 = "#5CF2B8" if chg1 >= 0 else "#F08A3C"
-        color2 = "#5CF2B8" if chg2 >= 0 else "#F08A3C"
-        icon = "↗" if chg1 >= 0 else "↘"
-        rows.append(f"""
-          <div class="watchlist-row">
-            <div class="watchlist-left">
-              <div class="watchlist-symbol">{t}</div>
-              <div class="watchlist-sub">
-                <span style="color:{color1};">{icon} {chg1:+.2f}%</span>
-              </div>
-            </div>
-            <div class="watchlist-right">
-              <div class="watchlist-price">{last:,.2f}</div>
-              <div class="watchlist-sub">
-                <span style="color:{color2};">{chg2:+.2f}%</span>
-              </div>
-            </div>
-          </div>
-        """)
-
-    html = f"""
-    <html>
-    <head>
-      <style>
-        body {{
-          margin: 0;
-          background: #0E1492;
-          border-radius: 18px;
-          font-family: 'Inter', sans-serif;
-          color: #E6F0FF;
-        }}
-        .watchlist-card {{
-          padding: 14px 18px;
-        }}
-        .watchlist-title {{
-          font-weight: 800;
-          font-size: 18px;
-          color: #E6F0FF;
-          margin-bottom: 10px;
-        }}
-        .watchlist-row {{
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }}
-        .watchlist-row:last-child {{
-          border-bottom: none;
-        }}
-        .watchlist-left {{
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }}
-        .watchlist-right {{
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 3px;
-        }}
-        .watchlist-symbol {{
-          font-weight: 700;
-          font-size: 15px;
-        }}
-        .watchlist-price {{
-          font-weight: 700;
-          color: #E6F0FF;
-          font-size: 15px;
-        }}
-        .watchlist-sub {{
-          font-size: 12.5px;
-          opacity: 0.9;
-        }}
-      </style>
-    </head>
-    <body>
-      <div class="watchlist-card">
-        <div class="watchlist-title">{title}</div>
-        {''.join(rows) if rows else '<div style="opacity:.7;">No data available</div>'}
-      </div>
-    </body>
-    </html>
-    """
-
-    components.html(html, height=420, scrolling=False)
-
 
 # ────────────────────────────────────────────────────────────────
-# DUMMY DATA
+# DEMO DATA
 # ────────────────────────────────────────────────────────────────
 dates = pd.date_range("2024-01-01", periods=200)
+price = np.cumsum(np.random.normal(0.5, 2, len(dates))) + 300
 prices = pd.DataFrame({
-    "NVDA": np.linspace(300, 380, len(dates)) + np.random.randn(len(dates))*2,
-    "TSMC": np.linspace(320, 360, len(dates)) + np.random.randn(len(dates))*2,
-    "ASML": np.linspace(340, 390, len(dates)) + np.random.randn(len(dates))*2,
-    "CDNS": np.linspace(290, 330, len(dates)) + np.random.randn(len(dates))*2,
-    "SNPS": np.linspace(300, 340, len(dates)) + np.random.randn(len(dates))*2,
-}, index=dates)
+    "Date": dates,
+    "NVDA": price,
+    "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
+    "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
+    "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
+    "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
+}).set_index("Date")
 
 # ────────────────────────────────────────────────────────────────
-# WATCHLIST RENDER FUNCTION (now uses components.html)
+# HEADER
+# ────────────────────────────────────────────────────────────────
+st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+
+# ────────────────────────────────────────────────────────────────
+# TOP LAYOUT (3 columns)
+# ────────────────────────────────────────────────────────────────
+col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
+
+# LEFT PANEL (WATCHLIST)
+with col_left:
+    st.markdown("**Watchlist**")
+    for t in ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"]:
+        last = prices[t].iloc[-1]
+        chg = np.random.uniform(-2, 2)
+        color = GREEN if chg > 0 else ORANGE
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between'><b>{t}</b>"
+            f"<span style='color:{TEXT}'>{last:,.2f}</span></div>"
+            f"<span style='color:{color}'>{chg:+.2f}%</span>",
+            unsafe_allow_html=True,
+        )
+    st.toggle("Affiliated Signals", True)
+    st.toggle("Macro layer", True)
+    st.toggle("News Sentiment", True)
+    st.toggle("Options Flow", True)
+# ────────────────────────────────────────────────────────────────
+# WATCHLIST CARD (with #0E1492 background)
 # ────────────────────────────────────────────────────────────────
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
     rows = []
@@ -286,30 +248,11 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
       {''.join(rows) if rows else '<div style="opacity:.7;">No data available</div>'}
     </div>
     """
-    components.html(html, height=420, scrolling=True)
+    st.markdown(html, unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────
-# HEADER
-# ────────────────────────────────────────────────────────────────
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
-
-# ────────────────────────────────────────────────────────────────
-# LAYOUT (3 columns)
-# ────────────────────────────────────────────────────────────────
-col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
-
-# LEFT PANEL
-with col_left:
-    render_watchlist_from_prices(prices, ["TSMC", "ASML", "AMD", "MSFT"])
-    st.toggle("Affiliated Signals", True)
-    st.toggle("Macro layer", True)
-    st.toggle("News Sentiment", True)
-    st.toggle("Options Flow", True)
-
-
-
-# MIDDLE PANEL
+# MIDDLE PANEL (CHART + METRICS)
 with col_mid:
+    # Controls
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
@@ -318,6 +261,7 @@ with col_mid:
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
+    # Metric Boxes
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -326,6 +270,7 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
+    # Chart
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
@@ -340,13 +285,14 @@ with col_mid:
                       font=dict(color=TEXT), showlegend=False)
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
+    # Tabs (Error metrics / SHAP)
     tab1, tab2 = st.tabs(["Error metrics", "SHAP / Trade idea"])
     with tab1:
         st.markdown("<div class='card'><b>MAE</b>: 1.31<br><b>RMSE</b>: 2.06<br><b>Confu.</b>: 0.91</div>", unsafe_allow_html=True)
     with tab2:
         st.markdown("<div class='card'><b>Bias:</b> <span style='color:#FFCE6B'>Mild long</span><br>Entry 423.00<br>Target 452.00</div>", unsafe_allow_html=True)
 
-# RIGHT PANEL
+# RIGHT PANEL (AFFILIATED SIGNALS)
 with col_right:
     st.markdown("**Affiliated Signals**")
     for t in ["TSMC", "ASML", "CDNS", "SNPS"]:

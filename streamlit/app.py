@@ -55,7 +55,7 @@ header[data-testid="stHeader"] {{
 .app-header {{
   display:flex;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:24px;
 }}
 .app-header .title {{
   color: {TEXT};

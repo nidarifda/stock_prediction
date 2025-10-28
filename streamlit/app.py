@@ -112,15 +112,34 @@ st.markdown(f"""
   margin-bottom: 8px;
 }}
 
+/* ─────────────── Settings Card ─────────────── */
+.settings-card {
+  background: #0F1A2B; /* same dark tone as rest */
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 16px 20px 6px 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+.settings-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #E6F0FF;
+  margin-bottom: 8px;
+}
+
 /* ─────────────── Toggle Container ─────────────── */
-.toggle-container {{
-  margin-top: 6px;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: 6px;
-}}
+div[data-testid="stVerticalBlock"] > div:has(> label[data-testid="stCheckbox"]) {
+  background: transparent !important;
+}
+
+/* Make toggles tighter and inside card visually */
+[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > div {
+  margin-top: -6px !important;
+  margin-bottom: -6px !important;
+}
+
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
@@ -245,30 +264,16 @@ with col_left:
 # Settings Card (Properly Styled Container)
 with st.container():
     st.markdown("""
-        <div class="settings-card">
-            <div class="settings-title">Display Layers</div>
-        </div>
+    <div class="settings-card">
+      <div class="settings-title">Display Layers</div>
+    </div>
     """, unsafe_allow_html=True)
 
-    # Create a sub-container with padding inside card background
-    with st.container():
-        st.markdown(
-            """
-            <style>
-            div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
-                background: #0E1492 !important;
-                border-radius: 18px;
-                padding: 16px 20px;
-                box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options Flow", True)
+    # Add toggles immediately below so they appear inside visually
+    affiliated = st.toggle("Affiliated Signals", True)
+    macro = st.toggle("Macro layer", True)
+    news = st.toggle("News Sentiment", True)
+    options = st.toggle("Options Flow", True)
 
 # MIDDLE PANEL
 with col_mid:

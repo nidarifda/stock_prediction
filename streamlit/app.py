@@ -100,6 +100,7 @@ st.markdown(f"""
 
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
+/* Force toggle label text to white */
 [data-testid="stWidgetLabel"],
 .stToggle label,
 div[role="switch"] + label {{
@@ -108,14 +109,29 @@ div[role="switch"] + label {{
   font-weight: 500 !important;
 }}
 
-/* Make toggles visually sit INSIDE card */
+/* Make toggles visually sit inside the same card */
 [data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
-  margin-top: -4px !important;
-  margin-bottom: -4px !important;
-  padding-left: 12px !important;
+  margin-top: -6px !important;
+  margin-bottom: -6px !important;
+  padding-left: 10px !important;
   background: transparent !important;
   position: relative !important;
   z-index: 1 !important;
+}}
+
+/* Make toggle switch blue when active */
+[data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
+  background-color: #496BFF !important; /* bright blue ON state */
+}}
+
+/* Optional: subtle glow when active */
+[data-testid="stSwitch"] div[role="switch"][aria-checked="true"]::after {{
+  box-shadow: 0 0 6px #496BFF !important;
+}}
+
+/* Make toggle background darker when off */
+[data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
+  background-color: rgba(255,255,255,0.15) !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -302,22 +318,30 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Open card manually
+    # Render the Layers box manually
     st.markdown("""
-    <div class="watchlist-card" style="padding-bottom:14px;">
-        <div class="watchlist-title">Layers</div>
+    <div style="
+        background-color:#0F1A2B;
+        border:1px solid rgba(255,255,255,0.08);
+        border-radius:18px;
+        padding:16px 20px 8px 20px;
+        margin-top:12px;
+        box-shadow:0 6px 18px rgba(0,0,0,0.35);
+        ">
+        <div style="font-weight:700;font-size:15px;color:#E6F0FF;margin-bottom:8px;">
+            Layers
+        </div>
     """, unsafe_allow_html=True)
 
-    # Everything inside one Streamlit container
+    # Place toggles visually inside same area
     with st.container():
-        st.markdown("<div style='padding-left:10px;'>", unsafe_allow_html=True)
+        st.write("")  # ensure proper spacing
         affiliated = st.toggle("Affiliated Signals", True)
         macro = st.toggle("Macro layer", True)
         news = st.toggle("News Sentiment", True)
         options = st.toggle("Options flow", True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
-    # Close the card manually
+    # Close the div manually
     st.markdown("</div>", unsafe_allow_html=True)
 
 

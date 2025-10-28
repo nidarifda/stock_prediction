@@ -107,6 +107,11 @@ st.markdown(f"""
   font-weight: 500 !important;
 }}
 
+.stToggle {{
+  margin-top: -5px !important;       /* pulls closer to the card above */
+  margin-bottom: -2px !important;    /* smaller gap between each toggle */
+  padding-left: 12px !important;     /* indent to match Watchlist padding */
+}}
 /* Blue toggle on */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
   background-color: #496BFF !important;
@@ -302,7 +307,7 @@ with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
     # No box, no "Layers" title — just toggles directly
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:-5px;'></div>", unsafe_allow_html=True)
     affiliated = st.toggle("Affiliated Signals", True)
     macro = st.toggle("Macro layer", True)
     news = st.toggle("News Sentiment", True)

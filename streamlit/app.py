@@ -96,7 +96,7 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Settings (toggle) card styling ─────────────── */
-.settings-card {{
+.blue-container {
   background: #0E1492 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -104,25 +104,35 @@ st.markdown(f"""
   padding: 16px 20px;
   margin-top: 12px;
   transition: all 0.25s ease-in-out;
-}}
-.settings-card:hover {{
+}
+.blue-container:hover {
   box-shadow: 0 10px 24px rgba(0,0,0,0.5);
-}}
-.settings-title {{
+}
+
+/* Title styling */
+.container-title {
   font-weight: 800;
   font-size: 18px;
   color: #E6F0FF;
   margin-bottom: 10px;
-  text-align:left;
-}}
-.toggle-container {{
+  text-align: left;
+}
+
+/* Toggle box styling */
+.toggle-box {
   margin-top: 6px;
   background: transparent;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding-bottom: 6px;
-}}
+}
+.stToggle > label {
+  color: #E6F0FF !important;
+  font-weight: 500;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 .metric-row {{
@@ -232,7 +242,6 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
-# LEFT PANEL
 with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
@@ -244,7 +253,7 @@ with col_left:
     </div>
     """, unsafe_allow_html=True)
 
-    # Toggles inside simulated box
+    # Toggles inside simulated box (CSS trick)
     st.markdown("""
     <style>
     div[data-testid="stVerticalBlock"] > div.toggle-box {
@@ -259,16 +268,14 @@ with col_left:
     </style>
     """, unsafe_allow_html=True)
 
-    # --- Start simulated card ---
-    toggle_box = st.container()
-    with toggle_box:
+    # Create the toggle container inside the same column
+    with st.container() as toggle_box:
         st.markdown('<div class="toggle-box">', unsafe_allow_html=True)
         st.toggle("Affiliated Signals", True)
         st.toggle("Macro layer", True)
         st.toggle("News Sentiment", True)
         st.toggle("Options Flow", True)
         st.markdown('</div>', unsafe_allow_html=True)
-
 
 
 

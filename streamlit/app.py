@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 
 # ────────────────────────────────────────────────────────────────
 # CONFIG
@@ -42,7 +41,7 @@ st.markdown(f"""
   font-weight:800;
 }}
 
-/* Watchlist card styling */
+/* ─────────────── Watchlist card styling ─────────────── */
 .watchlist-card {{
   background: #070535 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -93,6 +92,28 @@ st.markdown(f"""
   font-size: 12.5px;
   opacity: 0.9;
 }}
+
+/* ─────────────── Settings (toggle) card styling ─────────────── */
+.settings-card {{
+  background: #0E1492 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  margin-top: 12px;
+  transition: all 0.25s ease-in-out;
+}}
+.settings-card:hover {{
+  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+}}
+.settings-title {{
+  font-weight: 800;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 10px;
+  text-align:left;
+}}
+
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -202,11 +223,24 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
 with col_left:
+    # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
-    st.toggle("Affiliated Signals", True)
-    st.toggle("Macro layer", True)
-    st.toggle("News Sentiment", True)
-    st.toggle("Options Flow", True)
+
+    # Settings Card (Toggles)
+    st.markdown("""
+    <div class="settings-card">
+      <div class="settings-title">Display Layers</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown("<div class='settings-card' style='margin-top:-18px;'>", unsafe_allow_html=True)
+        st.toggle("Affiliated Signals", True)
+        st.toggle("Macro layer", True)
+        st.toggle("News Sentiment", True)
+        st.toggle("Options Flow", True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
 
 # MIDDLE PANEL
 with col_mid:

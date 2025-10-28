@@ -133,17 +133,31 @@ st.markdown(f"""
 
 /* Dropdowns (Selectboxes) */
 [data-baseweb="select"] {{
-  color: #0F1A2B !important;
-  background-color: #0F1A2B !important;
+  background-color: #0F1A2B !important;  /* matches card color */
+  border: 1px solid rgba(255,255,255,0.25) !important; /* visible border */
   border-radius: 10px !important;
-  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: #E6F0FF !important;  /* white text */
   font-weight: 500 !important;
-}}
-[data-baseweb="select"] * {{
-  color: #0F1A2B !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  transition: all 0.25s ease-in-out;
 }}
 
-/* Center text in dropdowns */
+/* Text and caret color */
+[data-baseweb="select"] * {{
+  color: #E6F0FF !important;
+}}
+
+/* Hover and focus effect */
+[data-baseweb="select"]:hover {{
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.5);
+}}
+[data-baseweb="select"]:focus-within {{
+  border-color: #31D0FF !important;
+  box-shadow: 0 0 10px rgba(49,208,255,0.5);
+}}
+
+/* Center text inside dropdowns */
 div[data-baseweb="select"] > div {{
   justify-content: center !important;
 }}
@@ -164,7 +178,7 @@ div[data-baseweb="select"] > div {{
 
 /* Radio circle (active/inactive) */
 [data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
-  background-color: #496BFF !important; /* bright blue for active */
+  background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
 }}
 [data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
@@ -172,12 +186,13 @@ div[data-baseweb="select"] > div {{
   background: transparent !important;
 }}
 
-/* Adjust layout between dropdowns and radio buttons */
+/* Align dropdowns and radio buttons neatly in the same line */
 div[data-testid="stHorizontalBlock"] {{
   align-items: center !important;
   gap: 1rem !important;
   margin-bottom: 8px !important;
 }}
+
 
 
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ────────────────────────────────────────────────────────────────
 # CONFIG
@@ -33,20 +34,12 @@ st.markdown(f"""
 .app-header {{
   display:flex;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:60px;
 }}
 .app-header .title {{
   color:{TEXT};
   font-size:30px;
   font-weight:800;
-}}
-
-.card {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);
-  padding:14px 16px;
 }}
 
 /* Watchlist card styling */
@@ -57,12 +50,17 @@ st.markdown(f"""
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   padding: 16px 20px;
   margin-bottom: 18px;
+  transition: all 0.25s ease-in-out;
+}}
+.watchlist-card:hover {{
+  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
 }}
 .watchlist-title {{
   font-weight: 800;
   font-size: 18px;
   color: #E6F0FF;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  text-align:left;
 }}
 .watchlist-row {{
   display: flex;
@@ -74,6 +72,14 @@ st.markdown(f"""
 .watchlist-row:last-child {{
   border-bottom: none;
 }}
+.watchlist-left, .watchlist-right {{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}}
+.watchlist-right {{
+  align-items: flex-end;
+}}
 .watchlist-symbol {{
   font-weight: 700;
   font-size: 15px;
@@ -81,19 +87,12 @@ st.markdown(f"""
 .watchlist-price {{
   font-weight: 700;
   color: #E6F0FF;
+  font-size: 15px;
 }}
-.watchlist-change-up {{
-  color: #5CF2B8;
-  font-weight: 600;
-  font-size: 13px;
+.watchlist-sub {{
+  font-size: 12.5px;
+  opacity: 0.9;
 }}
-.watchlist-change-down {{
-  color: #F08A3C;
-  font-weight: 600;
-  font-size: 13px;
-}}
-
-
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -114,28 +113,11 @@ st.markdown(f"""
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
 }}
-[data-testid="stTabs"] button {{
-  background:transparent; border:none;
-  color:{TEXT}; font-weight:600; font-size:14px;
-}}
-[data-testid="stTabs"] button[aria-selected="true"] {{
-  color:{ACCENT}; border-bottom:2px solid {ACCENT};
-}}
-.right-panel {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);
-  padding:12px 14px;
-}}
 .sig-row {{
   display:flex; align-items:center; justify-content:space-between;
   padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
 }}
 .sig-row:last-child{{border-bottom:0;}}
-.footer-wrap {{
-  margin-top:0.8rem;
-}}
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
@@ -172,36 +154,62 @@ prices = pd.DataFrame({
 }).set_index("Date")
 
 # ────────────────────────────────────────────────────────────────
+# WATCHLIST COMPONENT
+# ────────────────────────────────────────────────────────────────
+def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+    rows = []
+    for t in tickers:
+        s = prices_df[t].dropna()
+        if s.empty:
+            continue
+        last = s.iloc[-1]
+        chg1 = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100 if len(s) > 1 else 0
+        chg2 = np.random.uniform(-0.5, 0.5)
+        color1 = GREEN if chg1 >= 0 else ORANGE
+        color2 = GREEN if chg2 >= 0 else ORANGE
+        icon = "↗" if chg1 >= 0 else "↘"
+        rows.append(f"""
+        <div class="watchlist-row">
+            <div class="watchlist-left">
+                <div class="watchlist-symbol">{t}</div>
+                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1:+.2f}%</div>
+            </div>
+            <div class="watchlist-right">
+                <div class="watchlist-price">{last:,.2f}</div>
+                <div class="watchlist-sub" style="color:{color2};">{chg2:+.2f}%</div>
+            </div>
+        </div>
+        """)
+    st.markdown(
+        f"""
+        <div class="watchlist-card">
+          <div class="watchlist-title">{title}</div>
+          {''.join(rows)}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ────────────────────────────────────────────────────────────────
 # HEADER
 # ────────────────────────────────────────────────────────────────
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
-# TOP LAYOUT (3 columns)
+# LAYOUT (3 columns)
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
-# LEFT PANEL (WATCHLIST)
+# LEFT PANEL
 with col_left:
-    st.markdown("**Watchlist**")
-    for t in ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"]:
-        last = prices[t].iloc[-1]
-        chg = np.random.uniform(-2, 2)
-        color = GREEN if chg > 0 else ORANGE
-        st.markdown(
-            f"<div style='display:flex;justify-content:space-between'><b>{t}</b>"
-            f"<span style='color:{TEXT}'>{last:,.2f}</span></div>"
-            f"<span style='color:{color}'>{chg:+.2f}%</span>",
-            unsafe_allow_html=True,
-        )
+    render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options Flow", True)
 
-# MIDDLE PANEL (CHART + METRICS)
+# MIDDLE PANEL
 with col_mid:
-    # Controls
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
@@ -210,7 +218,6 @@ with col_mid:
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # Metric Boxes
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -219,7 +226,6 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Chart
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
@@ -234,14 +240,7 @@ with col_mid:
                       font=dict(color=TEXT), showlegend=False)
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
-    # Tabs (Error metrics / SHAP)
-    tab1, tab2 = st.tabs(["Error metrics", "SHAP / Trade idea"])
-    with tab1:
-        st.markdown("<div class='card'><b>MAE</b>: 1.31<br><b>RMSE</b>: 2.06<br><b>Confu.</b>: 0.91</div>", unsafe_allow_html=True)
-    with tab2:
-        st.markdown("<div class='card'><b>Bias:</b> <span style='color:#FFCE6B'>Mild long</span><br>Entry 423.00<br>Target 452.00</div>", unsafe_allow_html=True)
-
-# RIGHT PANEL (AFFILIATED SIGNALS)
+# RIGHT PANEL
 with col_right:
     st.markdown("**Affiliated Signals**")
     for t in ["TSMC", "ASML", "CDNS", "SNPS"]:

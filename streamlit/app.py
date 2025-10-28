@@ -200,12 +200,17 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
 with col_left:
-    with st.container():
-        render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"])
+    st.markdown("<div style='margin-top:8px; margin-bottom:6px;'></div>", unsafe_allow_html=True)
+    # 🔹 Use a clean frame background anchor
+    st.markdown("<div style='background:#0E1492;border-radius:18px;padding:10px 12px;'>", unsafe_allow_html=True)
+    render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"])
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options Flow", True)
+
 
 # MIDDLE PANEL
 with col_mid:

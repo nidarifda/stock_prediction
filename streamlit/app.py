@@ -101,6 +101,14 @@ st.markdown(f"""
 # ────────────────────────────────────────────────────────────────
 # toggle style
 # ────────────────────────────────────────────────────────────────
+.toggle-container {{
+  margin-top: 6px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+}}
 
 
 .metric-row {{
@@ -211,7 +219,6 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
-# LEFT PANEL
 with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
@@ -233,6 +240,7 @@ with col_left:
           </div>
         </div>
         """, unsafe_allow_html=True)
+
 
 
 # MIDDLE PANEL

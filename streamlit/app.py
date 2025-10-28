@@ -129,6 +129,58 @@ st.markdown(f"""
 }}
 
 
+/* ─────────────── Middle Control Bar ─────────────── */
+
+/* Dropdowns (Selectboxes) */
+[data-baseweb="select"] {
+  color: #E6F0FF !important;
+  background-color: #0F1A2B !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  font-weight: 500 !important;
+}
+[data-baseweb="select"] * {
+  color: #E6F0FF !important;
+}
+
+/* Center text in dropdowns */
+div[data-baseweb="select"] > div {
+  justify-content: center !important;
+}
+
+/* Radio buttons (Next day / 1D / 1W / 1M) */
+.stRadio > div {{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}}
+
+.stRadio label p {{
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}}
+
+/* Radio circle (active/inactive) */
+[data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
+  background-color: #496BFF !important; /* bright blue for active */
+  border: 2px solid #496BFF !important;
+}}
+[data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  background: transparent !important;
+}}
+
+/* Adjust layout between dropdowns and radio buttons */
+div[data-testid="stHorizontalBlock"] {{
+  align-items: center !important;
+  gap: 1rem !important;
+  margin-bottom: 8px !important;
+}}
+
+
+
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;

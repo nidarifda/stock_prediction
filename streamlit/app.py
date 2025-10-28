@@ -101,14 +101,6 @@ st.markdown(f"""
 # ────────────────────────────────────────────────────────────────
 # toggle style
 # ────────────────────────────────────────────────────────────────
-.toggle-container {{
-  margin-top: 6px;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-bottom: 6px;
-}}
 
 
 .metric-row {{

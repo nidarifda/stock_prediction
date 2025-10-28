@@ -190,7 +190,6 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
             </div>
         </div>
         """)
-    # ✅ Fixed block now inside function
     st.markdown(
         f"""
         <div style="width:100%;">
@@ -216,22 +215,6 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 # LEFT PANEL
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
-
-# Settings Card (Properly Styled Container)
-with st.container():
-    st.markdown("""
-    <div class="settings-card">
-      <div class="settings-title">Display Layers</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # make toggles appear visually inside the same card
-    with st.container():
-        st.markdown(
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options Flow", True))
 
 # MIDDLE PANEL
 with col_mid:

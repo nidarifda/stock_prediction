@@ -99,21 +99,6 @@ st.markdown(f"""
 
 /* ─────────────── Settings Card ─────────────── */
 .settings-card {{
-  background: #0E1492;
-  border-radius: 18px;
-  padding: 16px 20px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-  margin-top: 12px;
-}}
-.settings-title {{
-  font-weight: 700;
-  font-size: 18px;
-  color: #E6F0FF;
-  margin-bottom: 8px;
-}}
-
-/* ─────────────── Settings Card ─────────────── */
-.settings-card {{
   background: #0F1A2B;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px 18px 0 0;

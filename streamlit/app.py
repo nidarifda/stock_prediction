@@ -143,6 +143,106 @@ header[data-testid="stHeader"] {{
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
 """, unsafe_allow_html=True)
+import streamlit.components.v1 as components
+
+def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+    rows = []
+    for t in tickers:
+        if t not in prices_df.columns:
+            continue
+        s = prices_df[t].dropna()
+        if s.empty:
+            continue
+        last = s.iloc[-1]
+        chg1 = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100 if len(s) > 1 else 0
+        chg2 = np.random.uniform(-0.5, 0.5)  # mock secondary % change (intraday or 1D)
+        color1 = "#5CF2B8" if chg1 >= 0 else "#F08A3C"
+        color2 = "#5CF2B8" if chg2 >= 0 else "#F08A3C"
+        icon = "↗" if chg1 >= 0 else "↘"
+        rows.append(f"""
+          <div class="watchlist-row">
+            <div class="watchlist-left">
+              <div class="watchlist-symbol">{t}</div>
+              <div class="watchlist-sub">
+                <span style="color:{color1};">{icon} {chg1:+.2f}%</span>
+              </div>
+            </div>
+            <div class="watchlist-right">
+              <div class="watchlist-price">{last:,.2f}</div>
+              <div class="watchlist-sub">
+                <span style="color:{color2};">{chg2:+.2f}%</span>
+              </div>
+            </div>
+          </div>
+        """)
+
+    html = f"""
+    <html>
+    <head>
+      <style>
+        body {{
+          margin: 0;
+          background: #0E1492;
+          border-radius: 18px;
+          font-family: 'Inter', sans-serif;
+          color: #E6F0FF;
+        }}
+        .watchlist-card {{
+          padding: 14px 18px;
+        }}
+        .watchlist-title {{
+          font-weight: 800;
+          font-size: 18px;
+          color: #E6F0FF;
+          margin-bottom: 10px;
+        }}
+        .watchlist-row {{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }}
+        .watchlist-row:last-child {{
+          border-bottom: none;
+        }}
+        .watchlist-left {{
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }}
+        .watchlist-right {{
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 3px;
+        }}
+        .watchlist-symbol {{
+          font-weight: 700;
+          font-size: 15px;
+        }}
+        .watchlist-price {{
+          font-weight: 700;
+          color: #E6F0FF;
+          font-size: 15px;
+        }}
+        .watchlist-sub {{
+          font-size: 12.5px;
+          opacity: 0.9;
+        }}
+      </style>
+    </head>
+    <body>
+      <div class="watchlist-card">
+        <div class="watchlist-title">{title}</div>
+        {''.join(rows) if rows else '<div style="opacity:.7;">No data available</div>'}
+      </div>
+    </body>
+    </html>
+    """
+
+    components.html(html, height=420, scrolling=False)
+
 
 # ────────────────────────────────────────────────────────────────
 # DUMMY DATA
@@ -200,16 +300,12 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
 with col_left:
-    st.markdown("<div style='margin-top:8px; margin-bottom:6px;'></div>", unsafe_allow_html=True)
-    # 🔹 Use a clean frame background anchor
-    st.markdown("<div style='background:#0E1492;border-radius:18px;padding:10px 12px;'>", unsafe_allow_html=True)
-    render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"])
-    st.markdown("</div>", unsafe_allow_html=True)
-
+    render_watchlist_from_prices(prices, ["TSMC", "ASML", "AMD", "MSFT"])
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options Flow", True)
+
 
 
 # MIDDLE PANEL

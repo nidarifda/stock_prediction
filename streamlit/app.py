@@ -102,36 +102,19 @@ st.markdown(f"""
 /* ─────────────── Compact Toggle Panel ─────────────── */
 /* Force toggle label text to white */
 [data-testid="stWidgetLabel"],
-.stToggle label,
-div[role="switch"] + label {{
+.stToggle label {{
   color: #FFFFFF !important;
-  opacity: 1 !important;
   font-weight: 500 !important;
 }}
 
-/* Make toggles visually sit inside the same card */
-[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
-  margin-top: -6px !important;
-  margin-bottom: -6px !important;
-  padding-left: 10px !important;
-  background: transparent !important;
-  position: relative !important;
-  z-index: 1 !important;
-}}
-
-/* Make toggle switch blue when active */
+/* Blue toggle on */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
-  background-color: #496BFF !important; /* bright blue ON state */
+  background-color: #496BFF !important;
 }}
 
-/* Optional: subtle glow when active */
-[data-testid="stSwitch"] div[role="switch"][aria-checked="true"]::after {{
-  box-shadow: 0 0 6px #496BFF !important;
-}}
-
-/* Make toggle background darker when off */
+/* Dim gray toggle off */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
-  background-color: rgba(255,255,255,0.15) !important;
+  background-color: rgba(255,255,255,0.2) !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -318,32 +301,12 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Render the Layers box manually
-    st.markdown("""
-    <div style="
-        background-color:#0F1A2B;
-        border:1px solid rgba(255,255,255,0.08);
-        border-radius:18px;
-        padding:16px 20px 8px 20px;
-        margin-top:12px;
-        box-shadow:0 6px 18px rgba(0,0,0,0.35);
-        ">
-        <div style="font-weight:700;font-size:15px;color:#E6F0FF;margin-bottom:8px;">
-            Layers
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Place toggles visually inside same area
-    with st.container():
-        st.write("")  # ensure proper spacing
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options flow", True)
-
-    # Close the div manually
-    st.markdown("</div>", unsafe_allow_html=True)
-
+    # No box, no "Layers" title — just toggles directly
+    st.markdown("<br>", unsafe_allow_html=True)
+    affiliated = st.toggle("Affiliated Signals", True)
+    macro = st.toggle("Macro layer", True)
+    news = st.toggle("News Sentiment", True)
+    options = st.toggle("Options flow", True)
 
 # MIDDLE PANEL
 with col_mid:

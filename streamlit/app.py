@@ -234,9 +234,11 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
-# LEFT PANEL (WATCHLIST)
+# LEFT PANEL (WATCHLIST) — wrapped in container so Streamlit doesn’t escape HTML
 with col_left:
-    render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"], title="Watchlist")
+    with st.container():
+        render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"], title="Watchlist")
+
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)

@@ -292,7 +292,7 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    """Render a styled signals card (same design as watchlist)."""
+    """Render signals in a watchlist-style card with correlation bars."""
     st.markdown(
         f"""
         <div class="watchlist-card">
@@ -305,16 +305,41 @@ def render_signals_card(title: str, tickers: list[str]):
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
+
         st.markdown(
             f"""
-            <div class='sig-row'>
-                <b style='color:{color}'>{t}</b>
-                <span style='color:{color}'>{chg:+.2f}%</span>
+            <div class="watchlist-row">
+                <div class="watchlist-left">
+                    <div class="watchlist-symbol" style="color:{color};">{t}</div>
+                    <div class="watchlist-sub" style="color:{TEXT}; opacity:0.85;">
+                        Correlation {corr:.2f}
+                    </div>
+                </div>
+                <div class="watchlist-right">
+                    <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        st.progress(corr, text=f"Correlation {corr:.2f}")
+
+        # add thin blue bar under each row
+        st.markdown(
+            f"""
+            <div style="background-color:rgba(255,255,255,0.1);
+                        border-radius:6px;
+                        height:6px;
+                        margin-top:-4px;
+                        margin-bottom:10px;">
+              <div style="background-color:#2E6CFF;
+                          width:{corr*100}%;
+                          height:100%;
+                          border-radius:6px;
+                          transition:width 0.4s ease-in-out;"></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
   

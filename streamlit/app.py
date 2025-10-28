@@ -192,6 +192,17 @@ div[data-testid="stHorizontalBlock"] {{
   gap: 1rem !important;
   margin-bottom: 8px !important;
 }}
+/* Limit the width of dropdown boxes */
+[data-baseweb="select"] {{
+  max-width: 160px !important;   /* adjust width as desired */
+  min-width: 140px !important;
+  text-align: center !important;
+}}
+
+/* Center dropdown content */
+[data-baseweb="select"] > div {{
+  justify-content: center !important;
+}}
 
 
 

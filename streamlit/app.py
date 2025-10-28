@@ -12,8 +12,8 @@ st.set_page_config(page_title="Stock Prediction Expert", page_icon="📈", layou
 
 BG = "#0B1220"
 CARD = "#0F1A2B"
-TEXT = "#E6F0FF"
-MUTED = "#8AA1C7"
+TEXT = "#FFFFFF"
+MUTED = "#A9BBD9"
 ACCENT = "#496BFF"
 ORANGE = "#F08A3C"
 GREEN = "#5CF2B8"
@@ -97,70 +97,28 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
-/* ─────────────── Compact Toggle Panel ─────────────── */
+/* ─────────────── Compact Toggle Card ─────────────── */
 .toggle-card {{
   background:{CARD};
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
-  padding: 16px 20px;
+  padding: 16px 20px 10px 20px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  color: {TEXT};
+  margin-top: 8px;
 }}
 .toggle-title {{
   font-weight: 700;
   font-size: 15px;
   color: {TEXT};
   margin-bottom: 8px;
+  text-shadow: 0 0 4px rgba(255,255,255,0.2);
 }}
-
-/* ─────────────── Metrics ─────────────── */
-.metric-row {{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:16px;
-  margin-top:10px;
+.stToggle label {{
+  color: {TEXT} !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
 }}
-.metric-slot {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;
-  height:68px;
-  text-align:center;
-  box-shadow:0 6px 14px rgba(0,0,0,.25);
-}}
-.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
-.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
-
-/* ─────────────── Chart & Signals ─────────────── */
-.js-plotly-plot {{
-  border-radius:14px !important;
-  box-shadow:0 0 22px rgba(0,0,0,.4) !important;
-}}
-.sig-row {{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
-}}
-.sig-row:last-child{{border-bottom:0;}}
-
-/* ─────────────── Footer Status Bar ─────────────── */
-.statusbar {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:22px;
-  box-shadow:0 10px 28px rgba(0,0,0,.35);
-  display:flex;
-  align-items:center;
-  padding:8px 0;
-  margin-top:25px;
-}}
-.status-item {{
-  display:flex; align-items:center; gap:8px;
-  padding:8px 18px; font-size:13px; color:{MUTED};
-  border-right:1px solid rgba(255,255,255,.08);
-}}
-.status-item:last-child{{border-right:0;}}
-.status-value{{color:{TEXT};font-weight:700;}}
-.dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
-box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -231,13 +189,14 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Compact toggle card (the one you want)
+    # Compact toggle card (with icons + white text)
     with st.container():
-        st.markdown("<div class='toggle-card'><div class='toggle-title'>Layers</div></div>", unsafe_allow_html=True)
-        affiliated = st.toggle("Affiliated Signals", True)
-        macro = st.toggle("Macro layer", True)
-        news = st.toggle("News Sentiment", True)
-        options = st.toggle("Options flow", True)
+        st.markdown("<div class='toggle-card'><div class='toggle-title'>Layers</div>", unsafe_allow_html=True)
+        affiliated = st.toggle("🧩 Affiliated Signals", True)
+        macro = st.toggle("💹 Macro layer", True)
+        news = st.toggle("📰 News Sentiment", True)
+        options = st.toggle("🔄 Options flow", True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # MIDDLE PANEL
 with col_mid:

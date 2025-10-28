@@ -48,6 +48,52 @@ st.markdown(f"""
   box-shadow:0 6px 18px rgba(0,0,0,.25);
   padding:14px 16px;
 }}
+
+/* Watchlist card styling */
+.watchlist-card {{
+  background: #0E1492 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}}
+.watchlist-title {{
+  font-weight: 800;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 12px;
+}}
+.watchlist-row {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}}
+.watchlist-row:last-child {{
+  border-bottom: none;
+}}
+.watchlist-symbol {{
+  font-weight: 700;
+  font-size: 15px;
+}}
+.watchlist-price {{
+  font-weight: 700;
+  color: #E6F0FF;
+}}
+.watchlist-change-up {{
+  color: #5CF2B8;
+  font-weight: 600;
+  font-size: 13px;
+}}
+.watchlist-change-down {{
+  color: #F08A3C;
+  font-weight: 600;
+  font-size: 13px;
+}}
+
+
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);

@@ -112,25 +112,39 @@ div[role="switch"] + label, /* accessibility fallback */
   font-weight: 500 !important;
 }}
 
-.toggle-card {{
+.toggle-box {{
   background: #0F1A2B;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
-  padding: 16px 20px 10px 20px;
+  padding: 16px 20px 28px 20px; /* increased bottom padding */
+  margin-top: 10px;
+  margin-bottom: 0;
   box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-  color: #E6F0FF;
-  margin-bottom: 6px;
+  position: relative;
+  z-index: 0;
 }}
+
 .toggle-title {{
   font-weight: 700;
   font-size: 15px;
   color: #E6F0FF;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }}
-.stToggle label {{
-  color: #E6F0FF !important;
+
+/* Make toggles appear visually inside card */
+[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
+  margin-top: -10px !important;
+  margin-bottom: -10px !important;
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}}
+
+/* Force toggle text color white */
+[data-testid="stWidgetLabel"], .stToggle label, div[role="switch"] + label {{
+  color: #FFFFFF !important;
+  opacity: 1 !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -242,19 +256,19 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
 # ────────────────────────────────────────────────────────────────
  
 def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
-    """Render a styled toggle list with a title and toggles."""
+    """Render a styled toggle box with a title and toggles visually inside."""
     st.markdown(
         f"""
-        <div class="toggle-card">
-            <div class="toggle-title">{title}</div>
-        </div>
+        <div class="toggle-box">
+          <div class="toggle-title">{title}</div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Display toggles underneath inside the same visual block
     for label, default in toggles:
         st.toggle(label, default)
+
+    st.markdown("</div>", unsafe_allow_html=True)
       
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -267,12 +281,9 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
-# LEFT PANEL
 with col_left:
-    # Top: Watchlist card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Below: Toggle list card
     render_toggle_list(
         "Layers",
         [

@@ -226,20 +226,18 @@ with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Settings Card (Toggles)
+    # Settings Card (Toggles inside)
     st.markdown("""
     <div class="settings-card">
       <div class="settings-title">Display Layers</div>
-    </div>
     """, unsafe_allow_html=True)
 
-    with st.container():
-        st.markdown("<div class='settings-card' style='margin-top:-18px;'>", unsafe_allow_html=True)
-        st.toggle("Affiliated Signals", True)
-        st.toggle("Macro layer", True)
-        st.toggle("News Sentiment", True)
-        st.toggle("Options Flow", True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.toggle("Affiliated Signals", True)
+    st.toggle("Macro layer", True)
+    st.toggle("News Sentiment", True)
+    st.toggle("Options Flow", True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # MIDDLE PANEL

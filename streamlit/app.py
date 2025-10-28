@@ -194,8 +194,8 @@ div[data-testid="stHorizontalBlock"] {{
 }}
 /* Limit the width of dropdown boxes */
 [data-baseweb="select"] {{
-  max-width: 160px !important;   /* adjust width as desired */
-  min-width: 140px !important;
+  max-width: 120px !important;   /* adjust width as desired */
+  min-width: 100px !important;
   text-align: center !important;
 }}
 

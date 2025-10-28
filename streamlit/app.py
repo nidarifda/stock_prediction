@@ -42,7 +42,10 @@ st.markdown(f"""
   font-weight:800;
 }}
 
-/* Watchlist card styling */
+
+# ────────────────────────────────────────────────────────────────
+# Watchlist card styling 
+# ────────────────────────────────────────────────────────────────
 .watchlist-card {{
   background: #0E1492 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -93,6 +96,21 @@ st.markdown(f"""
   font-size: 12.5px;
   opacity: 0.9;
 }}
+
+
+# ────────────────────────────────────────────────────────────────
+# toggle style
+# ────────────────────────────────────────────────────────────────
+.toggle-container {{
+  margin-top: 6px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+}}
+
+
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -201,12 +219,29 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
+# LEFT PANEL
 with col_left:
+    # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
-    st.toggle("Affiliated Signals", True)
-    st.toggle("Macro layer", True)
-    st.toggle("News Sentiment", True)
-    st.toggle("Options Flow", True)
+
+    # Settings Card (Toggles inside)
+    with st.container():
+        st.markdown("""
+        <div class="settings-card">
+          <div class="settings-title">Display Layers</div>
+          <div class="toggle-container">
+        """, unsafe_allow_html=True)
+
+        affiliated = st.toggle("Affiliated Signals", True)
+        macro = st.toggle("Macro layer", True)
+        news = st.toggle("News Sentiment", True)
+        options = st.toggle("Options Flow", True)
+
+        st.markdown("""
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 # MIDDLE PANEL
 with col_mid:

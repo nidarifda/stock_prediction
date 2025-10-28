@@ -307,30 +307,36 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    parts = [f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>']
+    """Render a signals card styled exactly like the watchlist."""
+    # Start the card
+    st.markdown(f"""
+    <div class="watchlist-card">
+        <div class="watchlist-title">{title}</div>
+    """, unsafe_allow_html=True)
 
+    # Render each ticker row directly as HTML (no string join)
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
 
-        parts.append(f"""
+        st.markdown(f"""
         <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding-bottom:10px;">
-          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-            <div class="watchlist-symbol" style="color:{color};">{t}</div>
-            <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
-          </div>
-          <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
-            Correlation {corr:.2f}
-          </div>
-          <div class="sigbar-track">
-            <div class="sigbar-fill" style="width:{corr*100:.0f}%;"></div>
-          </div>
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <div class="watchlist-symbol" style="color:{color};">{t}</div>
+                <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
+            </div>
+            <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
+                Correlation {corr:.2f}
+            </div>
+            <div class="sigbar-track">
+                <div class="sigbar-fill" style="width:{corr*100:.0f}%;"></div>
+            </div>
         </div>
-        """)
+        """, unsafe_allow_html=True)
 
-    parts.append("</div>")  # close .watchlist-card
-    st.markdown("".join(parts), unsafe_allow_html=True)
+    # Close the card
+    st.markdown("</div>", unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

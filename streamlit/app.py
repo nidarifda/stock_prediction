@@ -113,7 +113,7 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Settings Card ─────────────── */
-.settings-card {
+.settings-card {{
   background: #0F1A2B; /* same dark tone as rest */
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
@@ -121,13 +121,13 @@ st.markdown(f"""
   box-shadow: 0 6px 16px rgba(0,0,0,0.35);
   margin-top: 12px;
   margin-bottom: 0;
-}
-.settings-title {
+}}
+.settings-title {{
   font-weight: 700;
   font-size: 16px;
   color: #E6F0FF;
   margin-bottom: 8px;
-}
+}}
 
 /* ─────────────── Toggle Container ─────────────── */
 div[data-testid="stVerticalBlock"] > div:has(> label[data-testid="stCheckbox"]) {

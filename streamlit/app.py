@@ -128,33 +128,46 @@ st.markdown(f"""
   font-weight: 500;
 }}
 
-/* ─────────────── Radio buttons container ─────────────── */
-.radio-box {{
+/* ─────────────── Radio box container ─────────────── */
+.radio-wrapper {
   background: #F5F6FA;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 4px 12px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* ─────────────── Style the actual Streamlit radio buttons ─────────────── */
+div[data-baseweb="radio"] {{
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }}
-.radio-inner {{
+
+div[data-baseweb="radio"] > div {{
   display: flex;
   align-items: center;
-  gap: 18px;
-  color: #2A2A2A;
-  font-weight: 600;
-  font-size: 14px;
+  gap: 6px;
 }}
-.radio-inner span {{
+
+div[data-baseweb="radio"] label {{
+  color: #2A2A2A !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
   cursor: pointer;
-  transition: color 0.2s, transform 0.2s;
+  transition: color 0.2s ease;
 }}
-.radio-inner span:hover {{
-  color: #F08A3C;
-  transform: scale(1.05);
+
+/* highlight selected option */
+div[data-baseweb="radio"] input:checked + div > label {{
+  color: #496BFF !important;
+  font-weight: 700 !important;
 }}
+
 
 
 /* ─────────────── Metrics, plot, and footer ─────────────── */
@@ -305,25 +318,26 @@ with col_left:
 
 # MIDDLE PANEL
 # Controls row (styled input boxes)
+# Controls row
 col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
     st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
 with col2:
-    st.markdown("""
-    <div class="radio-box">
-      <div class="radio-inner">
-        <span>Next day</span>
-        <span>1D</span>
-        <span>1W</span>
-        <span>1M</span>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="radio-wrapper">', unsafe_allow_html=True)
+    choice = st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=1,
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col3:
     st.selectbox("", ["LightGBM"], label_visibility="collapsed")
+
 
 
     st.markdown("""

@@ -308,12 +308,13 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title, tickers):
-    """Render a signals card styled like the Watchlist (no raw HTML showing)."""
+    """Render a signals card styled like the Watchlist (all tickers in one box)."""
 
-    html_parts = [
-        '<div class="watchlist-card">',
-        f'<div class="watchlist-title">{title}</div>'
-    ]
+    # Build HTML manually (in one go)
+    html = f"""
+    <div class="watchlist-card">
+        <div class="watchlist-title">{title}</div>
+    """
 
     for t in tickers:
         chg = np.random.uniform(-1, 1)
@@ -321,7 +322,7 @@ def render_signals_card(title, tickers):
         color = GREEN if chg > 0 else ORANGE
         bar_width = int(corr * 100)
 
-        html_parts.append(f"""
+        html += f"""
         <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                 <div class="watchlist-symbol" style="color:{color};">{t}</div>
@@ -338,10 +339,10 @@ def render_signals_card(title, tickers):
                             transition:width 0.4s ease-in-out;"></div>
             </div>
         </div>
-        """)
+        """
 
-    html_parts.append("</div>")  # close card
-    st.markdown("".join(html_parts), unsafe_allow_html=True)
+    html += "</div>"  # close watchlist-card
+    st.markdown(html, unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

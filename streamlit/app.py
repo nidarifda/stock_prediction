@@ -307,22 +307,21 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
-def render_signals_card(title: str, tickers: list[str]):
-    """Render the full affiliated signals block inside one cohesive card."""
-    
-    # Start full card HTML
-    html = f"""
-    <div class="watchlist-card">
-        <div class="watchlist-title">{title}</div>
-    """
+def render_signals_card(title, tickers):
+    """Render a signals card styled like the Watchlist (no raw HTML showing)."""
 
-    # Add each ticker block
+    html_parts = [
+        '<div class="watchlist-card">',
+        f'<div class="watchlist-title">{title}</div>'
+    ]
+
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
+        bar_width = int(corr * 100)
 
-        html += f"""
+        html_parts.append(f"""
         <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0;">
             <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                 <div class="watchlist-symbol" style="color:{color};">{t}</div>
@@ -331,25 +330,18 @@ def render_signals_card(title: str, tickers: list[str]):
             <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
                 Correlation {corr:.2f}
             </div>
-            <div style="background-color:rgba(255,255,255,0.1);
-                        border-radius:6px;
-                        height:6px;
-                        width:100%;
-                        margin-top:4px;">
+            <div style="background:rgba(255,255,255,0.1); border-radius:6px; height:6px; width:100%; margin-top:4px;">
                 <div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);
-                            width:{corr*100:.0f}%;
+                            width:{bar_width}%;
                             height:100%;
                             border-radius:6px;
                             transition:width 0.4s ease-in-out;"></div>
             </div>
         </div>
-        """
+        """)
 
-    # Close card container
-    html += "</div>"
-
-    # Render once
-    st.markdown(html, unsafe_allow_html=True)
+    html_parts.append("</div>")  # close card
+    st.markdown("".join(html_parts), unsafe_allow_html=True)
 
   
 # ────────────────────────────────────────────────────────────────

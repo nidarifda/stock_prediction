@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 
 # ────────────────────────────────────────────────────────────────
 # CONFIG
@@ -31,6 +30,7 @@ st.markdown(f"""
 }}
 .block-container {{ padding-top:1rem; padding-bottom:0rem; }}
 
+/* ─────────────── Header ─────────────── */
 .app-header {{
   display:flex;
   align-items:center;
@@ -42,10 +42,7 @@ st.markdown(f"""
   font-weight:800;
 }}
 
-
-# ────────────────────────────────────────────────────────────────
-# Watchlist card styling 
-# ────────────────────────────────────────────────────────────────
+/* ─────────────── Watchlist card ─────────────── */
 .watchlist-card {{
   display: block;
   width: 100%;
@@ -54,7 +51,7 @@ st.markdown(f"""
   border-radius: 18px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   padding: 16px 20px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   transition: all 0.25s ease-in-out;
 }}
 .watchlist-card:hover {{
@@ -99,10 +96,22 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
+/* ─────────────── Settings Card ─────────────── */
+.settings-card {{
+  background: #0E1492;
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  margin-top: 12px;
+}}
+.settings-title {{
+  font-weight: 700;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 8px;
+}}
 
-# ────────────────────────────────────────────────────────────────
-# toggle style
-# ────────────────────────────────────────────────────────────────
+/* ─────────────── Toggle Container ─────────────── */
 .toggle-container {{
   margin-top: 6px;
   background: transparent;
@@ -112,10 +121,10 @@ st.markdown(f"""
   padding-bottom: 6px;
 }}
 
-
+/* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:16px;
   margin-top:10px;
 }}
@@ -129,6 +138,8 @@ st.markdown(f"""
 }}
 .metric-slot .m-label {{ font-size:12px; opacity:.8; }}
 .metric-slot .m-value {{ font-size:22px; font-weight:800; }}
+
+/* ─────────────── Chart & Signals ─────────────── */
 .js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
@@ -138,6 +149,8 @@ st.markdown(f"""
   padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
 }}
 .sig-row:last-child{{border-bottom:0;}}
+
+/* ─────────────── Footer Status Bar ─────────────── */
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
@@ -146,6 +159,7 @@ st.markdown(f"""
   display:flex;
   align-items:center;
   padding:8px 0;
+  margin-top:25px;
 }}
 .status-item {{
   display:flex; align-items:center; gap:8px;
@@ -200,17 +214,18 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
             </div>
         </div>
         """)
-st.markdown(
-    f"""
-    <div style="width:100%;">
-      <div class="watchlist-card">
-        <div class="watchlist-title">{title}</div>
-        {''.join(rows)}
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    # ✅ Fixed block now inside function
+    st.markdown(
+        f"""
+        <div style="width:100%;">
+          <div class="watchlist-card">
+            <div class="watchlist-title">{title}</div>
+            {''.join(rows)}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -224,7 +239,6 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
 with col_left:
-    # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
     # Settings Card (Toggles inside)
@@ -244,8 +258,6 @@ with col_left:
           </div>
         </div>
         """, unsafe_allow_html=True)
-
-
 
 # MIDDLE PANEL
 with col_mid:
@@ -268,15 +280,21 @@ with col_mid:
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
-    now_x = s.index[-1]; last = s.iloc[-1]
+    now_x = s.index[-1]
+    last = s.iloc[-1]
     proj_x = pd.bdate_range(start=now_x, periods=12)
     proj_y = np.linspace(last, last * 1.03, len(proj_x))
     fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines", line=dict(width=2, dash="dot", color="#F08A3C")))
     fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
     fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-    fig.update_layout(height=370, margin=dict(l=40, r=10, t=10, b=40),
-                      paper_bgcolor=CARD, plot_bgcolor=CARD,
-                      font=dict(color=TEXT), showlegend=False)
+    fig.update_layout(
+        height=370,
+        margin=dict(l=40, r=10, t=10, b=40),
+        paper_bgcolor=CARD,
+        plot_bgcolor=CARD,
+        font=dict(color=TEXT),
+        showlegend=False
+    )
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
 # RIGHT PANEL

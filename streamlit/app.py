@@ -97,67 +97,49 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
-
-
 /* ─────────────── Compact Toggle Panel ─────────────── */
-/* Force toggle label text to white */
 [data-testid="stWidgetLabel"],
 .stToggle label {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
 }}
-
 .stToggle {{
   margin-top: -4px !important;
   margin-bottom: -2px !important;
-  padding-left: 20px !important;   /* indent toggles same as Watchlist padding */
+  padding-left: 20px !important;
 }}
-
-/* Adjust the switch knob so it doesn't stick too far left */
 [data-testid="stSwitch"] {{
-  margin-left: 6px !important;     /* fine-tune horizontal alignment */
+  margin-left: 6px !important;
 }}
-
-/* Blue toggle when ON */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
   background-color: #496BFF !important;
 }}
-
-/* Dim gray toggle when OFF */
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
   background-color: rgba(255,255,255,0.2) !important;
 }}
 
-
 /* ─────────────── Middle Control Bar ─────────────── */
-/* Dropdown container */
 [data-baseweb="select"] {{
-  background-color: #0F1A2B !important;     /* match card color */
+  background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #0F1A2B !important;
-  font-weight: 300 !important;
+  color: #E6F0FF !important;
+  font-weight: 500 !important;
   height: 42px !important;
-  width: 160px !important;                  /* fixed symmetrical width */
+  width: 160px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
 }}
-
-/* Prevent inner input background from showing */
 [data-baseweb="select"] input {{
   background-color: transparent !important;
   color: #E6F0FF !important;
 }}
-
-/* Force dropdown arrow and text color */
 [data-baseweb="select"] * {{
   color: #E6F0FF !important;
 }}
-
-/* Hover and focus visuals */
 [data-baseweb="select"]:hover {{
   border-color: #496BFF !important;
   box-shadow: 0 0 10px rgba(73,107,255,0.45);
@@ -167,36 +149,31 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-/* ─────────────── Radio Group Box Styling ─────────────── */
+/* ─────────────── Radio Group Box ─────────────── */
 .radio-box {{
-  background-color: #0F1A2B !important;    /* same color as dropdowns */
+  background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  padding: 6px 16px !important;            /* inner spacing */
+  padding: 6px 16px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
+  width: 180px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }}
-
-/* Fix text color */
 .stRadio label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
   font-size: 14px !important;
   margin: 0 !important;
 }}
-
-/* Align buttons nicely inside the box */
 .stRadio > div {{
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 14px !important;
 }}
-
-/* Active/inactive radio buttons */
 [data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
@@ -205,8 +182,6 @@ st.markdown(f"""
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
-
-
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
@@ -226,14 +201,13 @@ st.markdown(f"""
 .metric-slot .m-label {{ font-size:12px; opacity:.8; }}
 .metric-slot .m-value {{ font-size:22px; font-weight:800; }}
 
-
 /* ─────────────── Chart & Signals ─────────────── */
 .js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
 }}
 
-/* ─────────────── Signal Rows inside Card ─────────────── */
+/* ─────────────── Signal Rows ─────────────── */
 .sig-row {{
   display:flex;
   align-items:center;
@@ -241,13 +215,11 @@ st.markdown(f"""
   padding:8px 2px;
   border-bottom:1px solid rgba(255,255,255,0.08);
   font-size:14px;
-  color:#E6F0FF; /* ensure text is white inside dark theme */
+  color:#E6F0FF;
 }}
 .sig-row:last-child {{ border-bottom:none; }}
-
-/* Progress bars inside signal card */
 [data-testid="stProgress"] div[role="progressbar"] {{
-  background-color:#2E6CFF !important;   /* bright blue */
+  background-color:#2E6CFF !important;
   border-radius:10px !important;
 }}
 [data-testid="stProgress"] > div {{
@@ -255,23 +227,7 @@ st.markdown(f"""
   border-radius:10px !important;
 }}
 
-/* ─────────────── Right Bar ─────────────── */
-.sigbar-track{{
-  width:100%;
-  height:6px;
-  background: rgba(255,255,255,0.12);
-  border-radius:6px;
-  margin-top:6px;
-  margin-bottom:6px;
-}}
-.sigbar-fill{{
-  height:100%;
-  border-radius:6px;
-  background: linear-gradient(90deg, #2E6CFF, #31D0FF);
-  transition: width .35s ease-in-out;
-}}
-
-/* ─────────────── Footer Status Bar ─────────────── */
+/* ─────────────── Footer ─────────────── */
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
@@ -351,16 +307,12 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title, tickers):
-    """Render a signals card styled like the Watchlist (all inside one box)."""
-
     html = f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>'
-
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
         bar_width = int(corr * 100)
-
         html += (
             f'<div class="watchlist-row" style="flex-direction:column;align-items:flex-start;padding:6px 0;">'
             f'<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
@@ -369,15 +321,12 @@ def render_signals_card(title, tickers):
             f'</div>'
             f'<div class="watchlist-sub" style="color:{TEXT};opacity:.9;margin-top:2px;">Correlation {corr:.2f}</div>'
             f'<div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;margin-top:4px;">'
-            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;'
-            f'border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
+            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
             f'</div></div>'
         )
-
-    html += "</div>"  # close card container
+    html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
-  
 # ────────────────────────────────────────────────────────────────
 # HEADER
 # ────────────────────────────────────────────────────────────────
@@ -391,13 +340,11 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 # LEFT PANEL
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
-
-    # No box, no "Layers" title — just toggles directly
     st.markdown("<div style='margin-top:-2px;'></div>", unsafe_allow_html=True)
-    affiliated = st.toggle("Affiliated Signals", True)
-    macro = st.toggle("Macro layer", True)
-    news = st.toggle("News Sentiment", True)
-    options = st.toggle("Options flow", True)
+    st.toggle("Affiliated Signals", True)
+    st.toggle("Macro layer", True)
+    st.toggle("News Sentiment", True)
+    st.toggle("Options flow", True)
 
 # MIDDLE PANEL
 with col_mid:
@@ -405,9 +352,9 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
     with col2:
-    st.markdown('<div class="radio-box">', unsafe_allow_html=True)
-    st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="radio-box">', unsafe_allow_html=True)
+        st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
+        st.markdown('</div>', unsafe_allow_html=True)
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ────────────────────────────────────────────────────────────────
 # PAGE CONFIG
@@ -26,9 +27,7 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-/* ────────────────────────────────────────────── */
-/*  FIX HEADER CUT ISSUE                          */
-/* ────────────────────────────────────────────── */
+/* Remove default Streamlit header gap */
 header[data-testid="stHeader"] {{
   height: 0rem !important;
   visibility: hidden !important;
@@ -37,93 +36,65 @@ header[data-testid="stHeader"] {{
   padding-top: 0 !important;
   margin-top: 0 !important;
 }}
-.block-container {{
-  padding-top: 0.5rem !important;
-}}
-.app-header {{
-  margin-top: 10px !important;
-  margin-bottom: 24px !important;
-}}
 
-/* ────────────────────────────────────────────── */
-/*  MAIN DASHBOARD STYLES                         */
-/* ────────────────────────────────────────────── */
 .stApp {{
   background-color:{BG};
   color:{TEXT};
   font-family:'Inter',sans-serif;
 }}
-.block-container {{ padding-top:1rem; padding-bottom:0rem; }}
 
+/* Dashboard title */
 .app-header {{
   display:flex;
   align-items:center;
   margin-bottom:24px;
 }}
 .app-header .title {{
-  color: {TEXT};
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: 0.3px;
-  text-shadow: 0 0 10px rgba(73,107,255,0.25);
-}}
-.card {{
-  background:{CARD};
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);
-  padding:14px 16px;
+  color:{TEXT};
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:0.3px;
+  text-shadow:0 0 10px rgba(73,107,255,0.25);
 }}
 
-/* ────────────────────────────────────────────── */
-/* WATCHLIST CARD                                */
-/* ────────────────────────────────────────────── */
+/* Watchlist card */
 .watchlist-card {{
-  background: #0E1492 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  padding: 16px 20px;
-  margin-bottom: 18px;
+  background:#0E1492 !important;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  padding:16px 20px;
+  margin-bottom:18px;
+  transition:transform .2s ease, box-shadow .2s ease;
+}}
+.watchlist-card:hover {{
+  transform:translateY(-2px);
+  box-shadow:0 10px 22px rgba(0,0,0,0.45);
 }}
 .watchlist-title {{
-  font-weight: 800;
-  font-size: 18px;
-  color: #E6F0FF;
-  margin-bottom: 12px;
+  font-weight:800;
+  font-size:18px;
+  color:#E6F0FF;
+  margin-bottom:12px;
 }}
 .watchlist-row {{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  transition:background .2s ease;
 }}
-.watchlist-row:last-child {{
-  border-bottom: none;
+.watchlist-row:hover {{
+  background:rgba(255,255,255,0.05);
 }}
-.watchlist-symbol {{
-  font-weight: 700;
-  font-size: 15px;
-}}
-.watchlist-price {{
-  font-weight: 700;
-  color: #E6F0FF;
-}}
-.watchlist-change-up {{
-  color: #5CF2B8;
-  font-weight: 600;
-  font-size: 13px;
-}}
-.watchlist-change-down {{
-  color: #F08A3C;
-  font-weight: 600;
-  font-size: 13px;
-}}
+.watchlist-row:last-child {{border-bottom:none;}}
+.watchlist-symbol {{font-weight:700;font-size:15px;}}
+.watchlist-price {{font-weight:700;color:#E6F0FF;}}
+.watchlist-change-up {{color:#5CF2B8;font-weight:600;font-size:13px;}}
+.watchlist-change-down {{color:#F08A3C;font-weight:600;font-size:13px;}}
 
-/* ────────────────────────────────────────────── */
-/* METRIC BOXES + CHART + FOOTER                 */
-/* ────────────────────────────────────────────── */
+/* Metric boxes & footer */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -138,27 +109,20 @@ header[data-testid="stHeader"] {{
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
 }}
-.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
-.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
+.metric-slot .m-label {{font-size:12px;opacity:.8;}}
+.metric-slot .m-value {{font-size:22px;font-weight:800;}}
 .js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
 }}
-[data-testid="stTabs"] button {{
-  background:transparent; border:none;
-  color:{TEXT}; font-weight:600; font-size:14px;
-}}
-[data-testid="stTabs"] button[aria-selected="true"] {{
-  color:{ACCENT}; border-bottom:2px solid {ACCENT};
-}}
 .sig-row {{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 2px;
+  border-bottom:1px solid rgba(255,255,255,.06);
 }}
 .sig-row:last-child{{border-bottom:0;}}
-.footer-wrap {{
-  margin-top:0.8rem;
-}}
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
@@ -169,8 +133,8 @@ header[data-testid="stHeader"] {{
   padding:8px 0;
 }}
 .status-item {{
-  display:flex; align-items:center; gap:8px;
-  padding:8px 18px; font-size:13px; color:{MUTED};
+  display:flex;align-items:center;gap:8px;
+  padding:8px 18px;font-size:13px;color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
 }}
 .status-item:last-child{{border-right:0;}}
@@ -193,7 +157,7 @@ prices = pd.DataFrame({
 }, index=dates)
 
 # ────────────────────────────────────────────────────────────────
-# WATCHLIST RENDERER
+# WATCHLIST RENDER FUNCTION (now uses components.html)
 # ────────────────────────────────────────────────────────────────
 def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
     rows = []
@@ -222,7 +186,7 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
       {''.join(rows) if rows else '<div style="opacity:.7;">No data available</div>'}
     </div>
     """
-    st.markdown(html, unsafe_allow_html=True)
+    components.html(html, height=420, scrolling=True)
 
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -230,21 +194,20 @@ def render_watchlist_from_prices(prices_df: pd.DataFrame, tickers: list[str], ti
 st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
-# LAYOUT
+# LAYOUT (3 columns)
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
-# LEFT PANEL (WATCHLIST) — wrapped in container so Streamlit doesn’t escape HTML
+# LEFT PANEL
 with col_left:
     with st.container():
-        render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"], title="Watchlist")
-
+        render_watchlist_from_prices(prices, ["NVDA", "TSMC", "ASML", "CDNS", "SNPS"])
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options Flow", True)
 
-# MIDDLE PANEL (CHART + METRICS)
+# MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
@@ -282,7 +245,7 @@ with col_mid:
     with tab2:
         st.markdown("<div class='card'><b>Bias:</b> <span style='color:#FFCE6B'>Mild long</span><br>Entry 423.00<br>Target 452.00</div>", unsafe_allow_html=True)
 
-# RIGHT PANEL (AFFILIATED SIGNALS)
+# RIGHT PANEL
 with col_right:
     st.markdown("**Affiliated Signals**")
     for t in ["TSMC", "ASML", "CDNS", "SNPS"]:

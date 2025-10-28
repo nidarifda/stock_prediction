@@ -116,12 +116,9 @@ div[role="switch"] + label, /* accessibility fallback */
   background: #0F1A2B;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
-  padding: 16px 20px 28px 20px; /* increased bottom padding */
-  margin-top: 10px;
-  margin-bottom: 0;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-  position: relative;
-  z-index: 0;
+  padding: 18px 20px 22px 20px;
+  margin-top: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
 }}
 
 .toggle-title {{
@@ -285,35 +282,7 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         """,
         unsafe_allow_html=True,
     )
- # ────────────────────────────────────────────────────────────────
-# TOGGLELIST COMPONENT
-# ────────────────────────────────────────────────────────────────
- 
-def render_toggle_list(title, toggles):
-    """Render all Streamlit toggles inside a single styled card box."""
-    
-    # Card header
-    st.markdown(
-        f"""
-        <div class="watchlist-card">
-            <div class="watchlist-title">{title}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
-    # Display toggles inside same box using CSS padding
-    toggle_html = "<div style='margin-top:-15px; padding:10px 20px;'>"
-    st.markdown(toggle_html, unsafe_allow_html=True)
-
-    toggle_states = {}
-    for label, default in toggles:
-        toggle_states[label] = st.toggle(label, default)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    return toggle_states
-  
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
@@ -359,15 +328,23 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    render_toggle_list(
-        "Layers",
-        [
-            ("Affiliated Signals", True),
-            ("Macro layer", True),
-            ("News Sentiment", True),
-            ("Options flow", True),
-        ]
+    # Layers toggle box (inside one card)
+    st.markdown(
+        """
+        <div class="toggle-box">
+          <div class="toggle-title">Layers</div>
+        """,
+        unsafe_allow_html=True
     )
+
+    # toggles visually inside box
+    with st.container():
+        affiliated = st.toggle("Affiliated Signals", True)
+        macro = st.toggle("Macro layer", True)
+        news = st.toggle("News Sentiment", True)
+        options = st.toggle("Options flow", True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # MIDDLE PANEL

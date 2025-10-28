@@ -292,56 +292,46 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title: str, tickers: list[str]):
-    """Render signals in a watchlist-style card with correlation bars."""
-    st.markdown(
-        f"""
-        <div class="watchlist-card">
-            <div class="watchlist-title">{title}</div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    """Render a signals card styled identically to the watchlist card."""
+    # Open card container
+    card_html = f"""
+    <div class="watchlist-card">
+        <div class="watchlist-title">{title}</div>
+    """
+    
+    # Build rows inside
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
 
-        st.markdown(
-            f"""
-            <div class="watchlist-row">
-                <div class="watchlist-left">
-                    <div class="watchlist-symbol" style="color:{color};">{t}</div>
-                    <div class="watchlist-sub" style="color:{TEXT}; opacity:0.85;">
-                        Correlation {corr:.2f}
-                    </div>
-                </div>
-                <div class="watchlist-right">
-                    <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
-                </div>
+        card_html += f"""
+        <div class="watchlist-row" style="flex-direction: column; align-items: flex-start;">
+            <div style="display:flex; width:100%; justify-content:space-between;">
+                <div class="watchlist-symbol" style="color:{color};">{t}</div>
+                <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # add thin blue bar under each row
-        st.markdown(
-            f"""
+            <div class="watchlist-sub" style="color:{TEXT}; opacity:0.85; margin-top:2px;">
+                Correlation {corr:.2f}
+            </div>
             <div style="background-color:rgba(255,255,255,0.1);
                         border-radius:6px;
                         height:6px;
-                        margin-top:-4px;
-                        margin-bottom:10px;">
-              <div style="background-color:#2E6CFF;
-                          width:{corr*100}%;
-                          height:100%;
-                          border-radius:6px;
-                          transition:width 0.4s ease-in-out;"></div>
+                        width:100%;
+                        margin-top:4px;
+                        margin-bottom:8px;">
+                <div style="background-color:#2E6CFF;
+                            width:{corr*100}%;
+                            height:100%;
+                            border-radius:6px;
+                            transition:width 0.4s ease-in-out;"></div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        </div>
+        """
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Close card
+    card_html += "</div>"
+    st.markdown(card_html, unsafe_allow_html=True)
   
 # ────────────────────────────────────────────────────────────────
 # HEADER

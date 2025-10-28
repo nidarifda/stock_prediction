@@ -47,7 +47,7 @@ st.markdown(f"""
 .watchlist-card {{
   display: block;
   width: 100%;
-  background: #0E1492 !important;
+  background: #0F1A2B !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);

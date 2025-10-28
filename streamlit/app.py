@@ -308,13 +308,9 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
 def render_signals_card(title, tickers):
-    """Render a signals card styled like the Watchlist (all tickers in one box)."""
+    """Render a signals card styled like the Watchlist (all inside one box)."""
 
-    # Build HTML manually (in one go)
-    html = f"""
-    <div class="watchlist-card">
-        <div class="watchlist-title">{title}</div>
-    """
+    html = f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>'
 
     for t in tickers:
         chg = np.random.uniform(-1, 1)
@@ -322,26 +318,20 @@ def render_signals_card(title, tickers):
         color = GREEN if chg > 0 else ORANGE
         bar_width = int(corr * 100)
 
-        html += f"""
-        <div class="watchlist-row" style="flex-direction:column; align-items:flex-start; padding:6px 0;">
-            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div class="watchlist-symbol" style="color:{color};">{t}</div>
-                <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
-            </div>
-            <div class="watchlist-sub" style="color:{TEXT}; opacity:.9; margin-top:2px;">
-                Correlation {corr:.2f}
-            </div>
-            <div style="background:rgba(255,255,255,0.1); border-radius:6px; height:6px; width:100%; margin-top:4px;">
-                <div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);
-                            width:{bar_width}%;
-                            height:100%;
-                            border-radius:6px;
-                            transition:width 0.4s ease-in-out;"></div>
-            </div>
-        </div>
-        """
+        html += (
+            f'<div class="watchlist-row" style="flex-direction:column;align-items:flex-start;padding:6px 0;">'
+            f'<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
+            f'<div class="watchlist-symbol" style="color:{color};">{t}</div>'
+            f'<div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>'
+            f'</div>'
+            f'<div class="watchlist-sub" style="color:{TEXT};opacity:.9;margin-top:2px;">Correlation {corr:.2f}</div>'
+            f'<div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;margin-top:4px;">'
+            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;'
+            f'border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
+            f'</div></div>'
+        )
 
-    html += "</div>"  # close watchlist-card
+    html += "</div>"  # close card container
     st.markdown(html, unsafe_allow_html=True)
 
   

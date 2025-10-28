@@ -113,6 +113,15 @@ st.markdown(f"""
   margin-bottom: 10px;
   text-align:left;
 }}
+.toggle-container {{
+  margin-top: 6px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+}}
+
 
 .metric-row {{
   display:grid;
@@ -227,17 +236,23 @@ with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
     # Settings Card (Toggles inside)
-    st.markdown("""
-    <div class="settings-card">
-      <div class="settings-title">Display Layers</div>
-    """, unsafe_allow_html=True)
+    with st.container():
+        st.markdown("""
+        <div class="settings-card">
+          <div class="settings-title">Display Layers</div>
+          <div class="toggle-container">
+        """, unsafe_allow_html=True)
 
-    st.toggle("Affiliated Signals", True)
-    st.toggle("Macro layer", True)
-    st.toggle("News Sentiment", True)
-    st.toggle("Options Flow", True)
+        affiliated = st.toggle("Affiliated Signals", True)
+        macro = st.toggle("Macro layer", True)
+        news = st.toggle("News Sentiment", True)
+        options = st.toggle("Options Flow", True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("""
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 
 # MIDDLE PANEL

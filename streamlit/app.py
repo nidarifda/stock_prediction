@@ -167,6 +167,45 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
+/* ─────────────── Radio Group Box Styling ─────────────── */
+.radio-box {{
+  background-color: #0F1A2B !important;    /* same color as dropdowns */
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  padding: 6px 16px !important;            /* inner spacing */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 42px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}}
+
+/* Fix text color */
+.stRadio label p {{
+  color: #E6F0FF !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+}}
+
+/* Align buttons nicely inside the box */
+.stRadio > div {{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}}
+
+/* Active/inactive radio buttons */
+[data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
+  background-color: #496BFF !important;
+  border: 2px solid #496BFF !important;
+}}
+[data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  background: transparent !important;
+}}
+
 
 
 /* ─────────────── Metrics ─────────────── */
@@ -366,7 +405,9 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
     with col2:
-        st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
+    st.markdown('<div class="radio-box">', unsafe_allow_html=True)
+    st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

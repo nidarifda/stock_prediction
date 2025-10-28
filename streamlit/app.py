@@ -165,16 +165,35 @@ div[role="switch"] + label, /* accessibility fallback */
 .metric-slot .m-label {{ font-size:12px; opacity:.8; }}
 .metric-slot .m-value {{ font-size:22px; font-weight:800; }}
 
+
 /* ─────────────── Chart & Signals ─────────────── */
-.js-plotly-plot {{
+.js-plotly-plot {
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
-}}
-.sig-row {{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
-}}
-.sig-row:last-child{{border-bottom:0;}}
+}
+
+/* ─────────────── Signal Rows inside Card ─────────────── */
+.sig-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:8px 2px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  font-size:14px;
+  color:#E6F0FF; /* ensure text is white inside dark theme */
+}
+.sig-row:last-child { border-bottom:none; }
+
+/* Progress bars inside signal card */
+[data-testid="stProgress"] div[role="progressbar"] {
+  background-color:#2E6CFF !important;   /* bright blue */
+  border-radius:10px !important;
+}
+[data-testid="stProgress"] > div {
+  background-color:rgba(255,255,255,0.15) !important;
+  border-radius:10px !important;
+}
+
 
 /* ─────────────── Footer Status Bar ─────────────── */
 .statusbar {{
@@ -269,7 +288,36 @@ def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
         st.toggle(label, default)
 
     st.markdown("</div>", unsafe_allow_html=True)
-      
+# ────────────────────────────────────────────────────────────────
+# SIGNALS CARD COMPONENT
+# ────────────────────────────────────────────────────────────────
+def render_signals_card(title: str, tickers: list[str]):
+    """Render a styled signals card (same design as watchlist)."""
+    st.markdown(
+        f"""
+        <div class="watchlist-card">
+            <div class="watchlist-title">{title}</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    for t in tickers:
+        chg = np.random.uniform(-1, 1)
+        corr = np.random.uniform(0.6, 0.9)
+        color = GREEN if chg > 0 else ORANGE
+        st.markdown(
+            f"""
+            <div class='sig-row'>
+                <b style='color:{color}'>{t}</b>
+                <span style='color:{color}'>{chg:+.2f}%</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.progress(corr, text=f"Correlation {corr:.2f}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+  
 # ────────────────────────────────────────────────────────────────
 # HEADER
 # ────────────────────────────────────────────────────────────────
@@ -336,12 +384,7 @@ with col_mid:
 
 # RIGHT PANEL
 with col_right:
-    st.markdown("**Affiliated Signals**")
-    for t in ["TSMC", "ASML", "CDNS", "SNPS"]:
-        chg = np.random.uniform(-1, 1)
-        color = GREEN if chg > 0 else ORANGE
-        st.markdown(f"<div class='sig-row'><b style='color:{color}'>{t}</b> {chg:+.2f}%</div>", unsafe_allow_html=True)
-        st.progress(abs(chg) / 1.5, text=f"Correlation {np.random.uniform(0.6, 0.9):.2f}")
+    render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
 # FOOTER
 st.markdown(f"""

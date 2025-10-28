@@ -97,7 +97,17 @@ st.markdown(f"""
   opacity: 0.9;
 }}
 
+
+
 /* ─────────────── Compact Toggle Panel ─────────────── */
+div[data-testid="stHorizontalBlock"] label,
+div[data-testid="stVerticalBlock"] label,
+.stToggle label {{
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}}
+
 .toggle-card {{
   background: #0F1A2B;
   border: 1px solid rgba(255,255,255,0.08);

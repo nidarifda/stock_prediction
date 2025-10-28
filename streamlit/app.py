@@ -100,12 +100,16 @@ st.markdown(f"""
 
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
-div[data-testid="stHorizontalBlock"] label,
-div[data-testid="stVerticalBlock"] label,
+[data-testid="stWidgetLabel"],
+div[data-testid="stMarkdownContainer"] p,
+label[data-testid="stWidgetLabel"] p,
+.st-emotion-cache-1n76uvr, /* fallback class Streamlit often uses */
+.st-emotion-cache-16idsys, /* extra layer for toggle labels */
+div[role="switch"] + label, /* accessibility fallback */
 .stToggle label {{
   color: #FFFFFF !important;
-  font-weight: 500 !important;
   opacity: 1 !important;
+  font-weight: 500 !important;
 }}
 
 .toggle-card {{

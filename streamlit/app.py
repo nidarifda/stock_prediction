@@ -39,7 +39,7 @@ header[data-testid="stHeader"] {{
 }}
 .app-header {{
   margin-top: 10px !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 24px !important;
 }}
 
 /* ────────────────────────────────────────────── */
@@ -58,11 +58,12 @@ header[data-testid="stHeader"] {{
   margin-bottom:10px;
 }}
 .app-header .title {{
-  color:{TEXT};
-  font-size:30px;
-  font-weight:800;
+  color: {TEXT};
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 10px rgba(73,107,255,0.25);
 }}
-
 .card {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);

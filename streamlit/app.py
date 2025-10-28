@@ -204,7 +204,33 @@ div[data-testid="stHorizontalBlock"] {{
   justify-content: center !important;
 }}
 
+div[data-testid="stHorizontalBlock"] {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.2rem !important;
+  margin-bottom: 6px !important;
+}}
 
+/* Make selectboxes the same height as radio group */
+[data-baseweb="select"] {{
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 2px 8px !important;
+}}
+
+/* Force inner content to center vertically */
+[data-baseweb="select"] > div {{
+  align-items: center !important;
+  justify-content: center !important;
+}}
+
+/* Reduce radio button top offset */
+.stRadio {{
+  margin-top: 4px !important;
+}}
 
 
 /* ─────────────── Metrics ─────────────── */
@@ -400,7 +426,7 @@ with col_left:
 
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3 = st.columns([1, 1.2, 1])
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
     with col2:

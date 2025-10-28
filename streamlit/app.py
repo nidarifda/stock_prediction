@@ -44,7 +44,7 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Watchlist card styling ─────────────── */
-.watchlist-card {{
+.watchlist-card {
   background: #070535 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -52,51 +52,51 @@ st.markdown(f"""
   padding: 16px 20px;
   margin-bottom: 18px;
   transition: all 0.25s ease-in-out;
-}}
-.watchlist-card:hover {{
+}
+.watchlist-card:hover {
   box-shadow: 0 10px 24px rgba(0,0,0,0.5);
-}}
-.watchlist-title {{
+}
+.watchlist-title {
   font-weight: 800;
   font-size: 18px;
   color: #E6F0FF;
   margin-bottom: 10px;
   text-align:left;
-}}
-.watchlist-row {{
+}
+.watchlist-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-}}
-.watchlist-row:last-child {{
+}
+.watchlist-row:last-child {
   border-bottom: none;
-}}
-.watchlist-left, .watchlist-right {{
+}
+.watchlist-left, .watchlist-right {
   display: flex;
   flex-direction: column;
   gap: 3px;
-}}
-.watchlist-right {{
+}
+.watchlist-right {
   align-items: flex-end;
-}}
-.watchlist-symbol {{
+}
+.watchlist-symbol {
   font-weight: 700;
   font-size: 15px;
-}}
-.watchlist-price {{
+}
+.watchlist-price {
   font-weight: 700;
   color: #E6F0FF;
   font-size: 15px;
-}}
-.watchlist-sub {{
+}
+.watchlist-sub {
   font-size: 12.5px;
   opacity: 0.9;
-}}
+}
 
-/* ─────────────── Settings (toggle) card styling ─────────────── */
-.blue-container {{
+/* ─────────────── Settings (toggle) card ─────────────── */
+.settings-card {
   background: #0E1492 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -104,31 +104,28 @@ st.markdown(f"""
   padding: 16px 20px;
   margin-top: 12px;
   transition: all 0.25s ease-in-out;
-}}
-.blue-container:hover {{
-  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
-}}
-.container-title {{
+}
+.settings-title {
   font-weight: 800;
   font-size: 18px;
   color: #E6F0FF;
   margin-bottom: 10px;
   text-align: left;
-}}
-.toggle-box {{
+}
+.toggle-box {
   margin-top: 6px;
   background: transparent;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding-bottom: 6px;
-}}
-.stToggle > label {{
+}
+.stToggle > label {
   color: #E6F0FF !important;
   font-weight: 500;
-}}
+}
 
-/* ─────────────── Radio box container ─────────────── */
+/* ─────────────── Radio box styling ─────────────── */
 .radio-wrapper {
   background: #F5F6FA;
   border-radius: 8px;
@@ -139,64 +136,56 @@ st.markdown(f"""
   justify-content: center;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
 }
-
-/* ─────────────── Style the actual Streamlit radio buttons ─────────────── */
-div[data-baseweb="radio"] {{
+div[data-baseweb="radio"] {
   display: flex !important;
   align-items: center;
   justify-content: center;
   gap: 16px;
-}}
-
-div[data-baseweb="radio"] > div {{
+}
+div[data-baseweb="radio"] > div {
   display: flex;
   align-items: center;
   gap: 6px;
-}}
-
-div[data-baseweb="radio"] label {{
+}
+div[data-baseweb="radio"] label {
   color: #2A2A2A !important;
   font-weight: 600 !important;
   font-size: 14px !important;
   cursor: pointer;
   transition: color 0.2s ease;
-}}
-
-/* highlight selected option */
-div[data-baseweb="radio"] input:checked + div > label {{
+}
+div[data-baseweb="radio"] input:checked + div > label {
   color: #496BFF !important;
   font-weight: 700 !important;
-}}
+}
 
-
-
-/* ─────────────── Metrics, plot, and footer ─────────────── */
-.metric-row {{
+/* ─────────────── Metrics, plot, footer ─────────────── */
+.metric-row {
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:16px;
   margin-top:10px;
-}}
-.metric-slot {{
+}
+.metric-slot {
   background:{CARD};
   border:1px solid rgba(255,255,255,.1);
   border-radius:12px;
   height:68px;
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
-}}
-.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
-.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
-.js-plotly-plot {{
+}
+.metric-slot .m-label { font-size:12px; opacity:.8; }
+.metric-slot .m-value { font-size:22px; font-weight:800; }
+.js-plotly-plot {
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
-}}
-.sig-row {{
+}
+.sig-row {
   display:flex; align-items:center; justify-content:space-between;
   padding:6px 2px; border-bottom:1px solid rgba(255,255,255,.06);
-}}
-.sig-row:last-child{{border-bottom:0;}}
-.statusbar {{
+}
+.sig-row:last-child{border-bottom:0;}
+.statusbar {
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
   border-radius:22px;
@@ -204,19 +193,18 @@ div[data-baseweb="radio"] input:checked + div > label {{
   display:flex;
   align-items:center;
   padding:8px 0;
-}}
-.status-item {{
+}
+.status-item {
   display:flex; align-items:center; gap:8px;
   padding:8px 18px; font-size:13px; color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
-}}
-.status-item:last-child{{border-right:0;}}
-.status-value{{color:{TEXT};font-weight:700;}}
-.dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
-box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
+}
+.status-item:last-child{border-right:0;}
+.status-value{color:{TEXT};font-weight:700;}
+.dot{width:9px;height:9px;border-radius:50%;background:{GREEN};
+box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}
 </style>
 """, unsafe_allow_html=True)
-
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA
@@ -283,14 +271,14 @@ with col_left:
     # Watchlist Card
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Display Layers Title (top of box)
+    # Display Layers Title
     st.markdown("""
     <div class="settings-card">
       <div class="settings-title">Display Layers</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Toggles inside simulated box (CSS trick)
+    # Toggles inside simulated box
     st.markdown("""
     <style>
     div[data-testid="stVerticalBlock"] > div.toggle-box {
@@ -305,7 +293,6 @@ with col_left:
     </style>
     """, unsafe_allow_html=True)
 
-    # Create the toggle container inside the same column
     with st.container() as toggle_box:
         st.markdown('<div class="toggle-box">', unsafe_allow_html=True)
         st.toggle("Affiliated Signals", True)
@@ -314,16 +301,10 @@ with col_left:
         st.toggle("Options Flow", True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-
 # MIDDLE PANEL
-# Controls row (styled input boxes)
-# Controls row
 col1, col2, col3 = st.columns([1, 1, 1])
-
 with col1:
     st.selectbox("", ["NVDA"], label_visibility="collapsed")
-
 with col2:
     st.markdown('<div class="radio-wrapper">', unsafe_allow_html=True)
     choice = st.radio(
@@ -334,33 +315,33 @@ with col2:
         label_visibility="collapsed"
     )
     st.markdown('</div>', unsafe_allow_html=True)
-
 with col3:
     st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
+# Metrics row
+st.markdown("""
+<div class="metric-row">
+  <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
+  <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">415 – 434</div></div>
+  <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">0.78</div></div>
+</div>
+""", unsafe_allow_html=True)
 
-
-    st.markdown("""
-    <div class="metric-row">
-      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
-      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">415 – 434</div></div>
-      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">0.78</div></div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    s = prices["NVDA"]
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
-    now_x = s.index[-1]; last = s.iloc[-1]
-    proj_x = pd.bdate_range(start=now_x, periods=12)
-    proj_y = np.linspace(last, last * 1.03, len(proj_x))
-    fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines", line=dict(width=2, dash="dot", color="#F08A3C")))
-    fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-    fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
-    fig.update_layout(height=370, margin=dict(l=40, r=10, t=10, b=40),
-                      paper_bgcolor=CARD, plot_bgcolor=CARD,
-                      font=dict(color=TEXT), showlegend=False)
-    st.plotly_chart(fig, use_container_width=True, theme=None)
+# Chart
+s = prices["NVDA"]
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
+now_x = s.index[-1]
+last = s.iloc[-1]
+proj_x = pd.bdate_range(start=now_x, periods=12)
+proj_y = np.linspace(last, last * 1.03, len(proj_x))
+fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines", line=dict(width=2, dash="dot", color="#F08A3C")))
+fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
+fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+fig.update_layout(height=370, margin=dict(l=40, r=10, t=10, b=40),
+                  paper_bgcolor=CARD, plot_bgcolor=CARD,
+                  font=dict(color=TEXT), showlegend=False)
+st.plotly_chart(fig, use_container_width=True, theme=None)
 
 # RIGHT PANEL
 with col_right:

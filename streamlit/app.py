@@ -136,7 +136,7 @@ st.markdown(f"""
   background-color: #0F1A2B !important;  /* matches card color */
   border: 1px solid rgba(255,255,255,0.25) !important; /* visible border */
   border-radius: 10px !important;
-  color: #E6F0FF !important;  /* white text */
+  color: #0F1A2B !important;  /* white text */
   font-weight: 500 !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.35);
   transition: all 0.25s ease-in-out;
@@ -144,7 +144,7 @@ st.markdown(f"""
 
 /* Text and caret color */
 [data-baseweb="select"] * {{
-  color: #E6F0FF !important;
+  color: #0F1A2B !important;
 }}
 
 /* Hover and focus effect */

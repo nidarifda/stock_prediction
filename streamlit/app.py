@@ -135,10 +135,10 @@ st.markdown(f"""
   background-color: #0F1A2B !important;     /* match card color */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #E6F0FF !important;
+  color: #0f1a2b !important;
   font-weight: 500 !important;
   height: 42px !important;
-  width: 160px !important;                  /* fixed symmetrical width */
+  width: 130px !important;                  /* fixed symmetrical width */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;

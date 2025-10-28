@@ -101,47 +101,21 @@ st.markdown(f"""
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
 [data-testid="stWidgetLabel"],
-div[data-testid="stMarkdownContainer"] p,
-label[data-testid="stWidgetLabel"] p,
-.st-emotion-cache-1n76uvr, /* fallback class Streamlit often uses */
-.st-emotion-cache-16idsys, /* extra layer for toggle labels */
-div[role="switch"] + label, /* accessibility fallback */
-.stToggle label {{
+.stToggle label,
+div[role="switch"] + label {{
   color: #FFFFFF !important;
   opacity: 1 !important;
   font-weight: 500 !important;
 }}
 
-.toggle-box {{
-  background: #0F1A2B;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 18px 20px 22px 20px;
-  margin-top: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-}}
-
-.toggle-title {{
-  font-weight: 700;
-  font-size: 15px;
-  color: #E6F0FF;
-  margin-bottom: 10px;
-}}
-
-/* Make toggles appear visually inside card */
+/* Make toggles visually sit INSIDE card */
 [data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
-  margin-top: -10px !important;
-  margin-bottom: -10px !important;
+  margin-top: -4px !important;
+  margin-bottom: -4px !important;
+  padding-left: 12px !important;
   background: transparent !important;
-  position: relative;
-  z-index: 1;
-}}
-
-/* Force toggle text color white */
-[data-testid="stWidgetLabel"], .stToggle label, div[role="switch"] + label {{
-  color: #FFFFFF !important;
-  opacity: 1 !important;
-  font-weight: 500 !important;
+  position: relative !important;
+  z-index: 1 !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -328,22 +302,22 @@ col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Layers toggle box (inside one card)
-    st.markdown(
-        """
-        <div class="toggle-box">
-          <div class="toggle-title">Layers</div>
-        """,
-        unsafe_allow_html=True
-    )
+    # Open card manually
+    st.markdown("""
+    <div class="watchlist-card" style="padding-bottom:14px;">
+        <div class="watchlist-title">Layers</div>
+    """, unsafe_allow_html=True)
 
-    # toggles visually inside box
+    # Everything inside one Streamlit container
     with st.container():
+        st.markdown("<div style='padding-left:10px;'>", unsafe_allow_html=True)
         affiliated = st.toggle("Affiliated Signals", True)
         macro = st.toggle("Macro layer", True)
         news = st.toggle("News Sentiment", True)
         options = st.toggle("Options flow", True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
+    # Close the card manually
     st.markdown("</div>", unsafe_allow_html=True)
 
 

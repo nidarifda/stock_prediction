@@ -130,70 +130,44 @@ st.markdown(f"""
 
 
 /* ─────────────── Middle Control Bar ─────────────── */
-/* ─────────────── Control Bar Alignment ─────────────── */
-div[data-testid="stHorizontalBlock"] {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 1.2rem !important;
-  margin-bottom: 8px !important;
-}}
-
-/* Make dropdowns uniform & centered */
+/* Dropdown container */
 [data-baseweb="select"] {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.25) !important;
+  background-color: #0F1A2B !important;     /* match card color */
+  border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   color: #E6F0FF !important;
   font-weight: 500 !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-  transition: all 0.25s ease-in-out;
   height: 42px !important;
-  width: 160px !important;       /* fixed symmetrical width */
+  width: 160px !important;                  /* fixed symmetrical width */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  text-align: center !important;
-  padding: 0 10px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.25s ease-in-out;
 }}
 
+/* Prevent inner input background from showing */
+[data-baseweb="select"] input {{
+  background-color: transparent !important;
+  color: #E6F0FF !important;
+}}
+
+/* Force dropdown arrow and text color */
 [data-baseweb="select"] * {{
   color: #E6F0FF !important;
 }}
 
-/* Radio bar centered and vertically aligned */
-.stRadio {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+/* Hover and focus visuals */
+[data-baseweb="select"]:hover {{
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.45);
+}}
+[data-baseweb="select"]:focus-within {{
+  border-color: #31D0FF !important;
+  box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-.stRadio > div {{
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 20px !important;
-}}
 
-/* Radio labels */
-.stRadio label p {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  margin: 0 !important;
-}}
-
-/* Radio active/inactive */
-[data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
-  background-color: #496BFF !important;
-  border: 2px solid #496BFF !important;
-}}
-[data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.4) !important;
-  background: transparent !important;
-}}
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

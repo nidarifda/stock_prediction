@@ -47,6 +47,8 @@ st.markdown(f"""
 # Watchlist card styling 
 # ────────────────────────────────────────────────────────────────
 .watchlist-card {{
+  display: block;
+  width: 100%;
   background: #0E1492 !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 18px;
@@ -198,15 +200,17 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
             </div>
         </div>
         """)
-    st.markdown(
-        f"""
-        <div class="watchlist-card">
-          <div class="watchlist-title">{title}</div>
-          {''.join(rows)}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+st.markdown(
+    f"""
+    <div style="width:100%;">
+      <div class="watchlist-card">
+        <div class="watchlist-title">{title}</div>
+        {''.join(rows)}
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ────────────────────────────────────────────────────────────────
 # HEADER

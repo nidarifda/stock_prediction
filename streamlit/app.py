@@ -289,20 +289,30 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
 # TOGGLELIST COMPONENT
 # ────────────────────────────────────────────────────────────────
  
-def render_toggle_list(title: str, toggles: list[tuple[str, bool]]):
-    """Render a styled toggle box with a title and toggles visually inside."""
+def render_toggle_list(title, toggles):
+    """Render all Streamlit toggles inside a single styled card box."""
+    
+    # Card header
     st.markdown(
         f"""
-        <div class="toggle-box">
-          <div class="toggle-title">{title}</div>
+        <div class="watchlist-card">
+            <div class="watchlist-title">{title}</div>
+        </div>
         """,
         unsafe_allow_html=True,
     )
 
+    # Display toggles inside same box using CSS padding
+    toggle_html = "<div style='margin-top:-15px; padding:10px 20px;'>"
+    st.markdown(toggle_html, unsafe_allow_html=True)
+
+    toggle_states = {}
     for label, default in toggles:
-        st.toggle(label, default)
+        toggle_states[label] = st.toggle(label, default)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+    return toggle_states
   
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
@@ -358,7 +368,6 @@ with col_left:
             ("Options flow", True),
         ]
     )
-
 
 
 # MIDDLE PANEL

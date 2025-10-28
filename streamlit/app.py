@@ -167,13 +167,13 @@ div[role="switch"] + label, /* accessibility fallback */
 
 
 /* ─────────────── Chart & Signals ─────────────── */
-.js-plotly-plot {
+.js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
-}
+}}
 
 /* ─────────────── Signal Rows inside Card ─────────────── */
-.sig-row {
+.sig-row {{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -181,18 +181,18 @@ div[role="switch"] + label, /* accessibility fallback */
   border-bottom:1px solid rgba(255,255,255,0.08);
   font-size:14px;
   color:#E6F0FF; /* ensure text is white inside dark theme */
-}
-.sig-row:last-child { border-bottom:none; }
+}}
+.sig-row:last-child {{ border-bottom:none; }}
 
 /* Progress bars inside signal card */
-[data-testid="stProgress"] div[role="progressbar"] {
+[data-testid="stProgress"] div[role="progressbar"] {{
   background-color:#2E6CFF !important;   /* bright blue */
   border-radius:10px !important;
-}
-[data-testid="stProgress"] > div {
+}}
+[data-testid="stProgress"] > div {{
   background-color:rgba(255,255,255,0.15) !important;
   border-radius:10px !important;
-}
+}}
 
 
 /* ─────────────── Footer Status Bar ─────────────── */

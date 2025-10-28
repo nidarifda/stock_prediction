@@ -130,53 +130,62 @@ st.markdown(f"""
 
 
 /* ─────────────── Middle Control Bar ─────────────── */
+/* ─────────────── Control Bar Alignment ─────────────── */
+div[data-testid="stHorizontalBlock"] {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.2rem !important;
+  margin-bottom: 8px !important;
+}}
 
-/* Dropdowns (Selectboxes) */
+/* Make dropdowns uniform & centered */
 [data-baseweb="select"] {{
-  background-color: #0F1A2B !important;  /* matches card color */
-  border: 1px solid rgba(255,255,255,0.25) !important; /* visible border */
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.25) !important;
   border-radius: 10px !important;
-  color: #0F1A2B !important;  /* white text */
+  color: #E6F0FF !important;
   font-weight: 500 !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.35);
   transition: all 0.25s ease-in-out;
-}}
-
-/* Text and caret color */
-[data-baseweb="select"] * {{
-  color: #0F1A2B !important;
-}}
-
-/* Hover and focus effect */
-[data-baseweb="select"]:hover {{
-  border-color: #496BFF !important;
-  box-shadow: 0 0 10px rgba(73,107,255,0.5);
-}}
-[data-baseweb="select"]:focus-within {{
-  border-color: #31D0FF !important;
-  box-shadow: 0 0 10px rgba(49,208,255,0.5);
-}}
-
-/* Center text inside dropdowns */
-div[data-baseweb="select"] > div {{
+  height: 42px !important;
+  width: 160px !important;       /* fixed symmetrical width */
+  display: flex !important;
+  align-items: center !important;
   justify-content: center !important;
+  text-align: center !important;
+  padding: 0 10px !important;
 }}
 
-/* Radio buttons (Next day / 1D / 1W / 1M) */
+[data-baseweb="select"] * {{
+  color: #E6F0FF !important;
+}}
+
+/* Radio bar centered and vertically aligned */
+.stRadio {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}}
+
 .stRadio > div {{
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  gap: 14px !important;
+  gap: 20px !important;
 }}
 
+/* Radio labels */
 .stRadio label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
   font-size: 14px !important;
+  margin: 0 !important;
 }}
 
-/* Radio circle (active/inactive) */
+/* Radio active/inactive */
 [data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
@@ -185,53 +194,6 @@ div[data-baseweb="select"] > div {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
-
-/* Align dropdowns and radio buttons neatly in the same line */
-div[data-testid="stHorizontalBlock"] {{
-  align-items: center !important;
-  gap: 1rem !important;
-  margin-bottom: 8px !important;
-}}
-/* Limit the width of dropdown boxes */
-[data-baseweb="select"] {{
-  max-width: 130px !important;   /* adjust width as desired */
-  min-width: 120px !important;
-  text-align: center !important;
-}}
-
-/* Center dropdown content */
-[data-baseweb="select"] > div {{
-  justify-content: center !important;
-}}
-
-div[data-testid="stHorizontalBlock"] {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 1.2rem !important;
-  margin-bottom: 6px !important;
-}}
-
-/* Make selectboxes the same height as radio group */
-[data-baseweb="select"] {{
-  height: 40px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 2px 8px !important;
-}}
-
-/* Force inner content to center vertically */
-[data-baseweb="select"] > div {{
-  align-items: center !important;
-  justify-content: center !important;
-}}
-
-/* Reduce radio button top offset */
-.stRadio {{
-  margin-top: 4px !important;
-}}
-
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
@@ -426,7 +388,7 @@ with col_left:
 
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([1, 1.2, 1])
+    col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
     with col2:

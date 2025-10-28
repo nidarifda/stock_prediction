@@ -132,21 +132,21 @@ st.markdown(f"""
 /* ─────────────── Middle Control Bar ─────────────── */
 
 /* Dropdowns (Selectboxes) */
-[data-baseweb="select"] {
+[data-baseweb="select"] {{
   color: #E6F0FF !important;
   background-color: #0F1A2B !important;
   border-radius: 10px !important;
   border: 1px solid rgba(255,255,255,0.15) !important;
   font-weight: 500 !important;
-}
-[data-baseweb="select"] * {
+}}
+[data-baseweb="select"] * {{
   color: #E6F0FF !important;
-}
+}}
 
 /* Center text in dropdowns */
-div[data-baseweb="select"] > div {
+div[data-baseweb="select"] > div {{
   justify-content: center !important;
-}
+}}
 
 /* Radio buttons (Next day / 1D / 1W / 1M) */
 .stRadio > div {{

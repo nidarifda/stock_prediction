@@ -149,33 +149,35 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
+
 /* ─────────────── Radio Group Box ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  padding: 6px 12px !important;              /* tighter padding */
+  padding: 8px 14px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important;
-  width: 220px !important;                   /* more space to fit all labels */
+  height: 44px !important;
+  width: 280px !important;                /* wider so all radios stay in one line */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
 }}
 
-/* Inner container for radio items */
+/* Arrange radio buttons neatly in a row */
 .stRadio > div {{
   display: flex !important;
-  justify-content: space-evenly !important;  /* even spacing for all items */
+  justify-content: space-between !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 18px !important;
   width: 100% !important;
+  flex-wrap: nowrap !important;          /* force single row */
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Label text inside radio */
+/* Radio text */
 .stRadio label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
@@ -184,20 +186,14 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-/* Hide any extra spacing Streamlit adds */
-[data-testid="stVerticalBlock"] {{
-  padding: 0 !important;
-  margin: 0 !important;
-}}
-
-/* Radio circle alignment */
+/* Radio circles */
 [data-testid="stRadio"] [role="radio"] {{
   margin: 0 2px !important;
   transform: scale(0.9);
   transition: all 0.2s ease-in-out;
 }}
 
-/* Hover effect for interactivity */
+/* Hover effect */
 [data-testid="stRadio"] [role="radio"]:hover {{
   box-shadow: 0 0 6px rgba(73,107,255,0.5);
   border-color: #496BFF !important;
@@ -210,7 +206,7 @@ st.markdown(f"""
   box-shadow: 0 0 8px rgba(73,107,255,0.4);
 }}
 
-/* Inactive (unselected) radio */
+/* Inactive (unselected) */
 [data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
@@ -386,9 +382,9 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
     with col2:
-        st.markdown('<div class="radio-box">', unsafe_allow_html=True)
-        st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="radio-box">', unsafe_allow_html=True)
+    st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
+    st.markdown('</div>', unsafe_allow_html=True)
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

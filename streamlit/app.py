@@ -379,15 +379,24 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
-        st.markdown('<div class="radio-box">', unsafe_allow_html=True)
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=1,
-            label_visibility="collapsed"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div class="radio-box">
+            <div style="display:flex; justify-content:center; align-items:center;">
+    """, unsafe_allow_html=True)
+
+    st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=1,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("""
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

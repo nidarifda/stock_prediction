@@ -150,64 +150,61 @@ st.markdown(f"""
 }}
 
 
-/* ─────────────── Radio Group Box (fixed horizontal layout) ─────────────── */
+/* ─────────────── Radio Group Box (Fully Contained) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  padding: 8px 14px !important;
+  padding: 8px 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 44px !important;
+  height: 48px !important;
   width: 280px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
 }}
 
-/* Force Streamlit radio to align horizontally inside the box */
-.radio-box [data-testid="stRadio"] > div {{
+/* Make radio group fit inside box neatly */
+.radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-evenly !important;
+  justify-content: space-between !important;
   align-items: center !important;
-  flex-wrap: nowrap !important;
-  gap: 16px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Label text */
+/* Prevent text wrapping vertically */
 .radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
   font-size: 14px !important;
+  white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
-  white-space: nowrap !important;   /* prevent breaking into vertical letters */
 }}
 
-/* Radio buttons */
+/* Radio circles */
 .radio-box [role="radio"] {{
-  margin: 0 2px !important;
+  margin: 0 4px !important;
   transform: scale(0.9);
-  transition: all 0.2s ease-in-out;
+  transition: all 0.25s ease-in-out;
 }}
 
-/* Hover + Active */
-.radio-box [role="radio"]:hover {{
-  box-shadow: 0 0 6px rgba(73,107,255,0.5);
-  border-color: #496BFF !important;
-}}
+/* Active/inactive */
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
-  box-shadow: 0 0 8px rgba(73,107,255,0.4);
+  box-shadow: 0 0 6px rgba(73,107,255,0.4);
 }}
 .radio-box [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
+
 
 
 

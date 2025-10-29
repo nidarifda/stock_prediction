@@ -372,34 +372,38 @@ with col_left:
     st.toggle("Options flow", True)
 
 # MIDDLE PANEL
+# MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
 
+    # Left dropdown
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
+    # Middle radio group inside styled box
     with col2:
-    st.markdown("""
-        <div class="radio-box">
-            <div style="display:flex; justify-content:center; align-items:center;">
-    """, unsafe_allow_html=True)
+        st.markdown("""
+            <div class="radio-box">
+                <div style="display:flex; justify-content:center; align-items:center;">
+        """, unsafe_allow_html=True)
 
-    st.radio(
-        "",
-        ["Next day", "1D", "1W", "1M"],
-        horizontal=True,
-        index=1,
-        label_visibility="collapsed"
-    )
+        st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=1,
+            label_visibility="collapsed"
+        )
 
-    st.markdown("""
+        st.markdown("""
+                </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-
+    # Right dropdown
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
+
 
     st.markdown("""
     <div class="metric-row">

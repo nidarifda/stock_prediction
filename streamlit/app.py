@@ -150,7 +150,7 @@ st.markdown(f"""
 }}
 
 
-/* ─────────────── Radio Group Box ─────────────── */
+/* ─────────────── Radio Group Box (fixed horizontal layout) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -160,57 +160,55 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 44px !important;
-  width: 280px !important;                /* wider so all radios stay in one line */
+  width: 280px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
 }}
 
-/* Arrange radio buttons neatly in a row */
-.stRadio > div {{
+/* Force Streamlit radio to align horizontally inside the box */
+.radio-box [data-testid="stRadio"] > div {{
   display: flex !important;
-  justify-content: space-between !important;
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
   align-items: center !important;
-  gap: 18px !important;
+  flex-wrap: nowrap !important;
+  gap: 16px !important;
   width: 100% !important;
-  flex-wrap: nowrap !important;          /* force single row */
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Radio text */
-.stRadio label p {{
+/* Label text */
+.radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
   font-size: 14px !important;
   margin: 0 !important;
   padding: 0 !important;
+  white-space: nowrap !important;   /* prevent breaking into vertical letters */
 }}
 
-/* Radio circles */
-[data-testid="stRadio"] [role="radio"] {{
+/* Radio buttons */
+.radio-box [role="radio"] {{
   margin: 0 2px !important;
   transform: scale(0.9);
   transition: all 0.2s ease-in-out;
 }}
 
-/* Hover effect */
-[data-testid="stRadio"] [role="radio"]:hover {{
+/* Hover + Active */
+.radio-box [role="radio"]:hover {{
   box-shadow: 0 0 6px rgba(73,107,255,0.5);
   border-color: #496BFF !important;
 }}
-
-/* Active (selected) radio */
-[data-testid="stRadio"] [role="radio"][aria-checked="true"] {{
+.radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
   box-shadow: 0 0 8px rgba(73,107,255,0.4);
 }}
-
-/* Inactive (unselected) */
-[data-testid="stRadio"] [role="radio"][aria-checked="false"] {{
+.radio-box [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
+
 
 
 /* ─────────────── Metrics ─────────────── */

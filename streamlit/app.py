@@ -379,12 +379,21 @@ with col_left:
 # MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
+
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
+
     with col2:
-    st.markdown('<div class="radio-box">', unsafe_allow_html=True)
-    st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=1, label_visibility="collapsed")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="radio-box">', unsafe_allow_html=True)
+        st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=1,
+            label_visibility="collapsed"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

@@ -400,7 +400,6 @@ with col_mid:
             </div>
         </div>
     """, unsafe_allow_html=True)
-
     # Right dropdown
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

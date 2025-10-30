@@ -151,33 +151,34 @@ st.markdown(f"""
 
 
 /* ─────────────── Radio Group Box (Fully Contained) ─────────────── */
+/* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  padding: 8px 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 48px !important;
-  width: 280px !important;
+  height: 42px !important;              /* same as dropdowns */
+  width: 160px !important;              /* match dropdown width */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  margin-top: 4px !important;
-  margin-bottom: 4px !important;
+  transition: all 0.25s ease-in-out;
+  margin: 0 auto !important;            /* center align in column */
 }}
 
-/* Make radio group fit inside box neatly */
+/* Keep radio buttons in one neat row */
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;
+  justify-content: space-evenly !important;
   align-items: center !important;
+  gap: 10px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Prevent text wrapping vertically */
+/* Label style */
 .radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
@@ -187,14 +188,13 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-/* Radio circles */
+/* Circle size and behavior */
 .radio-box [role="radio"] {{
-  margin: 0 4px !important;
-  transform: scale(0.9);
+  margin: 0 3px !important;
+  transform: scale(0.85);
   transition: all 0.25s ease-in-out;
 }}
 
-/* Active/inactive */
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
@@ -204,6 +204,7 @@ st.markdown(f"""
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
+
 
 
 
@@ -382,23 +383,23 @@ with col_mid:
 
     # Middle radio group inside styled box
     with col2:
-        st.markdown("""
-            <div class="radio-box">
-                <div style="display:flex; justify-content:center; align-items:center;">
-        """, unsafe_allow_html=True)
+    st.markdown("""
+        <div class="radio-box">
+            <div style="display:flex; justify-content:center; align-items:center; width:100%;">
+    """, unsafe_allow_html=True)
 
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=1,
-            label_visibility="collapsed"
-        )
+    st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed"
+    )
 
-        st.markdown("""
-                </div>
+    st.markdown("""
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
 
     # Right dropdown
     with col3:

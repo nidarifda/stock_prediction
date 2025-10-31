@@ -119,12 +119,12 @@ st.markdown(f"""
   background-color: rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Middle Control Bar ─────────────── */
+/* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
 [data-baseweb="select"] {{
-  background-color: #0F1A2B !important;
+  background-color: #0F1A2B !important;          /* Match middle box */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #0F1A2B !important;
+  color: #FFFFFF !important;
   font-weight: 500 !important;
   height: 42px !important;
   width: 160px !important;
@@ -154,16 +154,16 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-/* ─────────────── Radio Group Box ─────────────── */
+/* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  background-color: #0F1A2B !important;
+  background-color: #0F1A2B !important;          /* Same tone as dropdowns */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 300px !important;              /* Increased width */
+  width: 300px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
@@ -181,20 +181,10 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-.radio-box label {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-  margin: 0 !important;
-  padding: 0 2px !important;
-}}
-
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
-  font-size: 12px !important;
+  font-size: 12.5px !important;
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -212,10 +202,12 @@ st.markdown(f"""
   border: 2px solid #496BFF !important;
   box-shadow: 0 0 6px rgba(73,107,255,0.4);
 }}
+
 .radio-box [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
+
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

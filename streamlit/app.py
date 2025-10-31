@@ -1,3 +1,4 @@
+# stock forecast
 # streamlit/app.py
 from __future__ import annotations
 import numpy as np
@@ -118,12 +119,12 @@ st.markdown(f"""
   background-color: rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Select Boxes (Left & Right) ─────────────── */
+/* ─────────────── Middle Control Bar ─────────────── */
 [data-baseweb="select"] {{
-  background-color: #0F1A2B !important;  /* Same as middle box */
+  background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #FFFFFF !important;             /* White text */
+  color: #E6F0FF !important;
   font-weight: 500 !important;
   height: 42px !important;
   width: 160px !important;
@@ -133,27 +134,23 @@ st.markdown(f"""
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
 }}
-
 [data-baseweb="select"] input {{
   background-color: transparent !important;
-  color: #FFFFFF !important;             /* White text */
+  color: #E6F0FF !important;
 }}
-
 [data-baseweb="select"] * {{
-  color: #FFFFFF !important;             /* White text */
+  color: #E6F0FF !important;
 }}
-
 [data-baseweb="select"]:hover {{
   border-color: #496BFF !important;
   box-shadow: 0 0 10px rgba(73,107,255,0.45);
 }}
-
 [data-baseweb="select"]:focus-within {{
   border-color: #31D0FF !important;
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-/* ─────────────── Radio Group Box ─────────────── */
+/* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -162,47 +159,35 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 300px !important;              /* Increased width */
+  width: 200px !important;              /* slightly wider for better spacing */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
-  padding: 0 20px !important;
 }}
 
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;
+  justify-content: space-evenly !important;
   align-items: center !important;
-  gap: 2px !important;                  /* Minimal gap */
+  gap: 10px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-.radio-box label {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}}
-
 .radio-box label p {{
-  color: #FFFFFF !important;
+  color: #E6F0FF !important;
   font-weight: 500 !important;
-  font-size: 10px !important;           /* Smaller font */
+  font-size: 14px !important;
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
-  text-align: center !important;
 }}
 
 .radio-box [role="radio"] {{
-  margin: 0 1px !important;
-  transform: scale(0.7);
+  margin: 0 3px !important;
+  transform: scale(0.85);
   transition: all 0.25s ease-in-out;
 }}
 
@@ -281,6 +266,7 @@ st.markdown(f"""
 .dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
+""", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA
@@ -311,25 +297,18 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         color1 = GREEN if chg1 >= 0 else ORANGE
         color2 = GREEN if chg2 >= 0 else ORANGE
         icon = "↗" if chg1 >= 0 else "↘"
-        
-        # Format the numbers separately to avoid f-string nesting issues
-        chg1_formatted = f"{chg1:+.2f}%"
-        chg2_formatted = f"{chg2:+.2f}%"
-        last_formatted = f"{last:,.2f}"
-        
         rows.append(f"""
         <div class="watchlist-row">
             <div class="watchlist-left">
                 <div class="watchlist-symbol">{t}</div>
-                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1_formatted}</div>
+                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1:+.2f}%</div>
             </div>
             <div class="watchlist-right">
-                <div class="watchlist-price">{last_formatted}</div>
-                <div class="watchlist-sub" style="color:{color2};">{chg2_formatted}</div>
+                <div class="watchlist-price">{last:,.2f}</div>
+                <div class="watchlist-sub" style="color:{color2};">{chg2:+.2f}%</div>
             </div>
         </div>
         """)
-    
     st.markdown(
         f"""
         <div style="width:100%;">
@@ -340,7 +319,7 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         </div>
         """,
         unsafe_allow_html=True,
-    )  # REMOVED THE EXTRA PARENTHESIS ON THIS LINE
+    )
 
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
@@ -374,7 +353,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 # ────────────────────────────────────────────────────────────────
 # LAYOUT (3 columns)
 # ────────────────────────────────────────────────────────────────
-col_left, col_mid, col_right = st.columns([1, 2.8, 1], gap="small")
+col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
 
 # LEFT PANEL
 with col_left:
@@ -387,18 +366,17 @@ with col_left:
 
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([1, 1.4, 1], gap="small")
+    col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
 
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
-        # Fixed radio button section - properly centered
         st.markdown("""
-        <div style="display: flex; justify-content: center; width: 100%;">
             <div class="radio-box">
+                <div style="display:flex; justify-content:center; align-items:center; width:100%;">
         """, unsafe_allow_html=True)
-        
+
         st.radio(
             "",
             ["Next day", "1D", "1W", "1M"],
@@ -406,15 +384,15 @@ with col_mid:
             index=0,
             label_visibility="collapsed"
         )
-        
+
         st.markdown("""
+                </div>
             </div>
-        </div>
         """, unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
-      
+
     # Metrics
     st.markdown("""
     <div class="metric-row">

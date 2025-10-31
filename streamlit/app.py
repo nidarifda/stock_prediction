@@ -121,30 +121,77 @@ st.markdown(f"""
 
 /* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
 
-/* Target all internal Streamlit dropdown layers */
 [data-baseweb="select"],
-[data-baseweb="popover"] > div,
+[data-baseweb="select"] * {{
+  background-color: #0F1A2B !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 3px rgba(255,255,255,0.25);
+}}
+
+/* Force all dropdown containers to stay dark */
 [data-baseweb="select"] > div,
 [data-baseweb="select"] > div > div,
 [data-baseweb="select"] div[role="combobox"],
-[data-baseweb="select"] div[aria-haspopup="listbox"],
-[data-baseweb="select"] div[data-baseweb="input"] {{
-  background-color: #0F1A2B !important;   /* Dark tone to match middle box */
+[data-baseweb="select"] div[data-baseweb="input"],
+[data-baseweb="select"] div[class*="control"],
+[data-baseweb="select"] div[class*="container"] {{
+  background-color: #0F1A2B !important;
+  color: #FFFFFF !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
   height: 42px !important;
-  width: 160px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}}
+
+/* 🔥 Force text (like “NVDA” and “LightGBM”) to show */
+[data-baseweb="select"] div[class*="singleValue"],
+[data-baseweb="select"] div[class*="value-container"],
+[data-baseweb="select"] div[class*="control"],
+[data-baseweb="select"] span,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div:not([role]) {{
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}}
+
+/* Placeholder style */
+[data-baseweb="select"] div[class*="placeholder"],
+[data-baseweb="select"] span[class*="placeholder"] {{
+  color: rgba(255,255,255,0.7) !important;
+  font-weight: 500 !important;
+}}
+
+/* Caret / Arrow icon */
+[data-baseweb="select"] svg {{
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  opacity: 1 !important;
+}}
+
+/* Dropdown menu (when expanded) */
+ul[role="listbox"],
+div[role="listbox"] {{
+  background-color: #0F1A2B !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
+}}
+
+/* Hover and focus */
+[data-baseweb="select"]:hover,
+[data-baseweb="select"]:focus-within {{
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.45);
 }}
 
 /* ─────────────── Force dropdown text visibility ─────────────── */
-/* Target internal span and text containers inside dropdowns */
 [data-baseweb="select"] span,
 [data-baseweb="select"] div[data-baseweb="single-value"],
 [data-baseweb="select"] div[class*="value-container"],
@@ -220,7 +267,6 @@ ul[role="listbox"] {{
   border-radius: 10px !important;
   color: #FFFFFF !important;
 }}
-
 
 
 

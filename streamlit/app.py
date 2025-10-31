@@ -300,7 +300,7 @@ ul[role="listbox"] {{
 
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
-radio-box {{
+.radio-box {{
   background-color: #0F1A2B !important;    /* same tone as dropdowns */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;

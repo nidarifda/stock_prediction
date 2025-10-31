@@ -143,6 +143,37 @@ st.markdown(f"""
   transition: all 0.25s ease-in-out;
 }}
 
+/* ─────────────── Force dropdown text visibility ─────────────── */
+[data-baseweb="select"] div[data-testid="stMarkdownContainer"],
+[data-baseweb="select"] div[role="option"],
+[data-baseweb="select"] div[aria-selected="true"],
+[data-baseweb="select"] div[data-baseweb="tag"],
+[data-baseweb="select"] span,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {{
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}}
+
+/* Fix invisible selected value */
+[data-baseweb="select"] div[data-baseweb="single-value"] {{
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}}
+
+/* Fix placeholder specifically */
+[data-baseweb="select"] div[data-baseweb="placeholder"] {{
+  color: rgba(255,255,255,0.8) !important;
+  opacity: 1 !important;
+}}
+
+/* Fix the small caret (down arrow) icon */
+[data-baseweb="select"] svg {{
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}}
+
 /* Dropdown text & placeholder */
 [data-baseweb="select"] input {{
   background-color: transparent !important;
@@ -168,6 +199,9 @@ ul[role="listbox"] {{
   border-radius: 10px !important;
   color: #FFFFFF !important;
 }}
+
+
+
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{

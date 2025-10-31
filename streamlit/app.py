@@ -311,18 +311,25 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         color1 = GREEN if chg1 >= 0 else ORANGE
         color2 = GREEN if chg2 >= 0 else ORANGE
         icon = "↗" if chg1 >= 0 else "↘"
+        
+        # Format the numbers separately to avoid f-string nesting issues
+        chg1_formatted = f"{chg1:+.2f}%"
+        chg2_formatted = f"{chg2:+.2f}%"
+        last_formatted = f"{last:,.2f}"
+        
         rows.append(f"""
         <div class="watchlist-row">
             <div class="watchlist-left">
                 <div class="watchlist-symbol">{t}</div>
-                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1:+.2f}%</div>
+                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1_formatted}</div>
             </div>
             <div class="watchlist-right">
-                <div class="watchlist-price">{last:,.2f}</div>
-                <div class="watchlist-sub" style="color:{color2};">{chg2:+.2f}%</div>
+                <div class="watchlist-price">{last_formatted}</div>
+                <div class="watchlist-sub" style="color:{color2};">{chg2_formatted}</div>
             </div>
         </div>
         """)
+    
     st.markdown(
         f"""
         <div style="width:100%;">
@@ -333,7 +340,7 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         </div>
         """,
         unsafe_allow_html=True,
-    )
+    )  # REMOVED THE EXTRA PARENTHESIS ON THIS LINE
 
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT

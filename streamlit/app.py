@@ -144,16 +144,29 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Force dropdown text visibility ─────────────── */
-[data-baseweb="select"] div[data-testid="stMarkdownContainer"],
-[data-baseweb="select"] div[role="option"],
-[data-baseweb="select"] div[aria-selected="true"],
-[data-baseweb="select"] div[data-baseweb="tag"],
-[data-baseweb="select"] span,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div {{
+div[class*="singleValue"],
+div[class*="css-1uccc91-singleValue"],
+div[class*="css-1wa3eu0-placeholder"],
+div[class*="css-1dimb5e-singleValue"],
+div[class*="css-1s2u09g-control"],
+div[class*="css-1pahdxg-control"],
+div[class*="css-1n7v3ny-option"],
+div[data-baseweb="select"] div {{
   color: #FFFFFF !important;
   opacity: 1 !important;
   font-weight: 600 !important;
+  text-shadow: 0 0 3px rgba(255,255,255,0.2);
+}}
+
+/* Make sure placeholder text is slightly lighter gray */
+div[class*="placeholder"] {{
+  color: rgba(255,255,255,0.8) !important;
+}}
+
+/* Dropdown menu item hover highlight */
+ul[role="listbox"] > li:hover {{
+  background: linear-gradient(90deg, rgba(73,107,255,0.3), rgba(73,107,255,0.1)) !important;
+  border-radius: 8px !important;
 }}
 
 /* Fix invisible selected value */

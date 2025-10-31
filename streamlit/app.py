@@ -167,18 +167,18 @@ st.markdown(f"""
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-evenly !important;
+  justify-content: space-between !important;  /* changed from space-evenly */
   align-items: center !important;
-  gap: 10px !important;
+  gap: 5px !important;  /* reduced from 10px */
   width: 100% !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 8px !important;  /* added some padding */
 }}
 
 .radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 13px !important;  /* slightly smaller font */
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;

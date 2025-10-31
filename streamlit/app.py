@@ -152,17 +152,18 @@ st.markdown(f"""
 /* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
 
 .radio-box {{
-  background-color: #0F1A2B !important;
+  background-color: #0F1A2B !important;  /* Same as middle box color */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 280px !important;              /* increased width */
+  width: 260px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
+  padding: 0 10px !important;
 }}
 
 .radio-box .stRadio > div {{
@@ -170,24 +171,38 @@ st.markdown(f"""
   flex-direction: row !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 12px !important;                 /* increased gap for better spacing */
+  gap: 8px !important;
   width: 100% !important;
-  margin: 0 !important;
-  padding: 0 15px !important;           /* added padding */
-}}
-
-.radio-box label p {{
-  color: #E6F0FF !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
+.radio-box label {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+}}
+
+.radio-box label p {{
+  color: #FFFFFF !important;            /* Changed to white */
+  font-weight: 500 !important;
+  font-size: 11px !important;           /* Smaller font */
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}}
+
 .radio-box [role="radio"] {{
-  margin: 0 3px !important;
-  transform: scale(0.85);
+  margin: 0 2px !important;
+  transform: scale(0.75);               /* Smaller radio circles */
   transition: all 0.25s ease-in-out;
 }}
 
@@ -200,6 +215,7 @@ st.markdown(f"""
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
+
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

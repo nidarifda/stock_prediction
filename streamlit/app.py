@@ -144,35 +144,43 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Force dropdown text visibility ─────────────── */
-div[class*="singleValue"],
-div[class*="css-1uccc91-singleValue"],
-div[class*="css-1wa3eu0-placeholder"],
-div[class*="css-1dimb5e-singleValue"],
-div[class*="css-1s2u09g-control"],
-div[class*="css-1pahdxg-control"],
-div[class*="css-1n7v3ny-option"],
-div[data-baseweb="select"] div {{
+/* Target internal span and text containers inside dropdowns */
+[data-baseweb="select"] span,
+[data-baseweb="select"] div[data-baseweb="single-value"],
+[data-baseweb="select"] div[class*="value-container"],
+[data-baseweb="select"] div[class*="-SingleValue"],
+[data-baseweb="select"] div[class*="-placeholder"],
+[data-baseweb="select"] div[class*="-control"],
+[data-baseweb="select"] div[class*="css"],
+[data-baseweb="select"] div:not([role]),
+[data-baseweb="select"] * {{
   color: #FFFFFF !important;
+  fill: #FFFFFF !important;
   opacity: 1 !important;
   font-weight: 600 !important;
-  text-shadow: 0 0 3px rgba(255,255,255,0.2);
+  text-shadow: 0 0 4px rgba(255,255,255,0.15) !important;
 }}
 
-/* Make sure placeholder text is slightly lighter gray */
-div[class*="placeholder"] {{
-  color: rgba(255,255,255,0.8) !important;
+/* Force visible text alignment and padding */
+[data-baseweb="select"] div[data-baseweb="single-value"],
+[data-baseweb="select"] div[class*="value-container"] {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }}
 
-/* Dropdown menu item hover highlight */
-ul[role="listbox"] > li:hover {{
-  background: linear-gradient(90deg, rgba(73,107,255,0.3), rgba(73,107,255,0.1)) !important;
-  border-radius: 8px !important;
+/* Make placeholder visible in lighter gray */
+[data-baseweb="select"] div[data-baseweb="placeholder"],
+[data-baseweb="select"] span[class*="placeholder"] {{
+  color: rgba(255,255,255,0.75) !important;
+  font-weight: 500 !important;
 }}
 
-/* Fix invisible selected value */
-[data-baseweb="select"] div[data-baseweb="single-value"] {{
-  color: #FFFFFF !important;
+/* Ensure dropdown caret is bright white */
+[data-baseweb="select"] svg {{
   opacity: 1 !important;
+  stroke: none !important;
 }}
 
 /* Fix placeholder specifically */

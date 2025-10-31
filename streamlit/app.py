@@ -371,11 +371,12 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
+        # Fixed radio button section - properly centered
         st.markdown("""
+        <div style="display: flex; justify-content: center; width: 100%;">
             <div class="radio-box">
-                <div style="display:flex; justify-content:center; align-items:center; width:100%;">
         """, unsafe_allow_html=True)
-
+        
         st.radio(
             "",
             ["Next day", "1D", "1W", "1M"],
@@ -383,15 +384,15 @@ with col_mid:
             index=0,
             label_visibility="collapsed"
         )
-
+        
         st.markdown("""
-                </div>
             </div>
+        </div>
         """, unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
-
+      
     # Metrics
     st.markdown("""
     <div class="metric-row">

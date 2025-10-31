@@ -150,6 +150,7 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
+
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -158,7 +159,7 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 240px !important;              /* increased from 200px to 240px */
+  width: 280px !important;              /* increased width */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
@@ -167,18 +168,18 @@ st.markdown(f"""
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;  /* changed from space-evenly */
+  justify-content: space-between !important;
   align-items: center !important;
-  gap: 5px !important;  /* reduced from 10px */
+  gap: 12px !important;                 /* increased gap for better spacing */
   width: 100% !important;
   margin: 0 !important;
-  padding: 0 8px !important;  /* added some padding */
+  padding: 0 15px !important;           /* added padding */
 }}
 
 .radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
-  font-size: 13px !important;  /* slightly smaller font */
+  font-size: 14px !important;
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -352,7 +353,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 # ────────────────────────────────────────────────────────────────
 # LAYOUT (3 columns)
 # ────────────────────────────────────────────────────────────────
-col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
+col_left, col_mid, col_right = st.columns([1, 2.8, 1], gap="small")
 
 # LEFT PANEL
 with col_left:
@@ -365,7 +366,7 @@ with col_left:
 
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
+    col1, col2, col3 = st.columns([1, 1.4, 1], gap="small")
 
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")

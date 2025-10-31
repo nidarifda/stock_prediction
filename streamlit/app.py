@@ -118,102 +118,7 @@ st.markdown(f"""
   background-color: rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Middle Control Bar ─────────────── */
-[data-baseweb="select"] {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  color: #E6F0FF !important;
-  font-weight: 500 !important;
-  height: 42px !important;
-  width: 160px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
-}}
-[data-baseweb="select"] input {{
-  background-color: transparent !important;
-  color: #E6F0FF !important;
-}}
-[data-baseweb="select"] * {{
-  color: #E6F0FF !important;
-}}
-[data-baseweb="select"]:hover {{
-  border-color: #496BFF !important;
-  box-shadow: 0 0 10px rgba(73,107,255,0.45);
-}}
-[data-baseweb="select"]:focus-within {{
-  border-color: #31D0FF !important;
-  box-shadow: 0 0 10px rgba(49,208,255,0.5);
-}}
-
-/* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
-
-.radio-box {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 42px !important;
-  width: 280px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
-  margin: 0 auto !important;
-  padding: 0 15px !important;
-}}
-
-.radio-box .stRadio > div {{
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  gap: 4px !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}}
-
-.radio-box label {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}}
-
-.radio-box label p {{
-  color: #FFFFFF !important;            /* White text */
-  font-weight: 500 !important;
-  font-size: 11px !important;
-  white-space: nowrap !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  text-align: center !important;
-}}
-
-.radio-box [role="radio"] {{
-  margin: 0 1px !important;
-  transform: scale(0.7);                /* Smaller radio buttons */
-  transition: all 0.25s ease-in-out;
-}}
-
-.radio-box [role="radio"][aria-checked="true"] {{
-  background-color: #496BFF !important;
-  border: 2px solid #496BFF !important;
-  box-shadow: 0 0 6px rgba(73,107,255,0.4);
-}}
-.radio-box [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.4) !important;
-  background: transparent !important;
-}}
-
-/* ─────────────── Select Box Styling ─────────────── */
+/* ─────────────── Select Boxes (Left & Right) ─────────────── */
 [data-baseweb="select"] {{
   background-color: #0F1A2B !important;  /* Same as middle box */
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -248,6 +153,68 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
+/* ─────────────── Radio Group Box ─────────────── */
+.radio-box {{
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 42px !important;
+  width: 300px !important;              /* Increased width */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.25s ease-in-out;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+}}
+
+.radio-box .stRadio > div {{
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 2px !important;                  /* Minimal gap */
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}}
+
+.radio-box label {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}}
+
+.radio-box label p {{
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 10px !important;           /* Smaller font */
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+}}
+
+.radio-box [role="radio"] {{
+  margin: 0 1px !important;
+  transform: scale(0.7);
+  transition: all 0.25s ease-in-out;
+}}
+
+.radio-box [role="radio"][aria-checked="true"] {{
+  background-color: #496BFF !important;
+  border: 2px solid #496BFF !important;
+  box-shadow: 0 0 6px rgba(73,107,255,0.4);
+}}
+.radio-box [role="radio"][aria-checked="false"] {{
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  background: transparent !important;
+}}
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
@@ -314,7 +281,6 @@ st.markdown(f"""
 .dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
-""", unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA

@@ -300,8 +300,8 @@ ul[role="listbox"] {{
 
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
-.radio-box {{
-  background-color: #0F1A2B !important;    /* Same tone as dropdowns */
+radio-box {{
+  background-color: #0F1A2B !important;    /* same tone as dropdowns */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
@@ -312,35 +312,34 @@ ul[role="listbox"] {{
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
-  padding: 0 15px !important;
+  padding: 0 12px !important;               /* inner spacing */
 }}
 
-/* Ensure radio buttons are aligned horizontally */
+/* Ensure radios are inside the box, aligned horizontally */
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;
+  justify-content: space-evenly !important;
   align-items: center !important;
-  gap: 8px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Label text styling */
+/* Make labels white, smaller and centered */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
-  font-size: 12.5px !important;
+  font-size: 13px !important;
   white-space: nowrap !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 6px !important;
   text-align: center !important;
 }}
 
-/* Radio circle visuals */
+/* Adjust the radio circles */
 .radio-box [role="radio"] {{
-  margin: 0 3px !important;
+  margin: 0 4px !important;
   transform: scale(0.85);
   transition: all 0.25s ease-in-out;
 }}
@@ -529,23 +528,19 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
-        st.markdown("""
-        <div style="display: flex; justify-content: center; width: 100%;">
-            <div class="radio-box">
-        """, unsafe_allow_html=True)
-        
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=0,
-            label_visibility="collapsed"
-        )
-        
-        st.markdown("""
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="radio-box">
+    """, unsafe_allow_html=True)
+
+    st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

@@ -124,7 +124,7 @@ st.markdown(f"""
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #E6F0FF !important;
+  color: #FFFFFF !important;
   font-weight: 500 !important;
   height: 42px !important;
   width: 160px !important;
@@ -134,23 +134,27 @@ st.markdown(f"""
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
 }}
+
 [data-baseweb="select"] input {{
   background-color: transparent !important;
-  color: #E6F0FF !important;
+  color: #FFFFFF !important;
 }}
+
 [data-baseweb="select"] * {{
-  color: #E6F0FF !important;
+  color: #FFFFFF !important;
 }}
+
 [data-baseweb="select"]:hover {{
   border-color: #496BFF !important;
   box-shadow: 0 0 10px rgba(73,107,255,0.45);
 }}
+
 [data-baseweb="select"]:focus-within {{
   border-color: #31D0FF !important;
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-/* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
+/* ─────────────── Radio Group Box ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -159,36 +163,47 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 280px !important;              /* increased from 200px to 280px */
+  width: 300px !important;              /* Increased width */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
-  padding: 0 15px !important;           /* added padding */
+  padding: 0 15px !important;
 }}
 
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-between !important;  /* changed from space-evenly */
+  justify-content: space-between !important;
   align-items: center !important;
-  gap: 4px !important;                  /* reduced from 10px */
+  gap: 8px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
+.radio-box label {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+}}
+
 .radio-box label p {{
-  color: #FFFFFF !important;            /* changed to white */
+  color: #FFFFFF !important;
   font-weight: 500 !important;
-  font-size: 11px !important;           /* reduced from 14px */
+  font-size: 12px !important;
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
+  text-align: center !important;
 }}
 
 .radio-box [role="radio"] {{
-  margin: 0 2px !important;             /* reduced margin */
-  transform: scale(0.75);               /* smaller radio buttons */
+  margin: 0 3px !important;
+  transform: scale(0.85);
   transition: all 0.25s ease-in-out;
 }}
 
@@ -354,7 +369,7 @@ st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert<
 # ────────────────────────────────────────────────────────────────
 # LAYOUT (3 columns)
 # ────────────────────────────────────────────────────────────────
-col_left, col_mid, col_right = st.columns([1, 2.4, 1.4], gap="small")
+col_left, col_mid, col_right = st.columns([0.8, 3, 0.8], gap="small")
 
 # LEFT PANEL
 with col_left:
@@ -365,19 +380,20 @@ with col_left:
     st.toggle("News Sentiment", True)
     st.toggle("Options flow", True)
 
+
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Made middle column much wider
 
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
         st.markdown("""
+        <div style="display: flex; justify-content: center; width: 100%;">
             <div class="radio-box">
-                <div style="display:flex; justify-content:center; align-items:center; width:100%;">
         """, unsafe_allow_html=True)
-
+        
         st.radio(
             "",
             ["Next day", "1D", "1W", "1M"],
@@ -385,10 +401,10 @@ with col_mid:
             index=0,
             label_visibility="collapsed"
         )
-
+        
         st.markdown("""
-                </div>
             </div>
+        </div>
         """, unsafe_allow_html=True)
 
     with col3:

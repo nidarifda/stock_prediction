@@ -267,7 +267,36 @@ ul[role="listbox"] {{
   border-radius: 10px !important;
   color: #FFFFFF !important;
 }}
+/* Keep dark outer box styling */
+[data-baseweb="select"] > div {{
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.25s ease-in-out;
+}}
 
+/* Remove inner duplicate border */
+[data-baseweb="select"] > div > div {{
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}}
+
+/* Align text properly and ensure visibility */
+[data-baseweb="select"] div[class*="value-container"] {{
+  border: none !important;
+  background-color: transparent !important;
+  justify-content: center !important;
+  align-items: center !important;
+  color: #FFFFFF !important;
+}}
+
+/* Keep caret clean */
+[data-baseweb="select"] svg {{
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}}
 
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */

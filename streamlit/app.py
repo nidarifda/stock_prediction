@@ -149,8 +149,6 @@ st.markdown(f"""
   box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
-
-/* ─────────────── Radio Group Box (Fully Contained) ─────────────── */
 /* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
@@ -159,14 +157,13 @@ st.markdown(f"""
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important;              /* same as dropdowns */
-  width: 160px !important;              /* match dropdown width */
+  height: 42px !important;
+  width: 200px !important;              /* slightly wider for better spacing */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
-  margin: 0 auto !important;            /* center align in column */
+  margin: 0 auto !important;
 }}
 
-/* Keep radio buttons in one neat row */
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
@@ -178,7 +175,6 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-/* Label style */
 .radio-box label p {{
   color: #E6F0FF !important;
   font-weight: 500 !important;
@@ -188,7 +184,6 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-/* Circle size and behavior */
 .radio-box [role="radio"] {{
   margin: 0 3px !important;
   transform: scale(0.85);
@@ -204,10 +199,6 @@ st.markdown(f"""
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
 }}
-
-
-
-
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{
@@ -373,38 +364,35 @@ with col_left:
     st.toggle("Options flow", True)
 
 # MIDDLE PANEL
-# MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([1.1, 1.2, 1.1])
 
-    # Left dropdown
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # Middle radio group inside styled box
     with col2:
-    st.markdown("""
-        <div class="radio-box">
-            <div style="display:flex; justify-content:center; align-items:center; width:100%;">
-    """, unsafe_allow_html=True)
+        st.markdown("""
+            <div class="radio-box">
+                <div style="display:flex; justify-content:center; align-items:center; width:100%;">
+        """, unsafe_allow_html=True)
 
-    st.radio(
-        "",
-        ["Next day", "1D", "1W", "1M"],
-        horizontal=True,
-        index=0,
-        label_visibility="collapsed"
-    )
+        st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=0,
+            label_visibility="collapsed"
+        )
 
-    st.markdown("""
+        st.markdown("""
+                </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
-    # Right dropdown
+        """, unsafe_allow_html=True)
+
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-
+    # Metrics
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -413,6 +401,7 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
+    # Chart
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))

@@ -159,35 +159,36 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 200px !important;              /* slightly wider for better spacing */
+  width: 280px !important;              /* increased from 200px to 280px */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
+  padding: 0 15px !important;           /* added padding */
 }}
 
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
-  justify-content: space-evenly !important;
+  justify-content: space-between !important;  /* changed from space-evenly */
   align-items: center !important;
-  gap: 10px !important;
+  gap: 4px !important;                  /* reduced from 10px */
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
 .radio-box label p {{
-  color: #E6F0FF !important;
+  color: #FFFFFF !important;            /* changed to white */
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 11px !important;           /* reduced from 14px */
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
 .radio-box [role="radio"] {{
-  margin: 0 3px !important;
-  transform: scale(0.85);
+  margin: 0 2px !important;             /* reduced margin */
+  transform: scale(0.75);               /* smaller radio buttons */
   transition: all 0.25s ease-in-out;
 }}
 

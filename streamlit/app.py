@@ -120,8 +120,16 @@ st.markdown(f"""
 }}
 
 /* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
-[data-baseweb="select"] {{
-  background-color: #0F1A2B !important;          /* Match middle box */
+
+/* Target all internal Streamlit dropdown layers */
+[data-baseweb="select"],
+[data-baseweb="popover"] > div,
+[data-baseweb="select"] > div,
+[data-baseweb="select"] > div > div,
+[data-baseweb="select"] div[role="combobox"],
+[data-baseweb="select"] div[aria-haspopup="listbox"],
+[data-baseweb="select"] div[data-baseweb="input"] {{
+  background-color: #0F1A2B !important;   /* Dark tone to match middle box */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   color: #FFFFFF !important;
@@ -135,28 +143,35 @@ st.markdown(f"""
   transition: all 0.25s ease-in-out;
 }}
 
+/* Dropdown text & placeholder */
 [data-baseweb="select"] input {{
   background-color: transparent !important;
   color: #FFFFFF !important;
 }}
 
+/* Force text & icons inside dropdown to white */
 [data-baseweb="select"] * {{
   color: #FFFFFF !important;
 }}
 
-[data-baseweb="select"]:hover {{
+/* Hover + focus highlight */
+[data-baseweb="select"]:hover,
+[data-baseweb="select"]:focus-within {{
   border-color: #496BFF !important;
   box-shadow: 0 0 10px rgba(73,107,255,0.45);
 }}
 
-[data-baseweb="select"]:focus-within {{
-  border-color: #31D0FF !important;
-  box-shadow: 0 0 10px rgba(49,208,255,0.5);
+/* Dropdown list background (when opened) */
+ul[role="listbox"] {{
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  color: #FFFFFF !important;
 }}
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  background-color: #0F1A2B !important;          /* Same tone as dropdowns */
+  background-color: #0F1A2B !important;    /* Same tone as dropdowns */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
@@ -170,6 +185,7 @@ st.markdown(f"""
   padding: 0 15px !important;
 }}
 
+/* Ensure radio buttons are aligned horizontally */
 .radio-box .stRadio > div {{
   display: flex !important;
   flex-direction: row !important;
@@ -181,6 +197,7 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
+/* Label text styling */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
@@ -191,6 +208,7 @@ st.markdown(f"""
   text-align: center !important;
 }}
 
+/* Radio circle visuals */
 .radio-box [role="radio"] {{
   margin: 0 3px !important;
   transform: scale(0.85);

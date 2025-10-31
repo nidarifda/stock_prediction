@@ -158,7 +158,7 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 200px !important;              /* slightly wider for better spacing */
+  width: 240px !important;              /* increased from 200px to 240px */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;

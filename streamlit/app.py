@@ -124,7 +124,7 @@ st.markdown(f"""
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  color: #FFFFFF !important;
+  color: #0F1A2B !important;
   font-weight: 500 !important;
   height: 42px !important;
   width: 160px !important;

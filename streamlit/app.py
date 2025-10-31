@@ -159,7 +159,7 @@ st.markdown(f"""
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 280px !important;              /* Even wider */
+  width: 280px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
@@ -171,37 +171,35 @@ st.markdown(f"""
   flex-direction: row !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 4px !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-.radio-box label p {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
-  font-size: 10px !important;           /* Even smaller */
-  white-space: nowrap !important;
+.radio-box label {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
 .radio-box label p {{
-  color: #FFFFFF !important;            /* Changed to white */
+  color: #FFFFFF !important;            /* White text */
   font-weight: 500 !important;
-  font-size: 11px !important;           /* Smaller font */
+  font-size: 11px !important;
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 !important;
   text-align: center !important;
-  width: 100% !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
 }}
 
 .radio-box [role="radio"] {{
-  margin: 0 2px !important;
-  transform: scale(0.75);               /* Smaller radio circles */
+  margin: 0 1px !important;
+  transform: scale(0.7);                /* Smaller radio buttons */
   transition: all 0.25s ease-in-out;
 }}
 
@@ -213,6 +211,41 @@ st.markdown(f"""
 .radio-box [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
+}}
+
+/* ─────────────── Select Box Styling ─────────────── */
+[data-baseweb="select"] {{
+  background-color: #0F1A2B !important;  /* Same as middle box */
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  color: #FFFFFF !important;             /* White text */
+  font-weight: 500 !important;
+  height: 42px !important;
+  width: 160px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.25s ease-in-out;
+}}
+
+[data-baseweb="select"] input {{
+  background-color: transparent !important;
+  color: #FFFFFF !important;             /* White text */
+}}
+
+[data-baseweb="select"] * {{
+  color: #FFFFFF !important;             /* White text */
+}}
+
+[data-baseweb="select"]:hover {{
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.45);
+}}
+
+[data-baseweb="select"]:focus-within {{
+  border-color: #31D0FF !important;
+  box-shadow: 0 0 10px rgba(49,208,255,0.5);
 }}
 
 

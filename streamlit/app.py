@@ -152,18 +152,18 @@ st.markdown(f"""
 /* ─────────────── Radio Group Box (Perfectly Aligned) ─────────────── */
 
 .radio-box {{
-  background-color: #0F1A2B !important;  /* Same as middle box color */
+  background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 42px !important;
-  width: 260px !important;
+  width: 280px !important;              /* Even wider */
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
   margin: 0 auto !important;
-  padding: 0 10px !important;
+  padding: 0 15px !important;
 }}
 
 .radio-box .stRadio > div {{
@@ -177,14 +177,13 @@ st.markdown(f"""
   padding: 0 !important;
 }}
 
-.radio-box label {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 0 !important;
-  flex: 1 !important;
+.radio-box label p {{
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 10px !important;           /* Even smaller */
+  white-space: nowrap !important;
   margin: 0 !important;
-  padding: 0 2px !important;
+  padding: 0 !important;
 }}
 
 .radio-box label p {{

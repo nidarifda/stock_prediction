@@ -541,21 +541,6 @@ with col_mid:
         <div class="radio-box">
     """, unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <style>
-        div[data-testid="stRadio"] > div {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-evenly;
-            align-items: center;
-            width: 100%;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
     st.radio(
         "",
         ["Next day", "1D", "1W", "1M"],
@@ -565,6 +550,7 @@ with col_mid:
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

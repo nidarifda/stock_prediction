@@ -301,22 +301,22 @@ ul[role="listbox"] {{
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  background-color: #0F1A2B !important;    /* same tone as dropdowns */
+  background-color: #0F1A2B !important;     /* Same tone as dropdowns */
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important;
-  width: 300px !important;
+  height: 48px !important;
+  width: 340px !important;
+  margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   transition: all 0.25s ease-in-out;
-  margin: 0 auto !important;
-  padding: 0 12px !important;               /* inner spacing */
+  padding: 0 16px !important;
 }}
 
-/* Ensure radios are inside the box, aligned horizontally */
-.radio-box .stRadio > div {{
+/* Ensure radios are horizontally centered inside */
+.radio-box div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
   justify-content: space-evenly !important;
@@ -326,7 +326,7 @@ ul[role="listbox"] {{
   padding: 0 !important;
 }}
 
-/* Make labels white, smaller and centered */
+/* Label styling */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
@@ -335,24 +335,33 @@ ul[role="listbox"] {{
   margin: 0 !important;
   padding: 0 6px !important;
   text-align: center !important;
+  transition: color 0.25s ease-in-out;
 }}
 
-/* Adjust the radio circles */
+/* Circle (radio) visuals */
 .radio-box [role="radio"] {{
   margin: 0 4px !important;
   transform: scale(0.85);
   transition: all 0.25s ease-in-out;
 }}
 
+/* Active state (blue highlight + glowing ring) */
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
   box-shadow: 0 0 6px rgba(73,107,255,0.4);
 }}
 
+/* Inactive state */
 .radio-box [role="radio"][aria-checked="false"] {{
   border: 2px solid rgba(255,255,255,0.4) !important;
   background: transparent !important;
+}}
+
+/* Label color when selected */
+.radio-box [role="radio"][aria-checked="true"] + label p {{
+  color: #496BFF !important;
+  font-weight: 600 !important;
 }}
 
 
@@ -528,19 +537,34 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
-        st.markdown("""
+    st.markdown("""
         <div class="radio-box">
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=0,
-            label_visibility="collapsed"
-        )
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stRadio"] > div {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+            align-items: center;
+            width: 100%;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

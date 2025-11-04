@@ -16,7 +16,7 @@ CARD = "#0F1A2B"
 TEXT = "#E6F0FF"
 MUTED = "#8AA1C7"
 ACCENT = "#496BFF"
-ORANGE = "#F08A3C"
+ORANGE = "#F08A3C"w
 GREEN = "#5CF2B8"
 
 # ────────────────────────────────────────────────────────────────
@@ -528,34 +528,35 @@ with col_left:
     st.toggle("Options flow", True)
 
 
+
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Made middle column much wider
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider
 
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-   with col2:
-    # Open box
-    st.markdown("""<div class="radio-box">""", unsafe_allow_html=True)
+    with col2:
+        # open radio box container
+        st.markdown("""<div class="radio-box">""", unsafe_allow_html=True)
 
-    # Radio group INSIDE the box
-    st.radio(
-        "",
-        ["Next day", "1D", "1W", "1M"],
-        horizontal=True,
-        index=0,
-        label_visibility="collapsed",
-        key="forecast_horizon"
-    )
+        # actual radio buttons inside
+        st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=0,
+            label_visibility="collapsed",
+            key="forecast_horizon"
+        )
 
-    # Close box
-    st.markdown("</div>", unsafe_allow_html=True)
+        # close radio box
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # Metrics
+    # Metrics row
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -564,7 +565,7 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Chart
+    # Chart section
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))

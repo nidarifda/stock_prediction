@@ -16,7 +16,7 @@ CARD = "#0F1A2B"
 TEXT = "#E6F0FF"
 MUTED = "#8AA1C7"
 ACCENT = "#496BFF"
-ORANGE = "#F08A3C"w
+ORANGE = "#F08A3C"
 GREEN = "#5CF2B8"
 
 # ────────────────────────────────────────────────────────────────

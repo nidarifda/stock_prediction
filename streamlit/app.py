@@ -301,21 +301,20 @@ ul[role="listbox"] {{
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  background-color: #0F1A2B !important;     /* Same tone as dropdowns */
+  background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   height: 48px !important;
-  width: 340px !important;
+  width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
   padding: 0 16px !important;
 }}
 
-/* Ensure radios are horizontally centered inside */
+/* Force the radio buttons to sit inside the box horizontally */
 .radio-box div[data-testid="stRadio"] > div {{
   display: flex !important;
   flex-direction: row !important;
@@ -536,20 +535,22 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    with col2:
-        st.markdown("""
-            <div class="radio-box">
-        """, unsafe_allow_html=True)
+   with col2:
+    # Open box
+    st.markdown("""<div class="radio-box">""", unsafe_allow_html=True)
 
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=0,
-            label_visibility="collapsed"
-        )
+    # Radio group INSIDE the box
+    st.radio(
+        "",
+        ["Next day", "1D", "1W", "1M"],
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed",
+        key="forecast_horizon"
+    )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Close box
+    st.markdown("</div>", unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

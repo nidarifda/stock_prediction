@@ -20,7 +20,7 @@ ORANGE = "#F08A3C"
 GREEN = "#5CF2B8"
 
 # ────────────────────────────────────────────────────────────────
-# CSS STYLES (FULL MERGE)
+# CSS STYLES
 # ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
@@ -46,166 +46,325 @@ st.markdown(f"""
 
 /* ─────────────── Watchlist card ─────────────── */
 .watchlist-card {{
-  display:block;
-  width:100%;
-  background:#0F1A2B !important;
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:18px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.3);
-  padding:16px 20px;
-  margin-bottom:20px;
-  transition:all 0.25s ease-in-out;
+  display: block;
+  width: 100%;
+  background: #0F1A2B !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  transition: all 0.25s ease-in-out;
 }}
 .watchlist-card:hover {{
-  box-shadow:0 10px 24px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
 }}
 .watchlist-title {{
-  font-weight:800;
-  font-size:18px;
-  color:#E6F0FF;
-  margin-bottom:10px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #E6F0FF;
+  margin-bottom: 10px;
   text-align:left;
 }}
 .watchlist-row {{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }}
-.watchlist-row:last-child {{ border-bottom:none; }}
-.watchlist-left,.watchlist-right {{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
+.watchlist-row:last-child {{
+  border-bottom: none;
 }}
-.watchlist-right {{ align-items:flex-end; }}
+.watchlist-left, .watchlist-right {{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}}
+.watchlist-right {{
+  align-items: flex-end;
+}}
 .watchlist-symbol {{
-  font-weight:700;
-  font-size:15px;
+  font-weight: 700;
+  font-size: 15px;
 }}
 .watchlist-price {{
-  font-weight:700;
-  color:#E6F0FF;
-  font-size:15px;
+  font-weight: 700;
+  color: #E6F0FF;
+  font-size: 15px;
 }}
 .watchlist-sub {{
-  font-size:12.5px;
-  opacity:0.9;
+  font-size: 12.5px;
+  opacity: 0.9;
 }}
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
 [data-testid="stWidgetLabel"],
 .stToggle label {{
-  color:#FFFFFF !important;
-  font-weight:500 !important;
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
 }}
 .stToggle {{
-  margin-top:-4px !important;
-  margin-bottom:-2px !important;
-  padding-left:20px !important;
+  margin-top: -4px !important;
+  margin-bottom: -2px !important;
+  padding-left: 20px !important;
 }}
 [data-testid="stSwitch"] {{
-  margin-left:6px !important;
+  margin-left: 6px !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
-  background-color:#496BFF !important;
+  background-color: #496BFF !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
-  background-color:rgba(255,255,255,0.2) !important;
+  background-color: rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Middle Control Bar ─────────────── */
+/* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
+
 [data-baseweb="select"],
 [data-baseweb="select"] * {{
-  background-color:#0F1A2B !important;
-  border-color:rgba(255,255,255,0.18) !important;
-  color:#FFFFFF !important;
-  font-weight:600 !important;
-  text-shadow:0 0 3px rgba(255,255,255,0.25);
+  background-color: #0F1A2B !important;
+  border-color: rgba(255,255,255,0.18) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 3px rgba(255,255,255,0.25);
 }}
+
+/* Force all dropdown containers to stay dark */
 [data-baseweb="select"] > div,
-[data-baseweb="select"] div[role="combobox"] {{
-  background-color:#0F1A2B !important;
-  border-radius:10px !important;
-  height:42px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  border:1px solid rgba(255,255,255,0.18) !important;
+[data-baseweb="select"] > div > div,
+[data-baseweb="select"] div[role="combobox"],
+[data-baseweb="select"] div[data-baseweb="input"],
+[data-baseweb="select"] div[class*="control"],
+[data-baseweb="select"] div[class*="container"] {{
+  background-color: #0F1A2B !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }}
+
+/* 🔥 Force text (like “NVDA” and “LightGBM”) to show */
+[data-baseweb="select"] div[class*="singleValue"],
+[data-baseweb="select"] div[class*="value-container"],
+[data-baseweb="select"] div[class*="control"],
 [data-baseweb="select"] span,
-[data-baseweb="select"] input {{
-  color:#FFFFFF !important;
-  opacity:1 !important;
-  font-weight:600 !important;
-  text-align:center !important;
+[data-baseweb="select"] input,
+[data-baseweb="select"] div:not([role]) {{
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  text-align: center !important;
 }}
+
+/* Placeholder style */
+[data-baseweb="select"] div[class*="placeholder"],
+[data-baseweb="select"] span[class*="placeholder"] {{
+  color: rgba(255,255,255,0.7) !important;
+  font-weight: 500 !important;
+}}
+
+/* Caret / Arrow icon */
 [data-baseweb="select"] svg {{
-  fill:#FFFFFF !important;
-  opacity:1 !important;
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  opacity: 1 !important;
 }}
-ul[role="listbox"] {{
-  background-color:#0F1A2B !important;
-  border:1px solid rgba(255,255,255,0.18) !important;
-  border-radius:10px !important;
-  color:#FFFFFF !important;
+
+/* Dropdown menu (when expanded) */
+ul[role="listbox"],
+div[role="listbox"] {{
+  background-color: #0F1A2B !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }}
+
+/* Hover and focus */
 [data-baseweb="select"]:hover,
 [data-baseweb="select"]:focus-within {{
-  border-color:#496BFF !important;
-  box-shadow:0 0 10px rgba(73,107,255,0.45);
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.45);
 }}
 
-/* ─────────────── Radio Group Box ─────────────── */
+/* ─────────────── Force dropdown text visibility ─────────────── */
+[data-baseweb="select"] span,
+[data-baseweb="select"] div[data-baseweb="single-value"],
+[data-baseweb="select"] div[class*="value-container"],
+[data-baseweb="select"] div[class*="-SingleValue"],
+[data-baseweb="select"] div[class*="-placeholder"],
+[data-baseweb="select"] div[class*="-control"],
+[data-baseweb="select"] div[class*="css"],
+[data-baseweb="select"] div:not([role]),
+[data-baseweb="select"] * {{
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 4px rgba(255,255,255,0.15) !important;
+}}
+
+/* Force visible text alignment and padding */
+[data-baseweb="select"] div[data-baseweb="single-value"],
+[data-baseweb="select"] div[class*="value-container"] {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}}
+
+/* Make placeholder visible in lighter gray */
+[data-baseweb="select"] div[data-baseweb="placeholder"],
+[data-baseweb="select"] span[class*="placeholder"] {{
+  color: rgba(255,255,255,0.75) !important;
+  font-weight: 500 !important;
+}}
+
+/* Ensure dropdown caret is bright white */
+[data-baseweb="select"] svg {{
+  opacity: 1 !important;
+  stroke: none !important;
+}}
+
+/* Fix placeholder specifically */
+[data-baseweb="select"] div[data-baseweb="placeholder"] {{
+  color: rgba(255,255,255,0.8) !important;
+  opacity: 1 !important;
+}}
+
+/* Fix the small caret (down arrow) icon */
+[data-baseweb="select"] svg {{
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}}
+
+/* Dropdown text & placeholder */
+[data-baseweb="select"] input {{
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+}}
+
+/* Force text & icons inside dropdown to white */
+[data-baseweb="select"] * {{
+  color: #FFFFFF !important;
+}}
+
+/* Hover + focus highlight */
+[data-baseweb="select"]:hover,
+[data-baseweb="select"]:focus-within {{
+  border-color: #496BFF !important;
+  box-shadow: 0 0 10px rgba(73,107,255,0.45);
+}}
+
+/* Dropdown list background (when opened) */
+ul[role="listbox"] {{
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  color: #FFFFFF !important;
+}}
+/* Keep dark outer box styling */
+[data-baseweb="select"] > div {{
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  transition: all 0.25s ease-in-out;
+}}
+
+/* Remove inner duplicate border */
+[data-baseweb="select"] > div > div {{
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}}
+
+/* Align text properly and ensure visibility */
+[data-baseweb="select"] div[class*="value-container"] {{
+  border: none !important;
+  background-color: transparent !important;
+  justify-content: center !important;
+  align-items: center !important;
+  color: #FFFFFF !important;
+}}
+
+/* Keep caret clean */
+[data-baseweb="select"] svg {{
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}}
+
+
+/* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  background-color:#0F1A2B !important;
-  border:1px solid rgba(255,255,255,0.18) !important;
-  border-radius:10px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  height:48px !important;
-  width:100% !important;
-  margin:0 auto !important;
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
-  padding:0 16px !important;
-}}
-.radio-box div[data-testid="stRadio"] > div {{
-  display:flex !important;
-  flex-direction:row !important;
-  justify-content:space-evenly !important;
-  align-items:center !important;
-  width:100% !important;
-}}
-.radio-box label p {{
-  color:#FFFFFF !important;
-  font-weight:500 !important;
-  font-size:13px !important;
-  white-space:nowrap !important;
-  margin:0 !important;
-  padding:0 6px !important;
-  text-align:center !important;
-}}
-.radio-box [role="radio"] {{
-  margin:0 4px !important;
-  transform:scale(0.85);
-}}
-.radio-box [role="radio"][aria-checked="true"] {{
-  background-color:#496BFF !important;
-  border:2px solid #496BFF !important;
-  box-shadow:0 0 6px rgba(73,107,255,0.4);
-}}
-.radio-box [role="radio"][aria-checked="false"] {{
-  border:2px solid rgba(255,255,255,0.4) !important;
-  background:transparent !important;
-}}
-.radio-box [role="radio"][aria-checked="true"] + label p {{
-  color:#496BFF !important;
-  font-weight:600 !important;
+  background-color: #0F1A2B !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 48px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  padding: 0 16px !important;
 }}
 
-/* ─────────────── Metrics (FIXED + Enhanced) ─────────────── */
+/* Force the radio buttons to sit inside the box horizontally */
+.radio-box div[data-testid="stRadio"] > div {{
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}}
+
+/* Label styling */
+.radio-box label p {{
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 6px !important;
+  text-align: center !important;
+  transition: color 0.25s ease-in-out;
+}}
+
+/* Circle (radio) visuals */
+.radio-box [role="radio"] {{
+  margin: 0 4px !important;
+  transform: scale(0.85);
+  transition: all 0.25s ease-in-out;
+}}
+
+/* Active state (blue highlight + glowing ring) */
+.radio-box [role="radio"][aria-checked="true"] {{
+  background-color: #496BFF !important;
+  border: 2px solid #496BFF !important;
+  box-shadow: 0 0 6px rgba(73,107,255,0.4);
+}}
+
+/* Inactive state */
+.radio-box [role="radio"][aria-checked="false"] {{
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  background: transparent !important;
+}}
+
+/* Label color when selected */
+.radio-box [role="radio"][aria-checked="true"] + label p {{
+  color: #496BFF !important;
+  font-weight: 600 !important;
+}}
+
+
+/* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -219,25 +378,9 @@ ul[role="listbox"] {{
   height:68px;
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
-  padding:8px 0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  transition:all 0.3s ease;
 }}
-.metric-slot:hover {{
-  box-shadow:0 0 12px rgba(73,107,255,0.45);
-  transform:translateY(-1px);
-}}
-.metric-slot .m-label {{
-  font-size:12px;
-  opacity:.8;
-  margin-bottom:2px;
-}}
-.metric-slot .m-value {{
-  font-size:22px;
-  font-weight:800;
-}}
+.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
+.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
 
 /* ─────────────── Chart & Signals ─────────────── */
 .js-plotly-plot {{
@@ -277,20 +420,14 @@ ul[role="listbox"] {{
   margin-top:25px;
 }}
 .status-item {{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 18px;
-  font-size:13px;
-  color:{MUTED};
+  display:flex; align-items:center; gap:8px;
+  padding:8px 18px; font-size:13px; color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
 }}
 .status-item:last-child{{border-right:0;}}
 .status-value{{color:{TEXT};font-weight:700;}}
-.dot{{
-  width:9px;height:9px;border-radius:50%;background:{GREEN};
-  box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;
-}}
+.dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
+box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -365,7 +502,7 @@ def render_signals_card(title, tickers):
             f'</div>'
             f'<div class="watchlist-sub" style="color:{TEXT};opacity:.9;margin-top:2px;">Correlation {corr:.2f}</div>'
             f'<div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;margin-top:4px;">'
-            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;"></div>'
+            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
             f'</div></div>'
         )
     html += "</div>"
@@ -384,24 +521,42 @@ col_left, col_mid, col_right = st.columns([0.8, 3, 0.8], gap="small")
 # LEFT PANEL
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
+    st.markdown("<div style='margin-top:-2px;'></div>", unsafe_allow_html=True)
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options flow", True)
 
+
+
 # MIDDLE PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider
+
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
+
     with col2:
+        # open radio box container
         st.markdown("""<div class="radio-box">""", unsafe_allow_html=True)
-        st.radio("", ["Next day", "1D", "1W", "1M"], horizontal=True, index=0, label_visibility="collapsed")
+
+        # actual radio buttons inside
+        st.radio(
+            "",
+            ["Next day", "1D", "1W", "1M"],
+            horizontal=True,
+            index=0,
+            label_visibility="collapsed",
+            key="forecast_horizon"
+        )
+
+        # close radio box
         st.markdown("</div>", unsafe_allow_html=True)
+
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # Metrics
+    # Metrics row
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -410,7 +565,7 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Chart
+    # Chart section
     s = prices["NVDA"]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
@@ -433,7 +588,7 @@ with col_mid:
 
 # RIGHT PANEL
 with col_right:
-    render_signals_card("Affiliated Signals", ["TSMC", "ASML",
+    render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
 # FOOTER
 st.markdown(f"""

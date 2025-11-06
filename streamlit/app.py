@@ -371,6 +371,15 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
   color: #496BFF !important;
   font-weight: 600 !important;
 }}
+/* Make forecast horizon labels smaller */
+.radio-box label span {{
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px !important;
+  color: #FFFFFF !important;
+}}
+
+
 
 /* ─────────────── Align all three top selectors evenly ─────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{

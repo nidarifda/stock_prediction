@@ -559,7 +559,6 @@ with col_left:
 
 
 
-# MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
 
@@ -572,7 +571,7 @@ with col_mid:
         # Default session value = "1H"
         horizon = st.session_state.get("forecast_horizon", "1H")
 
-        # Custom interactive radio group (with smaller text + JS bridge)
+        # Custom interactive radio group (with smaller text + JS bridge + rerun)
         st.markdown(f"""
         <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
           <div style="
@@ -612,13 +611,17 @@ with col_mid:
         <script>
         const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
         radios.forEach(r => {{
-            r.addEventListener('change', e => {{
-                window.parent.postMessage({{
-                    type: 'streamlit:setComponentValue',
-                    key: 'forecast_horizon',
-                    value: e.target.value
-                }}, '*');
-            }});
+          r.addEventListener('change', e => {{
+            // Send new value to Streamlit
+            window.parent.postMessage({{
+              type: 'streamlit:setComponentValue',
+              key: 'forecast_horizon',
+              value: e.target.value
+            }}, '*');
+
+            // Force Streamlit to re-run immediately
+            window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
+          }});
         }});
         </script>
         """, unsafe_allow_html=True)

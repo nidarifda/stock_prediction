@@ -567,11 +567,15 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
-    with col2:
-        # Default session value = "1H"
-        horizon = st.session_state.get("forecast_horizon", "1H")
+      with col2:
+        # 1️⃣ Read from URL first — if not present, default to "1H"
+        query_params = st.experimental_get_query_params()
+        horizon = query_params.get("forecast", ["1H"])[0]
 
-        # HTML block for radio-style selector
+        # 2️⃣ Save to session state so it persists on rerun
+        st.session_state["forecast_horizon"] = horizon
+
+        # 3️⃣ Render the HTML radio buttons
         st.markdown(f"""
 <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
   <div style="

@@ -554,49 +554,52 @@ with col_left:
 with col_mid:
     col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider
 
+    # ─────────────── Dropdown: Stock ───────────────
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-   with col2:
-    horizon = st.session_state.get("forecast_horizon", "Next day")
+    # ─────────────── Radio Box: Forecast Horizon ───────────────
+    with col2:
+        horizon = st.session_state.get("forecast_horizon", "Today")
 
-    # Custom interactive radio group (with JS bridge)
-    st.markdown(f"""
-    <div class="radio-box" id="forecast-box">
-      <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="radio" name="forecast" value="Next day" {'checked' if horizon=='Next day' else ''}>
-          <span style="color:#fff;">Next day</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
-          <span style="color:#fff;">1D</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
-          <span style="color:#fff;">1W</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
-          <span style="color:#fff;">1M</span>
-        </label>
-      </div>
-    </div>
+        # Custom interactive radio group (with JS bridge)
+        st.markdown(f"""
+        <div class="radio-box" id="forecast-box">
+          <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="Today" {'checked' if horizon=='Today' else ''}>
+              <span style="color:#fff;">Today</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
+              <span style="color:#fff;">1D</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
+              <span style="color:#fff;">1W</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
+              <span style="color:#fff;">1M</span>
+            </label>
+          </div>
+        </div>
 
-    <script>
-    const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
-    radios.forEach(r => {{
-        r.addEventListener('change', e => {{
-            window.parent.postMessage({{ type: 'streamlit:setComponentValue', key: 'forecast_horizon', value: e.target.value }}, '*');
+        <script>
+        const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
+        radios.forEach(r => {{
+            r.addEventListener('change', e => {{
+                window.parent.postMessage({{ type: 'streamlit:setComponentValue', key: 'forecast_horizon', value: e.target.value }}, '*');
+            }});
         }});
-    }});
-    </script>
-    """, unsafe_allow_html=True)
+        </script>
+        """, unsafe_allow_html=True)
 
+    # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # Metrics row
+    # ─────────────── Metrics Row ───────────────
     st.markdown("""
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
@@ -605,25 +608,49 @@ with col_mid:
     </div>
     """, unsafe_allow_html=True)
 
-    # Chart section
+    # ─────────────── Dynamic Chart ───────────────
     s = prices["NVDA"]
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=s.index, y=s.values, mode="lines", line=dict(width=2, color="#70B3FF")))
+    fig.add_trace(go.Scatter(
+        x=s.index, y=s.values, mode="lines",
+        line=dict(width=2, color="#70B3FF"), name="Historical"
+    ))
+
     now_x = s.index[-1]
     last = s.iloc[-1]
     proj_x = pd.bdate_range(start=now_x, periods=12)
-    proj_y = np.linspace(last, last * 1.03, len(proj_x))
-    fig.add_trace(go.Scatter(x=proj_x, y=proj_y, mode="lines", line=dict(width=2, dash="dot", color="#F08A3C")))
+
+    # Adjust projection based on selected horizon
+    if horizon == "Today":
+        proj_y = np.linspace(last, last, len(proj_x))
+    elif horizon == "1D":
+        proj_y = np.linspace(last, last * 1.01, len(proj_x))
+    elif horizon == "1W":
+        proj_y = np.linspace(last, last * 1.05, len(proj_x))
+    elif horizon == "1M":
+        proj_y = np.linspace(last, last * 1.12, len(proj_x))
+    else:
+        proj_y = np.linspace(last, last * 1.03, len(proj_x))
+
+    fig.add_trace(go.Scatter(
+        x=proj_x, y=proj_y, mode="lines",
+        line=dict(width=2, dash="dot", color="#F08A3C"),
+        name="Forecast"
+    ))
+
     fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
     fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+
     fig.update_layout(
         height=370,
         margin=dict(l=40, r=10, t=10, b=40),
         paper_bgcolor=CARD,
         plot_bgcolor=CARD,
         font=dict(color=TEXT),
-        showlegend=False
+        showlegend=False,
+        transition=dict(duration=500, easing="cubic-in-out")
     )
+
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
 

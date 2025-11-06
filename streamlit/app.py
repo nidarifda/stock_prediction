@@ -362,6 +362,19 @@ ul[role="listbox"] {{
   color: #496BFF !important;
   font-weight: 600 !important;
 }}
+.radio-box > div:first-child {{
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: -8px !important;  /* pushes the radios slightly up into the box */
+}}
+
+.radio-box div[data-testid="stRadio"] > div {{
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}}
 
 
 /* ─────────────── Metrics ─────────────── */

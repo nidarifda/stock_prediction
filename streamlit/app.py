@@ -609,21 +609,26 @@ with col_mid:
         </div>
 
         <script>
-        const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
-        radios.forEach(r => {{
-          r.addEventListener('change', e => {{
-            // Send new value to Streamlit
-            window.parent.postMessage({{
-              type: 'streamlit:setComponentValue',
-              key: 'forecast_horizon',
-              value: e.target.value
-            }}, '*');
+const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
+radios.forEach(r => {
+  r.addEventListener('change', e => {
+    // Store the value persistently in localStorage
+    window.localStorage.setItem('forecast_horizon', e.target.value);
 
-            // Force Streamlit to re-run immediately
-            window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
-          }});
-        }});
-        </script>
+    // Notify Streamlit session_state
+    window.parent.postMessage({{
+      type: 'streamlit:setComponentValue',
+      key: 'forecast_horizon',
+      value: e.target.value
+                     }}, '*');
+
+    // Reliable rerun trigger
+    setTimeout(() => {
+      window.parent.postMessage({ type: 'streamlit:rerun' }, '*');
+    }, 100);
+  });
+});
+</script>
         """, unsafe_allow_html=True)
 
     # ─────────────── Dropdown: Model ───────────────

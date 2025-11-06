@@ -568,9 +568,11 @@ with col_mid:
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
     with col2:
-    horizon = st.session_state.get("forecast_horizon", "1H")
+        # Default session value = "1H"
+        horizon = st.session_state.get("forecast_horizon", "1H")
 
-    st.markdown(f"""
+        # HTML block for radio-style selector
+        st.markdown(f"""
 <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
   <div style="
     display:flex;
@@ -611,24 +613,20 @@ const radios = document.querySelectorAll('#forecast-box input[name="forecast"]')
 radios.forEach(r => {{
   r.addEventListener('change', e => {{
     const newValue = e.target.value;
-    // Update Streamlit URL query params (works on HuggingFace & Streamlit Cloud)
     const url = new URL(window.location);
     url.searchParams.set('forecast', newValue);
     window.history.replaceState(null, '', url);
-
-    // Trigger rerun properly
     window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
   }});
 }});
 </script>
 """, unsafe_allow_html=True)
 
-    # Read forecast from URL params each rerun
-    query_params = st.experimental_get_query_params()
-    if "forecast" in query_params:
-        horizon = query_params["forecast"][0]
-        st.session_state["forecast_horizon"] = horizon
-
+        # ✅ Read selected horizon from URL query params each rerun
+        query_params = st.experimental_get_query_params()
+        if "forecast" in query_params:
+            horizon = query_params["forecast"][0]
+            st.session_state["forecast_horizon"] = horizon
     # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

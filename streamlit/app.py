@@ -558,21 +558,30 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     with col2:
-        # open radio box container
-        st.markdown("""<div class="radio-box">""", unsafe_allow_html=True)
-
-        # actual radio buttons inside
-        st.radio(
-            "",
-            ["Next day", "1D", "1W", "1M"],
-            horizontal=True,
-            index=0,
-            label_visibility="collapsed",
-            key="forecast_horizon"
-        )
-
-        # close radio box
-        st.markdown("</div>", unsafe_allow_html=True)
+    horizon = st.session_state.get("forecast_horizon", "Next day")
+    # Custom HTML radio inside the box
+    st.markdown(f"""
+    <div class="radio-box">
+      <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="forecast" value="Next day" {'checked' if horizon=='Next day' else ''}>
+          <span style="color:#fff;">Next day</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
+          <span style="color:#fff;">1D</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
+          <span style="color:#fff;">1W</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
+          <span style="color:#fff;">1M</span>
+        </label>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

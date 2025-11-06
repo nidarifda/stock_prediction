@@ -307,34 +307,25 @@ ul[role="listbox"] {{
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important; /* same height as dropdowns */
+  height: 48px !important;
   width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  padding: 0 10px !important;
-  position: relative !important;
-  overflow: hidden !important;
+  padding: 0 16px !important;
 }}
 
-/* Make the internal radio group actually live inside */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
-  margin-top: -42px !important; /* pull it upward INTO the box */
-  z-index: 10 !important;
-}}
-
-/* Align the radio group items horizontally and center */
+/* Force the radio buttons to sit inside the box horizontally */
 .radio-box div[data-testid="stRadio"] > div {{
   display: flex !important;
-  justify-content: center !important;
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
   align-items: center !important;
-  gap: 14px !important;
   width: 100% !important;
-  height: 100% !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* Label text */
+/* Label styling */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
@@ -342,19 +333,18 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
   white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 6px !important;
-  transition: color 0.25s ease-in-out;
   text-align: center !important;
+  transition: color 0.25s ease-in-out;
 }}
 
-/* Radio circles */
+/* Circle (radio) visuals */
 .radio-box [role="radio"] {{
-  margin: 0 3px !important;
-  transform: scale(0.9);
+  margin: 0 4px !important;
+  transform: scale(0.85);
   transition: all 0.25s ease-in-out;
-  background: transparent !important;
 }}
 
-/* Active state */
+/* Active state (blue highlight + glowing ring) */
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
@@ -363,10 +353,11 @@ div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
 
 /* Inactive state */
 .radio-box [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.5) !important;
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  background: transparent !important;
 }}
 
-/* Selected label color */
+/* Label color when selected */
 .radio-box [role="radio"][aria-checked="true"] + label p {{
   color: #496BFF !important;
   font-weight: 600 !important;

@@ -626,11 +626,7 @@ radios.forEach(r => {{
 </script>
 """, unsafe_allow_html=True)
 
-        # ✅ Read selected horizon from URL query params each rerun
-        query_params = st.experimental_get_query_params()
-        if "forecast" in query_params:
-            horizon = query_params["forecast"][0]
-            st.session_state["forecast_horizon"] = horizon
+
     # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")

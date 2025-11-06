@@ -565,10 +565,22 @@ with col_mid:
         # Custom interactive radio group (with JS bridge)
         st.markdown(f"""
         <div class="radio-box" id="forecast-box">
-          <div style="display:flex;justify-content:center;align-items:center;gap:16px;">
+          <div style="display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
               <input type="radio" name="forecast" value="Today" {'checked' if horizon=='Today' else ''}>
               <span style="color:#fff;">Today</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
+              <span style="color:#fff;">1H</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
+              <span style="color:#fff;">6H</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
+              <span style="color:#fff;">12H</span>
             </label>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
               <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
@@ -620,9 +632,15 @@ with col_mid:
     last = s.iloc[-1]
     proj_x = pd.bdate_range(start=now_x, periods=12)
 
-    # Adjust projection based on selected horizon
+    # Adjust projection slope based on selected horizon
     if horizon == "Today":
         proj_y = np.linspace(last, last, len(proj_x))
+    elif horizon == "1H":
+        proj_y = np.linspace(last, last * 1.002, len(proj_x))
+    elif horizon == "6H":
+        proj_y = np.linspace(last, last * 1.005, len(proj_x))
+    elif horizon == "12H":
+        proj_y = np.linspace(last, last * 1.008, len(proj_x))
     elif horizon == "1D":
         proj_y = np.linspace(last, last * 1.01, len(proj_x))
     elif horizon == "1W":
@@ -652,6 +670,7 @@ with col_mid:
     )
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
+
 
 
 # RIGHT PANEL

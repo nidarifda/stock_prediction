@@ -301,59 +301,52 @@ ul[role="listbox"] {{
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
-  position: relative !important;
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  height: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 42px !important; /* same height as dropdowns */
   width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  overflow: hidden !important;
   padding: 0 10px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }}
 
-/* Force inner Streamlit radio container to stay inside the box */
-.radio-box > div[data-testid="stHorizontalBlock"],
-.radio-box > div > div[data-testid="stHorizontalBlock"],
-.radio-box > div[data-testid="stRadio"],
-.radio-box > div > div[data-testid="stRadio"] {{
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+/* Make the internal radio group actually live inside */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
+  margin-top: -42px !important; /* pull it upward INTO the box */
+  z-index: 10 !important;
 }}
 
-/* Keep buttons horizontal and centered */
-.radio-box [data-testid="stHorizontalBlock"] > div {{
+/* Align the radio group items horizontally and center */
+.radio-box div[data-testid="stRadio"] > div {{
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   gap: 14px !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
 }}
 
-/* Label text style */
+/* Label text */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
   font-size: 13px !important;
+  white-space: nowrap !important;
   margin: 0 !important;
   padding: 0 6px !important;
   transition: color 0.25s ease-in-out;
-  white-space: nowrap !important;
+  text-align: center !important;
 }}
 
-/* Circle (radio) visuals */
+/* Radio circles */
 .radio-box [role="radio"] {{
   margin: 0 3px !important;
   transform: scale(0.9);
@@ -365,7 +358,7 @@ ul[role="listbox"] {{
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
-  box-shadow: 0 0 8px rgba(73,107,255,0.5);
+  box-shadow: 0 0 6px rgba(73,107,255,0.4);
 }}
 
 /* Inactive state */
@@ -373,7 +366,7 @@ ul[role="listbox"] {{
   border: 2px solid rgba(255,255,255,0.5) !important;
 }}
 
-/* Highlight selected label */
+/* Selected label color */
 .radio-box [role="radio"][aria-checked="true"] + label p {{
   color: #496BFF !important;
   font-weight: 600 !important;

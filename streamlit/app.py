@@ -573,45 +573,45 @@ with col_mid:
 
         # Custom interactive radio group (with smaller text + JS bridge + rerun)
         st.markdown(f"""
-        <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
-          <div style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            gap:10px;
-            flex-wrap:wrap;
-          ">
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
-              <span style="color:#fff;font-size:11px;">1H</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
-              <span style="color:#fff;font-size:11px;">6H</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
-              <span style="color:#fff;font-size:11px;">12H</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
-              <span style="color:#fff;font-size:11px;">1D</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
-              <span style="color:#fff;font-size:11px;">1W</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
-              <span style="color:#fff;font-size:11px;">1M</span>
-            </label>
-          </div>
-        </div>
+<div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
+  <div style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  ">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
+      <span style="color:#fff;font-size:11px;">1H</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
+      <span style="color:#fff;font-size:11px;">6H</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
+      <span style="color:#fff;font-size:11px;">12H</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
+      <span style="color:#fff;font-size:11px;">1D</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
+      <span style="color:#fff;font-size:11px;">1W</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+      <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
+      <span style="color:#fff;font-size:11px;">1M</span>
+    </label>
+  </div>
+</div>
 
-        <script>
+<script>
 const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
-radios.forEach(r => {
-  r.addEventListener('change', e => {
+radios.forEach(r => {{
+  r.addEventListener('change', e => {{
     // Store the value persistently in localStorage
     window.localStorage.setItem('forecast_horizon', e.target.value);
 
@@ -620,16 +620,16 @@ radios.forEach(r => {
       type: 'streamlit:setComponentValue',
       key: 'forecast_horizon',
       value: e.target.value
-                     }}, '*');
+    }}, '*');
 
     // Reliable rerun trigger
-    setTimeout(() => {
-      window.parent.postMessage({ type: 'streamlit:rerun' }, '*');
-    }, 100);
-  });
-});
+    setTimeout(() => {{
+      window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
+    }}, 100);
+  }});
+}});
 </script>
-        """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:

@@ -568,11 +568,9 @@ with col_mid:
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
     with col2:
-        # Default session value = "1H"
-        horizon = st.session_state.get("forecast_horizon", "1H")
+    horizon = st.session_state.get("forecast_horizon", "1H")
 
-        # Custom interactive radio group (with smaller text + JS bridge + rerun)
-        st.markdown(f"""
+    st.markdown(f"""
 <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
   <div style="
     display:flex;
@@ -612,24 +610,24 @@ with col_mid:
 const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
 radios.forEach(r => {{
   r.addEventListener('change', e => {{
-    // Store the value persistently in localStorage
-    window.localStorage.setItem('forecast_horizon', e.target.value);
+    const newValue = e.target.value;
+    // Update Streamlit URL query params (works on HuggingFace & Streamlit Cloud)
+    const url = new URL(window.location);
+    url.searchParams.set('forecast', newValue);
+    window.history.replaceState(null, '', url);
 
-    // Notify Streamlit session_state
-    window.parent.postMessage({{
-      type: 'streamlit:setComponentValue',
-      key: 'forecast_horizon',
-      value: e.target.value
-    }}, '*');
-
-    // Reliable rerun trigger
-    setTimeout(() => {{
-      window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
-    }}, 100);
+    // Trigger rerun properly
+    window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
   }});
 }});
 </script>
 """, unsafe_allow_html=True)
+
+    # Read forecast from URL params each rerun
+    query_params = st.experimental_get_query_params()
+    if "forecast" in query_params:
+        horizon = query_params["forecast"][0]
+        st.session_state["forecast_horizon"] = horizon
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:

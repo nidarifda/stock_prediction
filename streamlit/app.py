@@ -299,7 +299,7 @@ ul[role="listbox"] {{
 }}
 
 
-/* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
+/* ─────────────── Radio Group Box (Keep in Harmony & Fixed Alignment) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -307,21 +307,30 @@ ul[role="listbox"] {{
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 48px !important;
+  height: 42px !important; /* same height as dropdowns */
   width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   padding: 0 16px !important;
+  position: relative !important;
+  overflow: visible !important;
 }}
 
-/* Force the radio buttons to sit inside the box horizontally */
+/* Pull the Streamlit radio container upward INTO the box */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
+  margin-top: -46px !important;
+  position: relative !important;
+  z-index: 10 !important;
+}}
+
+/* Force the radio buttons to sit neatly inside the box */
 .radio-box div[data-testid="stRadio"] > div {{
   display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-evenly !important;
+  justify-content: center !important;
   align-items: center !important;
-  width: 100% !important;
-  margin: 0 !important;
+  gap: 14px !important;
+  height: 100% !important;
+  margin: 0 auto !important;
   padding: 0 !important;
 }}
 
@@ -362,20 +371,19 @@ ul[role="listbox"] {{
   color: #496BFF !important;
   font-weight: 600 !important;
 }}
-.radio-box > div:first-child {{
-  width: 100% !important;
+
+/* ─────────────── Align all three top selectors evenly ─────────────── */
+.block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  margin-top: -8px !important;  /* pushes the radios slightly up into the box */
 }}
 
-.radio-box div[data-testid="stRadio"] > div {{
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 14px !important;
+[data-baseweb="select"] > div,
+.radio-box {{
+  height: 42px !important;
+  border-radius: 10px !important;
 }}
-
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

@@ -325,15 +325,44 @@ ul[role="listbox"] {{
   padding: 0 !important;
 }}
 
+/* 🔧 FIX alignment for the entire block */
+.radio-box [data-testid="stHorizontalBlock"] {{
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  gap: 12px !important;
+  margin: 0 auto !important;
+}}
+
+/* Ensure labels are centered */
+.radio-box div[data-testid="stRadio"] label {{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 6px !important;
+}}
+
+.radio-box div[data-testid="stRadio"] label p {{
+  margin: 0 !important;
+  padding: 0 6px !important;
+  text-align: center !important;
+}}
+
+/* make sure radio container doesn’t overflow */
+.radio-box > div:first-child {{
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}}
+
 /* Label styling */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
   font-size: 13px !important;
   white-space: nowrap !important;
-  margin: 0 !important;
-  padding: 0 6px !important;
-  text-align: center !important;
   transition: color 0.25s ease-in-out;
 }}
 
@@ -362,7 +391,6 @@ ul[role="listbox"] {{
   color: #496BFF !important;
   font-weight: 600 !important;
 }}
-
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

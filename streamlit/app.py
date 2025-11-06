@@ -559,6 +559,7 @@ with col_mid:
 
     with col2:
     horizon = st.session_state.get("forecast_horizon", "Next day")
+
     # Custom HTML radio inside the box
     st.markdown(f"""
     <div class="radio-box">
@@ -582,7 +583,7 @@ with col_mid:
       </div>
     </div>
     """, unsafe_allow_html=True)
-
+  
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

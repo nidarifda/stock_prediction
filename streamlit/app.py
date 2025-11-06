@@ -557,7 +557,7 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    with col2:
+   with col2:
     horizon = st.session_state.get("forecast_horizon", "Next day")
 
     # Custom interactive radio group (with JS bridge)

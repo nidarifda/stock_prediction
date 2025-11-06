@@ -301,96 +301,84 @@ ul[role="listbox"] {{
 
 /* ─────────────── Radio Group Box (Keep in Harmony) ─────────────── */
 .radio-box {{
+  position: relative !important;
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
   border-radius: 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 48px !important;
+  height: 52px !important;
   width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  padding: 0 16px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  padding: 0 10px !important;
 }}
 
-/* Force the radio buttons to sit inside the box horizontally */
-.radio-box div[data-testid="stRadio"] > div {{
+/* Force inner Streamlit radio container to stay inside the box */
+.radio-box > div[data-testid="stHorizontalBlock"],
+.radio-box > div > div[data-testid="stHorizontalBlock"],
+.radio-box > div[data-testid="stRadio"],
+.radio-box > div > div[data-testid="stRadio"] {{
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
   display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-evenly !important;
+  justify-content: center !important;
   align-items: center !important;
   width: 100% !important;
+  height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
 }}
 
-/* 🔧 FIX alignment for the entire block */
-.radio-box [data-testid="stHorizontalBlock"] {{
+/* Keep buttons horizontal and centered */
+.radio-box [data-testid="stHorizontalBlock"] > div {{
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  width: 100% !important;
-  gap: 12px !important;
-  margin: 0 auto !important;
+  gap: 14px !important;
 }}
 
-/* Ensure labels are centered */
-.radio-box div[data-testid="stRadio"] label {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 6px !important;
-}}
-
-.radio-box div[data-testid="stRadio"] label p {{
-  margin: 0 !important;
-  padding: 0 6px !important;
-  text-align: center !important;
-}}
-
-/* make sure radio container doesn’t overflow */
-.radio-box > div:first-child {{
-  width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}}
-
-/* Label styling */
+/* Label text style */
 .radio-box label p {{
   color: #FFFFFF !important;
   font-weight: 500 !important;
   font-size: 13px !important;
-  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 6px !important;
   transition: color 0.25s ease-in-out;
+  white-space: nowrap !important;
 }}
 
 /* Circle (radio) visuals */
 .radio-box [role="radio"] {{
-  margin: 0 4px !important;
-  transform: scale(0.85);
+  margin: 0 3px !important;
+  transform: scale(0.9);
   transition: all 0.25s ease-in-out;
+  background: transparent !important;
 }}
 
-/* Active state (blue highlight + glowing ring) */
+/* Active state */
 .radio-box [role="radio"][aria-checked="true"] {{
   background-color: #496BFF !important;
   border: 2px solid #496BFF !important;
-  box-shadow: 0 0 6px rgba(73,107,255,0.4);
+  box-shadow: 0 0 8px rgba(73,107,255,0.5);
 }}
 
 /* Inactive state */
 .radio-box [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.4) !important;
-  background: transparent !important;
+  border: 2px solid rgba(255,255,255,0.5) !important;
 }}
 
-/* Label color when selected */
+/* Highlight selected label */
 .radio-box [role="radio"][aria-checked="true"] + label p {{
   color: #496BFF !important;
   font-weight: 600 !important;
 }}
+
 
 /* ─────────────── Metrics ─────────────── */
 .metric-row {{

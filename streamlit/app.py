@@ -567,15 +567,11 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
-      with col2:
-        # 1️⃣ Read from URL first — if not present, default to "1H"
-        query_params = st.experimental_get_query_params()
-        horizon = query_params.get("forecast", ["1H"])[0]
+    with col2:
+        # Default session value = "1H"
+        horizon = st.session_state.get("forecast_horizon", "1H")
 
-        # 2️⃣ Save to session state so it persists on rerun
-        st.session_state["forecast_horizon"] = horizon
-
-        # 3️⃣ Render the HTML radio buttons
+        # Custom interactive radio group (with smaller text + JS bridge + rerun)
         st.markdown(f"""
 <div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
   <div style="
@@ -616,16 +612,24 @@ with col_mid:
 const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
 radios.forEach(r => {{
   r.addEventListener('change', e => {{
-    const newValue = e.target.value;
-    const url = new URL(window.location);
-    url.searchParams.set('forecast', newValue);
-    window.history.replaceState(null, '', url);
-    window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
+    // Store the value persistently in localStorage
+    window.localStorage.setItem('forecast_horizon', e.target.value);
+
+    // Notify Streamlit session_state
+    window.parent.postMessage({{
+      type: 'streamlit:setComponentValue',
+      key: 'forecast_horizon',
+      value: e.target.value
+    }}, '*');
+
+    // Reliable rerun trigger
+    setTimeout(() => {{
+      window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
+    }}, 100);
   }});
 }});
 </script>
 """, unsafe_allow_html=True)
-
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:

@@ -299,7 +299,7 @@ ul[role="listbox"] {{
 }}
 
 
-/* ─────────────── Radio Group Box (Keep in Harmony & Fixed Alignment) ─────────────── */
+/* ─────────────── Radio Box (Custom HTML Radios) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
   border: 1px solid rgba(255,255,255,0.18) !important;
@@ -307,77 +307,28 @@ ul[role="listbox"] {{
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important; /* same height as dropdowns */
+  height: 42px !important;      /* Same height as dropdowns */
   width: 100% !important;
   margin: 0 auto !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   padding: 0 16px !important;
-  position: relative !important;
-  overflow: visible !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }}
 
-/* Pull the Streamlit radio container upward INTO the box */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
-  margin-top: -46px !important;
-  position: relative !important;
-  z-index: 10 !important;
-}}
-
-/* Force the radio buttons to sit neatly inside the box */
-.radio-box div[data-testid="stRadio"] > div {{
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 14px !important;
-  height: 100% !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-}}
-
-/* Label styling */
-.radio-box label p {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  white-space: nowrap !important;
-  margin: 0 !important;
-  padding: 0 6px !important;
-  text-align: center !important;
-  transition: color 0.25s ease-in-out;
-}}
-
-/* Circle (radio) visuals */
-.radio-box [role="radio"] {{
-  margin: 0 4px !important;
-  transform: scale(0.85);
-  transition: all 0.25s ease-in-out;
-}}
-
-/* Active state (blue highlight + glowing ring) */
-.radio-box [role="radio"][aria-checked="true"] {{
-  background-color: #496BFF !important;
-  border: 2px solid #496BFF !important;
-  box-shadow: 0 0 6px rgba(73,107,255,0.4);
-}}
-
-/* Inactive state */
-.radio-box [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.4) !important;
-  background: transparent !important;
-}}
-
-/* Label color when selected */
-.radio-box [role="radio"][aria-checked="true"] + label p {{
-  color: #496BFF !important;
-  font-weight: 600 !important;
-}}
-/* Make forecast horizon labels smaller */
+/* Forecast horizon labels (1H, 6H...) */
 .radio-box label span {{
-  font-size: 11.5px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
   letter-spacing: 0.3px !important;
   color: #FFFFFF !important;
 }}
+
+/* Custom radio circle styling */
+.radio-box input[type="radio"] {{
+  transform: scale(0.9);
+  cursor: pointer;
+  accent-color: #496BFF !important;   /* Blue highlight when selected */
+}}
+
 
 
 

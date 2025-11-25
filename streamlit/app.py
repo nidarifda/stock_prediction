@@ -22,7 +22,8 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 # CSS STYLES
 # ────────────────────────────────────────────────────────────────
-st.markdown(f"""
+st.markdown(
+    f"""
 <style>
 .stApp {{
   background-color:{BG};
@@ -253,13 +254,6 @@ div[role="listbox"] {{
   color: #FFFFFF !important;
 }}
 
-/* Hover + focus highlight */
-[data-baseweb="select"]:hover,
-[data-baseweb="select"]:focus-within {{
-  border-color: #496BFF !important;
-  box-shadow: 0 0 10px rgba(73,107,255,0.45);
-}}
-
 /* Dropdown list background (when opened) */
 ul[role="listbox"] {{
   background-color: #0F1A2B !important;
@@ -267,6 +261,7 @@ ul[role="listbox"] {{
   border-radius: 10px !important;
   color: #FFFFFF !important;
 }}
+
 /* Keep dark outer box styling */
 [data-baseweb="select"] > div {{
   background-color: #0F1A2B !important;
@@ -298,39 +293,32 @@ ul[role="listbox"] {{
   opacity: 1 !important;
 }}
 
-
-/* ─────────────── Radio Box (Custom HTML Radios) ─────────────── */
-.radio-box {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 42px !important;      /* Same height as dropdowns */
-  width: 100% !important;
-  margin: 0 auto !important;
-  padding: 0 16px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+/* ─────────────── Forecast Horizon Radio Styling ─────────────── */
+[data-testid="stRadio"] {{
+  background-color:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  padding:4px 12px !important;
+  height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }}
 
-/* Forecast horizon labels (1H, 6H...) */
-.radio-box label span {{
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.3px !important;
-  color: #FFFFFF !important;
+[data-testid="stRadio"] > div {{
+  flex-wrap:nowrap !important;
+  justify-content:center !important;
 }}
 
-/* Custom radio circle styling */
-.radio-box input[type="radio"] {{
-  transform: scale(0.9);
-  cursor: pointer;
-  accent-color: #496BFF !important;   /* Blue highlight when selected */
+[data-testid="stRadio"] label p {{
+  font-size:11.5px !important;
+  font-weight:500 !important;
+  color:#FFFFFF !important;
+  margin:0 !important;
+  padding:0 4px !important;
+  white-space:nowrap !important;
 }}
-
-
-
 
 /* ─────────────── Align all three top selectors evenly ─────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
@@ -339,8 +327,7 @@ ul[role="listbox"] {{
   align-items: center !important;
 }}
 
-[data-baseweb="select"] > div,
-.radio-box {{
+[data-baseweb="select"] > div {{
   height: 42px !important;
   border-radius: 10px !important;
 }}
@@ -410,26 +397,33 @@ ul[role="listbox"] {{
 .dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA
 # ────────────────────────────────────────────────────────────────
 dates = pd.date_range("2024-01-01", periods=200)
 price = np.cumsum(np.random.normal(0.5, 2, len(dates))) + 300
-prices = pd.DataFrame({
-    "Date": dates,
-    "NVDA": price,
-    "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
-    "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
-    "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
-    "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
-}).set_index("Date")
+prices = (
+    pd.DataFrame(
+        {
+            "Date": dates,
+            "NVDA": price,
+            "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
+            "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
+            "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
+            "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
+        }
+    )
+    .set_index("Date")
+)
 
 # ────────────────────────────────────────────────────────────────
 # WATCHLIST COMPONENT
 # ────────────────────────────────────────────────────────────────
-def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchlist"):
+def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title: str = "Watchlist"):
     rows = []
     for t in tickers:
         s = prices_df[t].dropna()
@@ -441,7 +435,8 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         color1 = GREEN if chg1 >= 0 else ORANGE
         color2 = GREEN if chg2 >= 0 else ORANGE
         icon = "↗" if chg1 >= 0 else "↘"
-        rows.append(f"""
+        rows.append(
+            f"""
         <div class="watchlist-row">
             <div class="watchlist-left">
                 <div class="watchlist-symbol">{t}</div>
@@ -452,7 +447,8 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
                 <div class="watchlist-sub" style="color:{color2};">{chg2:+.2f}%</div>
             </div>
         </div>
-        """)
+        """
+        )
     st.markdown(
         f"""
         <div style="width:100%;">
@@ -465,10 +461,11 @@ def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title="Watchli
         unsafe_allow_html=True,
     )
 
+
 # ────────────────────────────────────────────────────────────────
 # SIGNALS CARD COMPONENT
 # ────────────────────────────────────────────────────────────────
-def render_signals_card(title, tickers):
+def render_signals_card(title: str, tickers):
     html = f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>'
     for t in tickers:
         chg = np.random.uniform(-1, 1)
@@ -480,19 +477,23 @@ def render_signals_card(title, tickers):
             f'<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
             f'<div class="watchlist-symbol" style="color:{color};">{t}</div>'
             f'<div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>'
-            f'</div>'
+            f"</div>"
             f'<div class="watchlist-sub" style="color:{TEXT};opacity:.9;margin-top:2px;">Correlation {corr:.2f}</div>'
             f'<div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;margin-top:4px;">'
             f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
-            f'</div></div>'
+            f"</div></div>"
         )
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
+
 # ────────────────────────────────────────────────────────────────
 # HEADER
 # ────────────────────────────────────────────────────────────────
-st.markdown('<div class="app-header"><div class="title">Stock Prediction Expert</div></div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="app-header"><div class="title">Stock Prediction Expert</div></div>',
+    unsafe_allow_html=True,
+)
 
 # ────────────────────────────────────────────────────────────────
 # LAYOUT (3 columns)
@@ -508,8 +509,7 @@ with col_left:
     st.toggle("News Sentiment", True)
     st.toggle("Options flow", True)
 
-
-
+# CENTER PANEL
 with col_mid:
     col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
 
@@ -517,91 +517,43 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # ─────────────── Radio Box: Forecast Horizon ───────────────
+    # ─────────────── Radio: Forecast Horizon ───────────────
     with col2:
-        # Default session value = "1H"
-        horizon = st.session_state.get("forecast_horizon", "1H")
-
-        # Custom interactive radio group (with smaller text + JS bridge + rerun)
-        st.markdown(f"""
-<div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
-  <div style="
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  ">
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
-      <span style="color:#fff;font-size:11px;">1H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
-      <span style="color:#fff;font-size:11px;">6H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
-      <span style="color:#fff;font-size:11px;">12H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
-      <span style="color:#fff;font-size:11px;">1D</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
-      <span style="color:#fff;font-size:11px;">1W</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
-      <span style="color:#fff;font-size:11px;">1M</span>
-    </label>
-  </div>
-</div>
-
-<script>
-const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
-radios.forEach(r => {{
-  r.addEventListener('change', e => {{
-    // Store the value persistently in localStorage
-    window.localStorage.setItem('forecast_horizon', e.target.value);
-
-    // Notify Streamlit session_state
-    window.parent.postMessage({{
-      type: 'streamlit:setComponentValue',
-      key: 'forecast_horizon',
-      value: e.target.value
-    }}, '*');
-
-    // Reliable rerun trigger
-    setTimeout(() => {{
-      window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
-    }}, 100);
-  }});
-}});
-</script>
-""", unsafe_allow_html=True)
+        horizon = st.radio(
+            "",
+            ["1H", "6H", "12H", "1D", "1W", "1M"],
+            key="forecast_horizon",
+            horizontal=True,
+        )
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
     # ─────────────── Metrics Row ───────────────
-    st.markdown("""
+    st.markdown(
+        """
     <div class="metric-row">
       <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
       <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">415 – 434</div></div>
       <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">0.78</div></div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # ─────────────── Dynamic Chart ───────────────
     s = prices["NVDA"]
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=s.index, y=s.values, mode="lines",
-        line=dict(width=2, color="#70B3FF"), name="Historical"
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=s.index,
+            y=s.values,
+            mode="lines",
+            line=dict(width=2, color="#70B3FF"),
+            name="Historical",
+        )
+    )
 
     now_x = s.index[-1]
     last = s.iloc[-1]
@@ -623,14 +575,20 @@ radios.forEach(r => {{
     else:
         proj_y = np.linspace(last, last * 1.03, len(proj_x))
 
-    fig.add_trace(go.Scatter(
-        x=proj_x, y=proj_y, mode="lines",
-        line=dict(width=2, dash="dot", color="#F08A3C"),
-        name="Forecast"
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=proj_x,
+            y=proj_y,
+            mode="lines",
+            line=dict(width=2, dash="dot", color="#F08A3C"),
+            name="Forecast",
+        )
+    )
 
     fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-    fig.add_vrect(x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0)
+    fig.add_vrect(
+        x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0
+    )
 
     fig.update_layout(
         height=370,
@@ -639,19 +597,18 @@ radios.forEach(r => {{
         plot_bgcolor=CARD,
         font=dict(color=TEXT),
         showlegend=False,
-        transition=dict(duration=500, easing="cubic-in-out")
+        transition=dict(duration=500, easing="cubic-in-out"),
     )
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
-
-
 
 # RIGHT PANEL
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
 # FOOTER
-st.markdown(f"""
+st.markdown(
+    f"""
 <div class="footer-wrap">
   <div class="statusbar">
     <div class="status-item">Model version <span class="status-value">v1.2</span></div>
@@ -661,4 +618,6 @@ st.markdown(f"""
     <div class="status-item">API status <span class="dot"></span> All systems operational</div>
   </div>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)

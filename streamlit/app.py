@@ -567,19 +567,19 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
-    with col2:
+     with col2:
 
-    # REAL Streamlit radio (hidden)
-    horizon = st.radio(
-        "Forecast Horizon",
-        ["1H", "6H", "12H", "1D", "1W", "1M"],
-        key="forecast_horizon",
-        horizontal=True,
-        label_visibility="collapsed",
-    )
+        # REAL Streamlit radio (hidden)
+        horizon = st.radio(
+            "Forecast Horizon",
+            ["1H", "6H", "12H", "1D", "1W", "1M"],
+            key="forecast_horizon",
+            horizontal=True,
+            label_visibility="collapsed",
+        )
 
-    # CUSTOM UI on top
-    st.markdown(f"""
+        # CUSTOM UI on top
+        st.markdown(f"""
 <style>
 .custom-radio input {{
   display:none;
@@ -601,7 +601,7 @@ with col_mid:
   display:flex;
   justify-content:center;
   gap:10px;
-  margin-top:-40px; /* overlay on top */
+  margin-top:-40px;
 }}
 </style>
 
@@ -636,6 +636,7 @@ with col_mid:
 document.querySelectorAll('input[name="horizon_custom"]').forEach(el => {{
   el.addEventListener('change', e => {{
     const horizon = e.target.value;
+
     // Update real Streamlit radio
     window.parent.postMessage({{
       isStreamlitMessage: true,
@@ -645,7 +646,7 @@ document.querySelectorAll('input[name="horizon_custom"]').forEach(el => {{
     }}, "*");
 
     setTimeout(() => {{
-      window.parent.postMessage({{type: "streamlit:rerun"}}, "*");
+      window.parent.postMessage({{ type: "streamlit:rerun" }}, "*");
     }}, 50);
   }});
 });

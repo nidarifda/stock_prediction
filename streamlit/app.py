@@ -267,6 +267,7 @@ ul[role="listbox"] {{
   border-radius: 10px !important;
   color: #FFFFFF !important;
 }}
+
 /* Keep dark outer box styling */
 [data-baseweb="select"] > div {{
   background-color: #0F1A2B !important;
@@ -298,7 +299,6 @@ ul[role="listbox"] {{
   opacity: 1 !important;
 }}
 
-
 /* ─────────────── Radio Group Box (Keep in Harmony & Fixed Alignment) ─────────────── */
 .radio-box {{
   background-color: #0F1A2B !important;
@@ -307,7 +307,7 @@ ul[role="listbox"] {{
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  height: 42px !important; /* same height as dropdowns */
+  height: 42px !important;
   width: 100% !important;
   margin: 0 auto !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
@@ -316,72 +316,7 @@ ul[role="listbox"] {{
   overflow: visible !important;
 }}
 
-/* Pull the Streamlit radio container upward INTO the box */
-div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
-  margin-top: -46px !important;
-  position: relative !important;
-  z-index: 10 !important;
-}}
-
-/* Force the radio buttons to sit neatly inside the box */
-.radio-box div[data-testid="stRadio"] > div {{
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 14px !important;
-  height: 100% !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-}}
-
-/* Label styling */
-.radio-box label p {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  white-space: nowrap !important;
-  margin: 0 !important;
-  padding: 0 6px !important;
-  text-align: center !important;
-  transition: color 0.25s ease-in-out;
-}}
-
-/* Circle (radio) visuals */
-.radio-box [role="radio"] {{
-  margin: 0 4px !important;
-  transform: scale(0.85);
-  transition: all 0.25s ease-in-out;
-}}
-
-/* Active state (blue highlight + glowing ring) */
-.radio-box [role="radio"][aria-checked="true"] {{
-  background-color: #496BFF !important;
-  border: 2px solid #496BFF !important;
-  box-shadow: 0 0 6px rgba(73,107,255,0.4);
-}}
-
-/* Inactive state */
-.radio-box [role="radio"][aria-checked="false"] {{
-  border: 2px solid rgba(255,255,255,0.4) !important;
-  background: transparent !important;
-}}
-
-/* Label color when selected */
-.radio-box [role="radio"][aria-checked="true"] + label p {{
-  color: #496BFF !important;
-  font-weight: 600 !important;
-}}
-/* Make forecast horizon labels smaller */
-.radio-box label span {{
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.3px !important;
-  color: #FFFFFF !important;
-}}
-
-
-
-/* ─────────────── Align all three top selectors evenly ─────────────── */
+/* Align all three top selectors evenly */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
   display: flex !important;
   justify-content: center !important;
@@ -557,8 +492,7 @@ with col_left:
     st.toggle("News Sentiment", True)
     st.toggle("Options flow", True)
 
-
-
+# MIDDLE PANEL
 with col_mid:
     col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
 
@@ -567,91 +501,16 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
-     with col2:
-
-        # REAL Streamlit radio (hidden)
+    with col2:
+        st.markdown('<div class="radio-box">', unsafe_allow_html=True)
         horizon = st.radio(
-            "Forecast Horizon",
+            "",
             ["1H", "6H", "12H", "1D", "1W", "1M"],
             key="forecast_horizon",
             horizontal=True,
             label_visibility="collapsed",
         )
-
-        # CUSTOM UI on top
-        st.markdown(f"""
-<style>
-.custom-radio input {{
-  display:none;
-}}
-.custom-radio label {{
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-  font-size:12px;
-  color:white;
-  opacity:0.7;
-}}
-.custom-radio input:checked + label {{
-  background:#496BFF;
-  opacity:1;
-  font-weight:700;
-}}
-.custom-radio-container {{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin-top:-40px;
-}}
-</style>
-
-<div class="custom-radio-container">
-  <div class="custom-radio">
-    <input type="radio" id="h1" name="horizon_custom" value="1H" {'checked' if horizon=='1H' else ''}>
-    <label for="h1">1H</label>
-  </div>
-  <div class="custom-radio">
-    <input type="radio" id="h6" name="horizon_custom" value="6H" {'checked' if horizon=='6H' else ''}>
-    <label for="h6">6H</label>
-  </div>
-  <div class="custom-radio">
-    <input type="radio" id="h12" name="horizon_custom" value="12H" {'checked' if horizon=='12H' else ''}>
-    <label for="h12">12H</label>
-  </div>
-  <div class="custom-radio">
-    <input type="radio" id="d1" name="horizon_custom" value="1D" {'checked' if horizon=='1D' else ''}>
-    <label for="d1">1D</label>
-  </div>
-  <div class="custom-radio">
-    <input type="radio" id="w1" name="horizon_custom" value="1W" {'checked' if horizon=='1W' else ''}>
-    <label for="w1">1W</label>
-  </div>
-  <div class="custom-radio">
-    <input type="radio" id="m1" name="horizon_custom" value="1M" {'checked' if horizon=='1M' else ''}>
-    <label for="m1">1M</label>
-  </div>
-</div>
-
-<script>
-document.querySelectorAll('input[name="horizon_custom"]').forEach(el => {{
-  el.addEventListener('change', e => {{
-    const horizon = e.target.value;
-
-    // Update real Streamlit radio
-    window.parent.postMessage({{
-      isStreamlitMessage: true,
-      type: "streamlit:setComponentValue",
-      key: "forecast_horizon",
-      value: horizon
-    }}, "*");
-
-    setTimeout(() => {{
-      window.parent.postMessage({{ type: "streamlit:rerun" }}, "*");
-    }}, 50);
-  }});
-});
-</script>
-""", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:
@@ -714,8 +573,6 @@ document.querySelectorAll('input[name="horizon_custom"]').forEach(el => {{
     )
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
-
-
 
 # RIGHT PANEL
 with col_right:

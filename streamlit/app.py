@@ -460,12 +460,18 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Custom HTML Radio: Forecast Horizon ───────────────
-    with col2:
-    # Hidden streamlit input for syncing JS value
-    horizon = st.text_input("horizon_hidden", st.session_state.get("forecast_horizon", "1H"), label_visibility="collapsed", key="horizon_hidden")
+   with col2:
 
-    st.markdown(
-        f"""
+        # Hidden streamlit input for syncing JS value
+        horizon = st.text_input(
+            "horizon_hidden",
+            st.session_state.get("forecast_horizon", "1H"),
+            label_visibility="collapsed",
+            key="horizon_hidden"
+        )
+
+        st.markdown(
+            f"""
 <div class="radio-box" id="forecast-box">
   <div class="radio-box-inner">
     <label><input type="radio" name="forecast" value="1H"> <span>1H</span></label>
@@ -504,13 +510,14 @@ with col_mid:
     }});
 }})();
 </script>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    # Sync selected value
-    st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
-    horizon = st.session_state["forecast_horizon"]
+        # Sync selected value for chart logic
+        st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
+        horizon = st.session_state["forecast_horizon"]
+
 
 
     # ─────────────── Dropdown: Model ───────────────

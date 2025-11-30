@@ -47,88 +47,88 @@ st.markdown(
 
 /* ─────────────── Watchlist card ─────────────── */
 .watchlist-card {{
-  display: block;
-  width: 100%;
-  background: #0F1A2B !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  transition: all 0.25s ease-in-out;
+  display:block;
+  width:100%;
+  background:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  padding:16px 20px;
+  margin-bottom:20px;
+  transition:all 0.25s ease-in-out;
 }}
 .watchlist-card:hover {{
-  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+  box-shadow:0 10px 24px rgba(0,0,0,0.5);
 }}
 .watchlist-title {{
-  font-weight: 800;
-  font-size: 18px;
-  color: #E6F0FF;
-  margin-bottom: 10px;
+  font-weight:800;
+  font-size:18px;
+  color:#E6F0FF;
+  margin-bottom:10px;
   text-align:left;
 }}
 .watchlist-row {{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }}
 .watchlist-row:last-child {{
-  border-bottom: none;
+  border-bottom:none;
 }}
 .watchlist-left, .watchlist-right {{
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
 }}
 .watchlist-right {{
-  align-items: flex-end;
+  align-items:flex-end;
 }}
 .watchlist-symbol {{
-  font-weight: 700;
-  font-size: 15px;
+  font-weight:700;
+  font-size:15px;
 }}
 .watchlist-price {{
-  font-weight: 700;
-  color: #E6F0FF;
-  font-size: 15px;
+  font-weight:700;
+  color:#E6F0FF;
+  font-size:15px;
 }}
 .watchlist-sub {{
-  font-size: 12.5px;
-  opacity: 0.9;
+  font-size:12.5px;
+  opacity:0.9;
 }}
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
 [data-testid="stWidgetLabel"],
 .stToggle label {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
+  color:#FFFFFF !important;
+  font-weight:500 !important;
 }}
 .stToggle {{
-  margin-top: -4px !important;
-  margin-bottom: -2px !important;
-  padding-left: 20px !important;
+  margin-top:-4px !important;
+  margin-bottom:-2px !important;
+  padding-left:20px !important;
 }}
 [data-testid="stSwitch"] {{
-  margin-left: 6px !important;
+  margin-left:6px !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
-  background-color: #496BFF !important;
+  background-color:#496BFF !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
-  background-color: rgba(255,255,255,0.2) !important;
+  background-color:rgba(255,255,255,0.2) !important;
 }}
 
 /* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
 
 [data-baseweb="select"],
 [data-baseweb="select"] * {{
-  background-color: #0F1A2B !important;
-  border-color: rgba(255,255,255,0.18) !important;
-  color: #FFFFFF !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 3px rgba(255,255,255,0.25);
+  background-color:#0F1A2B !important;
+  border-color:rgba(255,255,255,0.18) !important;
+  color:#FFFFFF !important;
+  font-weight:600 !important;
+  text-shadow:0 0 3px rgba(255,255,255,0.25);
 }}
 
 /* Force all dropdown containers to stay dark */
@@ -138,61 +138,17 @@ st.markdown(
 [data-baseweb="select"] div[data-baseweb="input"],
 [data-baseweb="select"] div[class*="control"],
 [data-baseweb="select"] div[class*="container"] {{
-  background-color: #0F1A2B !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  height: 42px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  background-color:#0F1A2B !important;
+  color:#FFFFFF !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
 }}
 
-/* 🔥 Force text (like “NVDA” and “LightGBM”) to show */
-[data-baseweb="select"] div[class*="singleValue"],
-[data-baseweb="select"] div[class*="value-container"],
-[data-baseweb="select"] div[class*="control"],
-[data-baseweb="select"] span,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div:not([role]) {{
-  color: #FFFFFF !important;
-  opacity: 1 !important;
-  font-weight: 600 !important;
-  text-align: center !important;
-}}
-
-/* Placeholder style */
-[data-baseweb="select"] div[class*="placeholder"],
-[data-baseweb="select"] span[class*="placeholder"] {{
-  color: rgba(255,255,255,0.7) !important;
-  font-weight: 500 !important;
-}}
-
-/* Caret / Arrow icon */
-[data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  stroke: #FFFFFF !important;
-  opacity: 1 !important;
-}}
-
-/* Dropdown menu (when expanded) */
-ul[role="listbox"],
-div[role="listbox"] {{
-  background-color: #0F1A2B !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-}}
-
-/* Hover and focus */
-[data-baseweb="select"]:hover,
-[data-baseweb="select"]:focus-within {{
-  border-color: #496BFF !important;
-  box-shadow: 0 0 10px rgba(73,107,255,0.45);
-}}
-
-/* ─────────────── Force dropdown text visibility ─────────────── */
+/* Force dropdown text visibility */
 [data-baseweb="select"] span,
 [data-baseweb="select"] div[data-baseweb="single-value"],
 [data-baseweb="select"] div[class*="value-container"],
@@ -202,134 +158,120 @@ div[role="listbox"] {{
 [data-baseweb="select"] div[class*="css"],
 [data-baseweb="select"] div:not([role]),
 [data-baseweb="select"] * {{
-  color: #FFFFFF !important;
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 4px rgba(255,255,255,0.15) !important;
+  color:#FFFFFF !important;
+  fill:#FFFFFF !important;
+  opacity:1 !important;
+  font-weight:600 !important;
+  text-shadow:0 0 4px rgba(255,255,255,0.15) !important;
 }}
 
-/* Force visible text alignment and padding */
-[data-baseweb="select"] div[data-baseweb="single-value"],
-[data-baseweb="select"] div[class*="value-container"] {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-}}
-
-/* Make placeholder visible in lighter gray */
-[data-baseweb="select"] div[data-baseweb="placeholder"],
+/* Placeholder style */
+[data-baseweb="select"] div[class*="placeholder"],
 [data-baseweb="select"] span[class*="placeholder"] {{
-  color: rgba(255,255,255,0.75) !important;
-  font-weight: 500 !important;
+  color:rgba(255,255,255,0.75) !important;
+  font-weight:500 !important;
 }}
 
-/* Ensure dropdown caret is bright white */
+/* Caret / Arrow icon */
 [data-baseweb="select"] svg {{
-  opacity: 1 !important;
-  stroke: none !important;
-}}
-
-/* Fix placeholder specifically */
-[data-baseweb="select"] div[data-baseweb="placeholder"] {{
-  color: rgba(255,255,255,0.8) !important;
-  opacity: 1 !important;
-}}
-
-/* Fix the small caret (down arrow) icon */
-[data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-}}
-
-/* Dropdown text & placeholder */
-[data-baseweb="select"] input {{
-  background-color: transparent !important;
-  color: #FFFFFF !important;
-}}
-
-/* Force text & icons inside dropdown to white */
-[data-baseweb="select"] * {{
-  color: #FFFFFF !important;
+  fill:#FFFFFF !important;
+  stroke:#FFFFFF !important;
+  opacity:1 !important;
 }}
 
 /* Dropdown list background (when opened) */
-ul[role="listbox"] {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  color: #FFFFFF !important;
+ul[role="listbox"],
+div[role="listbox"] {{
+  background-color:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  color:#FFFFFF !important;
 }}
 
 /* Keep dark outer box styling */
 [data-baseweb="select"] > div {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
+  background-color:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  transition:all 0.25s ease-in-out;
 }}
 
 /* Remove inner duplicate border */
 [data-baseweb="select"] > div > div {{
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
+  border:none !important;
+  background-color:transparent !important;
+  box-shadow:none !important;
 }}
 
 /* Align text properly and ensure visibility */
 [data-baseweb="select"] div[class*="value-container"] {{
-  border: none !important;
-  background-color: transparent !important;
-  justify-content: center !important;
-  align-items: center !important;
-  color: #FFFFFF !important;
+  border:none !important;
+  background-color:transparent !important;
+  justify-content:center !important;
+  align-items:center !important;
+  color:#FFFFFF !important;
 }}
 
 /* Keep caret clean */
 [data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
+  fill:#FFFFFF !important;
+  opacity:1 !important;
 }}
 
-/* ─────────────── Forecast Horizon Radio Styling ─────────────── */
-[data-testid="stRadio"] {{
+/* ─────────────── Custom Horizon Radio Box (HTML) ─────────────── */
+.radio-box {{
   background-color:#0F1A2B !important;
   border:1px solid rgba(255,255,255,0.18) !important;
   border-radius:10px !important;
-  padding:4px 12px !important;
-  height:42px !important;
+  height:42px !important;           /* same as dropdowns */
+  width:100% !important;
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
   box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  padding:0 12px !important;
 }}
 
-[data-testid="stRadio"] > div {{
-  flex-wrap:nowrap !important;
-  justify-content:center !important;
+.radio-box-inner {{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:nowrap;
 }}
 
-[data-testid="stRadio"] label p {{
+.radio-box label {{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+}}
+
+.radio-box label span {{
   font-size:11.5px !important;
   font-weight:500 !important;
   color:#FFFFFF !important;
-  margin:0 !important;
-  padding:0 4px !important;
-  white-space:nowrap !important;
+  white-space:nowrap;
+}}
+
+.radio-box input[type="radio"] {{
+  transform:scale(0.9);
+  cursor:pointer;
+  accent-color:{ACCENT} !important;   /* blue highlight when selected */
 }}
 
 /* ─────────────── Align all three top selectors evenly ─────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
 }}
 
-[data-baseweb="select"] > div {{
-  height: 42px !important;
-  border-radius: 10px !important;
+[data-baseweb="select"] > div,
+.radio-box {{
+  height:42px !important;
+  border-radius:10px !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -511,19 +453,92 @@ with col_left:
 
 # CENTER PANEL
 with col_mid:
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # middle wider layout
 
     # ─────────────── Dropdown: Stock ───────────────
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # ─────────────── Radio: Forecast Horizon ───────────────
+    # ─────────────── Custom HTML Radio: Forecast Horizon ───────────────
     with col2:
-        horizon = st.radio(
-            "",
-            ["1H", "6H", "12H", "1D", "1W", "1M"],
-            key="forecast_horizon",
-            horizontal=True,
+        # default value in session_state
+        if "forecast_horizon" not in st.session_state:
+            st.session_state["forecast_horizon"] = "1H"
+        horizon = st.session_state["forecast_horizon"]
+
+        st.markdown(
+            f"""
+<div class="radio-box" id="forecast-box">
+  <div class="radio-box-inner">
+    <label>
+      <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
+      <span>1H</span>
+    </label>
+    <label>
+      <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
+      <span>6H</span>
+    </label>
+    <label>
+      <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
+      <span>12H</span>
+    </label>
+    <label>
+      <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
+      <span>1D</span>
+    </label>
+    <label>
+      <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
+      <span>1W</span>
+    </label>
+    <label>
+      <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
+      <span>1M</span>
+    </label>
+  </div>
+</div>
+
+<script>
+(function() {{
+  const box = document.getElementById('forecast-box');
+  if (!box) return;
+  const radios = box.querySelectorAll('input[name="forecast"]');
+
+  // restore last choice from localStorage (front-end only)
+  const saved = window.localStorage.getItem('forecast_horizon');
+  if (saved) {{
+    radios.forEach(r => {{
+      r.checked = (r.value === saved);
+    }});
+    // notify Streamlit of restored value
+    window.parent.postMessage({{
+      type: 'streamlit:setComponentValue',
+      key: 'forecast_horizon',
+      value: saved
+    }}, '*');
+  }}
+
+  radios.forEach(r => {{
+    r.addEventListener('change', e => {{
+      const value = e.target.value;
+      window.localStorage.setItem('forecast_horizon', value);
+
+      // send value to Streamlit session_state
+      window.parent.postMessage({{
+        type: 'streamlit:setComponentValue',
+        key: 'forecast_horizon',
+        value: value
+      }}, '*');
+
+      // trigger rerun
+      setTimeout(() => {{
+        window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
+      }}, 50);
+    }});
+  }});
+}})();
+</script>
+""",
+            unsafe_allow_html=True,
         )
 
     # ─────────────── Dropdown: Model ───────────────

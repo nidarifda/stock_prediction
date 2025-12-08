@@ -560,16 +560,16 @@ with col_left:
 
 
 with col_mid:
-
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
 
     # ─────────────── Dropdown: Stock ───────────────
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Custom Radio Box ───────────────
-    with col2:   # <-- correct indentation, no extra space
+    with col2:
 
+        # Hidden streamlit input for syncing JS value
         horizon = st.text_input(
             "horizon_hidden",
             st.session_state.get("forecast_horizon", "1H"),
@@ -581,45 +581,47 @@ with col_mid:
             f"""
 <div class="radio-box" id="forecast-box">
   <div class="radio-box-inner">
-    <label><input type="radio" name="forecast" value="1H"><span>1H</span></label>
-    <label><input type="radio" name="forecast" value="6H"><span>6H</span></label>
-    <label><input type="radio" name="forecast" value="12H"><span>12H</span></label>
-    <label><input type="radio" name="forecast" value="1D"><span>1D</span></label>
-    <label><input type="radio" name="forecast" value="1W"><span>1W</span></label>
-    <label><input type="radio" name="forecast" value="1M"><span>1M</span></label>
+    <label><input type="radio" name="forecast" value="1H"> <span>1H</span></label>
+    <label><input type="radio" name="forecast" value="6H"> <span>6H</span></label>
+    <label><input type="radio" name="forecast" value="12H"> <span>12H</span></label>
+    <label><input type="radio" name="forecast" value="1D"> <span>1D</span></label>
+    <label><input type="radio" name="forecast" value="1W"> <span>1W</span></label>
+    <label><input type="radio" name="forecast" value="1M"> <span>1M</span></label>
   </div>
 </div>
 
 <script>
 (function() {{
-    const box = document.getElementById("forecast-box");
+    const box = document.getElementById('forecast-box');
     if (!box) return;
 
-    const radios = box.querySelectorAll("input[name='forecast']");
-    const current = "{st.session_state.get('forecast_horizon','1H')}";
+    const radios = box.querySelectorAll('input[name="forecast"]');
 
+    // Pre-select from Streamlit session value
+    const current = "{st.session_state.get('forecast_horizon', '1H')}";
     radios.forEach(r => {{
         r.checked = (r.value === current);
     }});
 
     radios.forEach(r => {{
-        r.addEventListener("change", e => {{
+        r.addEventListener('change', e => {{
             const newValue = e.target.value;
 
-            // HuggingFace-safe selector
-            const input = window.parent.document.querySelector('input[id^="horizon_hidden"]');
+            // Update Streamlit hidden text_input
+            const input = window.parent.document.querySelector('input#horizon_hidden');
             if (input) {{
                 input.value = newValue;
                 input.dispatchEvent(new Event('input', {{ bubbles: true }}));
             }}
         }});
     }});
-})();
+}})();
 </script>
             """,
             unsafe_allow_html=True,
         )
 
+        # Sync selected value for chart logic
         st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
         horizon = st.session_state["forecast_horizon"]
 

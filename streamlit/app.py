@@ -568,68 +568,62 @@ with col_mid:
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
     with col2:
-        # Default session value = "1H"
-        horizon = st.session_state.get("forecast_horizon", "1H")
 
-        # Custom interactive radio group (with smaller text + JS bridge + rerun)
-        st.markdown(f"""
-<div class="radio-box" id="forecast-box" style="padding:4px 10px !important;">
-  <div style="
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  ">
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1H" {'checked' if horizon=='1H' else ''}>
-      <span style="color:#fff;font-size:11px;">1H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="6H" {'checked' if horizon=='6H' else ''}>
-      <span style="color:#fff;font-size:11px;">6H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="12H" {'checked' if horizon=='12H' else ''}>
-      <span style="color:#fff;font-size:11px;">12H</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1D" {'checked' if horizon=='1D' else ''}>
-      <span style="color:#fff;font-size:11px;">1D</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1W" {'checked' if horizon=='1W' else ''}>
-      <span style="color:#fff;font-size:11px;">1W</span>
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-      <input type="radio" name="forecast" value="1M" {'checked' if horizon=='1M' else ''}>
-      <span style="color:#fff;font-size:11px;">1M</span>
-    </label>
+        # Hidden streamlit input for syncing JS value
+        horizon = st.text_input(
+            "horizon_hidden",
+            st.session_state.get("forecast_horizon", "1H"),
+            label_visibility="collapsed",
+            key="horizon_hidden"
+        )
+
+        st.markdown(
+            f"""
+<div class="radio-box" id="forecast-box">
+  <div class="radio-box-inner">
+    <label><input type="radio" name="forecast" value="1H"> <span>1H</span></label>
+    <label><input type="radio" name="forecast" value="6H"> <span>6H</span></label>
+    <label><input type="radio" name="forecast" value="12H"> <span>12H</span></label>
+    <label><input type="radio" name="forecast" value="1D"> <span>1D</span></label>
+    <label><input type="radio" name="forecast" value="1W"> <span>1W</span></label>
+    <label><input type="radio" name="forecast" value="1M"> <span>1M</span></label>
   </div>
 </div>
 
 <script>
-const radios = document.querySelectorAll('#forecast-box input[name="forecast"]');
-radios.forEach(r => {{
-  r.addEventListener('change', e => {{
-    // Store the value persistently in localStorage
-    window.localStorage.setItem('forecast_horizon', e.target.value);
+(function() {{
+    const box = document.getElementById('forecast-box');
+    if (!box) return;
 
-    // Notify Streamlit session_state
-    window.parent.postMessage({{
-      type: 'streamlit:setComponentValue',
-      key: 'forecast_horizon',
-      value: e.target.value
-    }}, '*');
+    const radios = box.querySelectorAll('input[name="forecast"]');
 
-    // Reliable rerun trigger
-    setTimeout(() => {{
-      window.parent.postMessage({{ type: 'streamlit:rerun' }}, '*');
-    }}, 100);
-  }});
-}});
+    // Pre-select from Streamlit session value
+    const current = "{st.session_state.get('forecast_horizon', '1H')}";
+    radios.forEach(r => {{
+        r.checked = (r.value === current);
+    }});
+
+    radios.forEach(r => {{
+        r.addEventListener('change', e => {{
+            const newValue = e.target.value;
+
+            // Update Streamlit hidden text_input
+            const input = window.parent.document.querySelector('input#horizon_hidden');
+            if (input) {{
+                input.value = newValue;
+                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            }}
+        }});
+    }});
+}})();
 </script>
-""", unsafe_allow_html=True)
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Sync selected value for chart logic
+        st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
+        horizon = st.session_state["forecast_horizon"]
 
     # ─────────────── Dropdown: Model ───────────────
     with col3:

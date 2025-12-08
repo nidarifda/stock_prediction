@@ -560,24 +560,25 @@ with col_left:
 
 
 with col_mid:
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")  # Middle wider layout
+
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")
 
     # ─────────────── Dropdown: Stock ───────────────
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # ─────────────── Radio Box: Forecast Horizon ───────────────
-    with col2:
+    # ─────────────── Custom Radio Box ───────────────
+    with col2:   # <-- correct indentation, no extra space
 
-    horizon = st.text_input(
-        "horizon_hidden",
-        st.session_state.get("forecast_horizon", "1H"),
-        label_visibility="collapsed",
-        key="horizon_hidden"
-    )
+        horizon = st.text_input(
+            "horizon_hidden",
+            st.session_state.get("forecast_horizon", "1H"),
+            label_visibility="collapsed",
+            key="horizon_hidden"
+        )
 
-    st.markdown(
-        f"""
+        st.markdown(
+            f"""
 <div class="radio-box" id="forecast-box">
   <div class="radio-box-inner">
     <label><input type="radio" name="forecast" value="1H"><span>1H</span></label>
@@ -605,25 +606,24 @@ with col_mid:
         r.addEventListener("change", e => {{
             const newValue = e.target.value;
 
-            // FIX: HuggingFace-safe selector
+            // HuggingFace-safe selector
             const input = window.parent.document.querySelector('input[id^="horizon_hidden"]');
-
             if (input) {{
                 input.value = newValue;
-                input.dispatchEvent(new Event("input", {{ bubbles: true }}));
+                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
             }}
         }});
     }});
 })();
 </script>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
-    horizon = st.session_state["forecast_horizon"]
+        st.session_state["forecast_horizon"] = st.session_state["horizon_hidden"]
+        horizon = st.session_state["forecast_horizon"]
 
-    # ─────────────── Dropdown: Model ───────────────
+   # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 

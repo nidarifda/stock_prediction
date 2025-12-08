@@ -567,7 +567,7 @@ with col_mid:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
     # ─────────────── Radio Box: Forecast Horizon ───────────────
-    with col2:
+     with col2:
 
         # Hidden streamlit input for syncing JS value
         horizon = st.text_input(

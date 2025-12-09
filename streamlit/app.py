@@ -22,7 +22,8 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 # CSS STYLES
 # ────────────────────────────────────────────────────────────────
-st.markdown(f"""
+st.markdown(
+    f"""
 <style>
 .stApp {{
   background-color:{BG};
@@ -46,294 +47,195 @@ st.markdown(f"""
 
 /* ─────────────── Watchlist card ─────────────── */
 .watchlist-card {{
-  display: block;
-  width: 100%;
-  background: #0F1A2B !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  transition: all 0.25s ease-in-out;
+  display:block;
+  width:100%;
+  background:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  padding:16px 20px;
+  margin-bottom:20px;
+  transition:all 0.25s ease-in-out;
 }}
 .watchlist-card:hover {{
-  box-shadow: 0 10px 24px rgba(0,0,0,0.5);
+  box-shadow:0 10px 24px rgba(0,0,0,0.5);
 }}
 .watchlist-title {{
-  font-weight: 800;
-  font-size: 18px;
-  color: #E6F0FF;
-  margin-bottom: 10px;
+  font-weight:800;
+  font-size:18px;
+  color:#E6F0FF;
+  margin-bottom:10px;
   text-align:left;
 }}
 .watchlist-row {{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }}
 .watchlist-row:last-child {{
-  border-bottom: none;
+  border-bottom:none;
 }}
 .watchlist-left, .watchlist-right {{
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
 }}
 .watchlist-right {{
-  align-items: flex-end;
+  align-items:flex-end;
 }}
 .watchlist-symbol {{
-  font-weight: 700;
-  font-size: 15px;
+  font-weight:700;
+  font-size:15px;
 }}
 .watchlist-price {{
-  font-weight: 700;
-  color: #E6F0FF;
-  font-size: 15px;
+  font-weight:700;
+  color:#E6F0FF;
+  font-size:15px;
 }}
 .watchlist-sub {{
-  font-size: 12.5px;
-  opacity: 0.9;
+  font-size:12.5px;
+  opacity:0.9;
 }}
 
 /* ─────────────── Compact Toggle Panel ─────────────── */
 [data-testid="stWidgetLabel"],
 .stToggle label {{
-  color: #FFFFFF !important;
-  font-weight: 500 !important;
+  color:#FFFFFF !important;
+  font-weight:500 !important;
 }}
 .stToggle {{
-  margin-top: -4px !important;
-  margin-bottom: -2px !important;
-  padding-left: 20px !important;
+  margin-top:-4px !important;
+  margin-bottom:-2px !important;
+  padding-left:20px !important;
 }}
 [data-testid="stSwitch"] {{
-  margin-left: 6px !important;
+  margin-left:6px !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
-  background-color: #496BFF !important;
+  background-color:#496BFF !important;
 }}
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
-  background-color: rgba(255,255,255,0.2) !important;
+  background-color:rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Middle Control Bar (Unified Dark Boxes) ─────────────── */
-
+/* ─────────────── Dropdowns (dark boxes) ─────────────── */
 [data-baseweb="select"],
 [data-baseweb="select"] * {{
-  background-color: #0F1A2B !important;
-  border-color: rgba(255,255,255,0.18) !important;
-  color: #FFFFFF !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 3px rgba(255,255,255,0.25);
+  background-color:#0F1A2B !important;
+  border-color:rgba(255,255,255,0.18) !important;
+  color:#FFFFFF !important;
+  font-weight:600 !important;
+  text-shadow:0 0 3px rgba(255,255,255,0.25);
 }}
 
-/* Force all dropdown containers to stay dark */
 [data-baseweb="select"] > div,
 [data-baseweb="select"] > div > div,
 [data-baseweb="select"] div[role="combobox"],
 [data-baseweb="select"] div[data-baseweb="input"],
 [data-baseweb="select"] div[class*="control"],
 [data-baseweb="select"] div[class*="container"] {{
-  background-color: #0F1A2B !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  height: 42px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  background-color:#0F1A2B !important;
+  color:#FFFFFF !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
 }}
 
-/* 🔥 Force text (like “NVDA” and “LightGBM”) to show */
 [data-baseweb="select"] div[class*="singleValue"],
 [data-baseweb="select"] div[class*="value-container"],
-[data-baseweb="select"] div[class*="control"],
 [data-baseweb="select"] span,
 [data-baseweb="select"] input,
 [data-baseweb="select"] div:not([role]) {{
-  color: #FFFFFF !important;
-  opacity: 1 !important;
-  font-weight: 600 !important;
-  text-align: center !important;
+  color:#FFFFFF !important;
+  opacity:1 !important;
+  font-weight:600 !important;
+  text-align:center !important;
 }}
 
-/* Placeholder style */
 [data-baseweb="select"] div[class*="placeholder"],
 [data-baseweb="select"] span[class*="placeholder"] {{
-  color: rgba(255,255,255,0.7) !important;
-  font-weight: 500 !important;
+  color:rgba(255,255,255,0.7) !important;
+  font-weight:500 !important;
 }}
 
-/* Caret / Arrow icon */
 [data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  stroke: #FFFFFF !important;
-  opacity: 1 !important;
+  fill:#FFFFFF !important;
+  stroke:#FFFFFF !important;
+  opacity:1 !important;
 }}
 
-/* Dropdown menu (when expanded) */
 ul[role="listbox"],
 div[role="listbox"] {{
-  background-color: #0F1A2B !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  background-color:#0F1A2B !important;
+  color:#FFFFFF !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }}
 
-/* Hover and focus */
 [data-baseweb="select"]:hover,
 [data-baseweb="select"]:focus-within {{
-  border-color: #496BFF !important;
-  box-shadow: 0 0 10px rgba(73,107,255,0.45);
+  border-color:#496BFF !important;
+  box-shadow:0 0 10px rgba(73,107,255,0.45);
 }}
 
-/* ─────────────── Force dropdown text visibility ─────────────── */
-[data-baseweb="select"] span,
-[data-baseweb="select"] div[data-baseweb="single-value"],
-[data-baseweb="select"] div[class*="value-container"],
-[data-baseweb="select"] div[class*="-SingleValue"],
-[data-baseweb="select"] div[class*="-placeholder"],
-[data-baseweb="select"] div[class*="-control"],
-[data-baseweb="select"] div[class*="css"],
-[data-baseweb="select"] div:not([role]),
-[data-baseweb="select"] * {{
-  color: #FFFFFF !important;
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 4px rgba(255,255,255,0.15) !important;
-}}
-
-/* Force visible text alignment and padding */
-[data-baseweb="select"] div[data-baseweb="single-value"],
-[data-baseweb="select"] div[class*="value-container"] {{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-}}
-
-/* Make placeholder visible in lighter gray */
-[data-baseweb="select"] div[data-baseweb="placeholder"],
-[data-baseweb="select"] span[class*="placeholder"] {{
-  color: rgba(255,255,255,0.75) !important;
-  font-weight: 500 !important;
-}}
-
-/* Ensure dropdown caret is bright white */
-[data-baseweb="select"] svg {{
-  opacity: 1 !important;
-  stroke: none !important;
-}}
-
-/* Fix placeholder specifically */
-[data-baseweb="select"] div[data-baseweb="placeholder"] {{
-  color: rgba(255,255,255,0.8) !important;
-  opacity: 1 !important;
-}}
-
-/* Fix the small caret (down arrow) icon */
-[data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
-}}
-
-/* Dropdown text & placeholder */
 [data-baseweb="select"] input {{
-  background-color: transparent !important;
-  color: #FFFFFF !important;
-}}
-
-/* Force text & icons inside dropdown to white */
-[data-baseweb="select"] * {{
-  color: #FFFFFF !important;
-}}
-
-/* Dropdown list background (when opened) */
-ul[role="listbox"] {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  color: #FFFFFF !important;
-}}
-
-/* Keep dark outer box styling */
-[data-baseweb="select"] > div {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  transition: all 0.25s ease-in-out;
-}}
-
-/* Remove inner duplicate border */
-[data-baseweb="select"] > div > div {{
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-}}
-
-/* Align text properly and ensure visibility */
-[data-baseweb="select"] div[class*="value-container"] {{
-  border: none !important;
-  background-color: transparent !important;
-  justify-content: center !important;
-  align-items: center !important;
-  color: #FFFFFF !important;
-}}
-
-/* Keep caret clean */
-[data-baseweb="select"] svg {{
-  fill: #FFFFFF !important;
-  opacity: 1 !important;
+  background-color:transparent !important;
+  color:#FFFFFF !important;
 }}
 
 /* ─────────────── Forecast horizon radio styling ─────────────── */
 div[data-testid="stRadio"] {{
-  background-color: #0F1A2B !important;
-  border: 1px solid rgba(255,255,255,0.18) !important;
-  border-radius: 10px !important;
-  padding: 4px 12px !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  height: 42px !important;
+  background-color:#0F1A2B !important;
+  border:1px solid rgba(255,255,255,0.18) !important;
+  border-radius:10px !important;
+  padding:4px 12px !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  height:42px !important;
 }}
 
 div[data-testid="stRadio"] > label {{
-  display: none !important; /* hide the widget label */
+  display:none !important;  /* hide radio widget label */
 }}
 
 div[data-testid="stRadio"] > div {{
-  display: flex !important;
-  gap: 10px !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display:flex !important;
+  gap:12px !important;
+  justify-content:center !important;
+  align-items:center !important;
+  flex-wrap:nowrap !important;
+}}
+
+div[data-testid="stRadio"] label {{
+  white-space:nowrap !important;
 }}
 
 div[data-testid="stRadio"] p {{
-  color: #FFFFFF !important;
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-  margin: 0 !important;
-  padding: 0 4px !important;
+  color:#FFFFFF !important;
+  font-size:11px !important;
+  font-weight:500 !important;
+  margin:0 !important;
+  padding:0 4px !important;
 }}
 
-/* ─────────────── Align all three top selectors evenly ─────────────── */
+/* ─────────────── Align three selectors (stock / horizon / model) ─────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
 }}
 
 [data-baseweb="select"] > div {{
-  height: 42px !important;
-  border-radius: 10px !important;
+  height:42px !important;
+  border-radius:10px !important;
 }}
 
 /* ─────────────── Metrics ─────────────── */
@@ -401,26 +303,35 @@ div[data-testid="stRadio"] p {{
 .dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
 box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA
 # ────────────────────────────────────────────────────────────────
 dates = pd.date_range("2024-01-01", periods=200)
 price = np.cumsum(np.random.normal(0.5, 2, len(dates))) + 300
-prices = pd.DataFrame({
-    "Date": dates,
-    "NVDA": price,
-    "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
-    "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
-    "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
-    "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
-}).set_index("Date")
+prices = (
+    pd.DataFrame(
+        {
+            "Date": dates,
+            "NVDA": price,
+            "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
+            "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
+            "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
+            "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
+        }
+    )
+    .set_index("Date")
+)
 
 # ────────────────────────────────────────────────────────────────
 # WATCHLIST COMPONENT
 # ────────────────────────────────────────────────────────────────
-def render_watchlist(prices_df: pd.DataFrame, tickers: list[str], title: str = "Watchlist") -> None:
+def render_watchlist(
+    prices_df: pd.DataFrame, tickers: list[str], title: str = "Watchlist"
+) -> None:
     rows = []
     for t in tickers:
         s = prices_df[t].dropna()
@@ -512,7 +423,7 @@ with col_mid:
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # ─────────────── Forecast Horizon (st.radio, styled) ───────────────
+    # ─────────────── Forecast Horizon ───────────────
     with col2:
         options = ["1H", "6H", "12H", "1D", "1W", "1M"]
         default_horizon = st.session_state.get("forecast_horizon", "1H")
@@ -562,7 +473,6 @@ with col_mid:
     last = s.iloc[-1]
     proj_x = pd.bdate_range(start=now_x, periods=12)
 
-    # Adjust projection slope by horizon
     if horizon == "1H":
         proj_y = np.linspace(last, last * 1.002, len(proj_x))
     elif horizon == "6H":
@@ -590,7 +500,11 @@ with col_mid:
 
     fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
     fig.add_vrect(
-        x0=now_x, x1=proj_x[-1], fillcolor="#2A2F3F", opacity=0.35, line_width=0
+        x0=now_x,
+        x1=proj_x[-1],
+        fillcolor="#2A2F3F",
+        opacity=0.35,
+        line_width=0,
     )
 
     fig.update_layout(

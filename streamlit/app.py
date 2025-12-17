@@ -218,11 +218,13 @@ div[data-testid="stRadio"] p {{
 
 
 /* ───────────────────────────── METRICS ───────────────────────────── */
+/* ─────────────── Metrics ─────────────── */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:16px;
   margin-top:10px;
+  margin-bottom:25px !important;   /* ← added spacing so chart does NOT touch */
 }}
 
 .metric-slot {{
@@ -243,6 +245,7 @@ div[data-testid="stRadio"] p {{
   font-size:22px;
   font-weight:800;
 }}
+
 
 
 /* ───────────────────────────── CHART ───────────────────────────── */

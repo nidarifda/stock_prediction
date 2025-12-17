@@ -22,51 +22,59 @@ GREEN = "#5CF2B8"
 # ────────────────────────────────────────────────────────────────
 # CSS STYLES
 # ────────────────────────────────────────────────────────────────
-st.markdown(
-    f"""
+st.markdown(f"""
 <style>
+
 .stApp {{
   background-color:{BG};
   color:{TEXT};
   font-family:'Inter',sans-serif;
 }}
-.block-container {{ padding-top:1rem; padding-bottom:0rem; }}
 
-/* ─────────────── Header ─────────────── */
+.block-container {{
+  padding-top:1rem;
+  padding-bottom:0rem;
+}}
+
+
+/* ───────────────────────────── HEADER ───────────────────────────── */
 .app-header {{
   display:flex;
   align-items:center;
   margin-top:50px;
   margin-bottom:30px;
 }}
+
 .app-header .title {{
   color:{TEXT};
   font-size:30px;
   font-weight:800;
 }}
 
-/* ─────────────── Watchlist card ─────────────── */
+
+/* ───────────────────────────── WATCHLIST CARD ───────────────────────────── */
 .watchlist-card {{
-  display:block;
   width:100%;
   background:#0F1A2B !important;
   border:1px solid rgba(255,255,255,0.12);
   border-radius:18px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.3);
   padding:16px 20px;
   margin-bottom:20px;
-  transition:all 0.25s ease-in-out;
+  box-shadow:0 6px 18px rgba(0,0,0,0.3);
+  transition:0.25s ease-in-out;
 }}
+
 .watchlist-card:hover {{
   box-shadow:0 10px 24px rgba(0,0,0,0.5);
 }}
+
 .watchlist-title {{
   font-weight:800;
   font-size:18px;
   color:#E6F0FF;
   margin-bottom:10px;
-  text-align:left;
 }}
+
 .watchlist-row {{
   display:flex;
   justify-content:space-between;
@@ -74,192 +82,149 @@ st.markdown(
   padding:8px 0;
   border-bottom:1px solid rgba(255,255,255,0.08);
 }}
+
 .watchlist-row:last-child {{
   border-bottom:none;
 }}
+
 .watchlist-left, .watchlist-right {{
   display:flex;
   flex-direction:column;
   gap:3px;
 }}
-.watchlist-right {{
-  align-items:flex-end;
-}}
+
 .watchlist-symbol {{
   font-weight:700;
   font-size:15px;
 }}
+
 .watchlist-price {{
   font-weight:700;
   color:#E6F0FF;
   font-size:15px;
 }}
+
 .watchlist-sub {{
   font-size:12.5px;
-  opacity:0.9;
+  opacity:.9;
 }}
 
-/* ─────────────── Compact Toggle Panel ─────────────── */
+
+/* ───────────────────────────── TOGGLE SWITCHES ───────────────────────────── */
 [data-testid="stWidgetLabel"],
 .stToggle label {{
   color:#FFFFFF !important;
   font-weight:500 !important;
 }}
+
 .stToggle {{
   margin-top:-4px !important;
   margin-bottom:-2px !important;
   padding-left:20px !important;
 }}
-[data-testid="stSwitch"] {{
-  margin-left:6px !important;
-}}
+
 [data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
   background-color:#496BFF !important;
 }}
+
 [data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
   background-color:rgba(255,255,255,0.2) !important;
 }}
 
-/* ─────────────── Dropdowns (dark boxes) ─────────────── */
-[data-baseweb="select"],
-[data-baseweb="select"] * {{
-  background-color:#0F1A2B !important;
-  border-color:rgba(255,255,255,0.18) !important;
-  color:#FFFFFF !important;
-  font-weight:600 !important;
-  text-shadow:0 0 3px rgba(255,255,255,0.25);
-}}
 
-[data-baseweb="select"] > div,
-[data-baseweb="select"] > div > div,
-[data-baseweb="select"] div[role="combobox"],
-[data-baseweb="select"] div[data-baseweb="input"],
-[data-baseweb="select"] div[class*="control"],
-[data-baseweb="select"] div[class*="container"] {{
+/* ───────────────────────────── CLEAN SELECTBOX (NO DOUBLE BOX) ───────────────────────────── */
+
+/* OUTER BOX */
+[data-baseweb="select"] > div {{
   background-color:#0F1A2B !important;
-  color:#FFFFFF !important;
   border:1px solid rgba(255,255,255,0.18) !important;
-  border-radius:10px !important;
+  border-radius:12px !important;
   height:42px !important;
   display:flex !important;
   align-items:center !important;
   justify-content:center !important;
+  padding:0 !important;
 }}
 
-[data-baseweb="select"] div[class*="singleValue"],
-[data-baseweb="select"] div[class*="value-container"],
-[data-baseweb="select"] span,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div:not([role]) {{
+/* REMOVE inner duplicate box */
+[data-baseweb="select"] > div > div {{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+}}
+
+/* Center text */
+[data-baseweb="select"] * {{
   color:#FFFFFF !important;
-  opacity:1 !important;
   font-weight:600 !important;
   text-align:center !important;
 }}
 
-[data-baseweb="select"] div[class*="placeholder"],
-[data-baseweb="select"] span[class*="placeholder"] {{
-  color:rgba(255,255,255,0.7) !important;
-  font-weight:500 !important;
-}}
-
-[data-baseweb="select"] svg {{
-  fill:#FFFFFF !important;
-  stroke:#FFFFFF !important;
-  opacity:1 !important;
-}}
-
-ul[role="listbox"],
-div[role="listbox"] {{
-  background-color:#0F1A2B !important;
-  color:#FFFFFF !important;
+/* Dropdown menu */
+ul[role="listbox"] {{
+  background:#0F1A2B !important;
   border:1px solid rgba(255,255,255,0.18) !important;
   border-radius:10px !important;
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }}
 
-[data-baseweb="select"]:hover,
-[data-baseweb="select"]:focus-within {{
-  border-color:#496BFF !important;
-  box-shadow:0 0 10px rgba(73,107,255,0.45);
-}}
 
-[data-baseweb="select"] input {{
-  background-color:transparent !important;
-  color:#FFFFFF !important;
-}}
-
-/* ─────────────── Forecast horizon radio styling (clean + fixed) ─────────────── */
+/* ───────────────────────────── HORIZON RADIO BAR (FULL FIXED) ───────────────────────────── */
 div[data-testid="stRadio"] {{
-    background-color: #0F1A2B !important;
-    border: 1px solid rgba(255,255,255,0.18) !important;
-    border-radius: 10px !important;
-    height: 42px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    background-color:#0F1A2B !important;
+    border:1px solid rgba(255,255,255,0.18) !important;
+    border-radius:10px !important;
+    height:42px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }}
 
-/* Hide default Streamlit label */
 div[data-testid="stRadio"] > label {{
-    display: none !important;
+    display:none !important;
 }}
 
-/* Wrapper for all radio items */
 div[data-testid="stRadio"] > div {{
-    display: flex !important;
-    flex-wrap: nowrap !important;    /* PREVENT WRAPPING */
-    white-space: nowrap !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 42px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    gap: 22px !important;
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    white-space:nowrap !important;
+    justify-content:center !important;
+    align-items:center !important;
+    height:42px !important;
+    gap:26px !important;
 }}
 
-/* Each label (circle + text) */
 div[data-testid="stRadio"] label {{
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    white-space: nowrap !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:6px !important;
 }}
 
-/* Text style inside radio labels */
 div[data-testid="stRadio"] p {{
-    color: #FFFFFF !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    color:#FFFFFF !important;
+    font-size:11px !important;
+    font-weight:500 !important;
+    margin:0 !important;
 }}
 
 
-/* ─────────────── Align three selectors (stock / horizon / model) ─────────────── */
+/* ───────────────────────────── TOP SELECTORS ALIGNMENT ───────────────────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
   display:flex !important;
-  justify-content:center !important;
   align-items:center !important;
+  justify-content:center !important;
 }}
 
-[data-baseweb="select"] > div {{
-  height:42px !important;
-  border-radius:10px !important;
-}}
 
-/* ─────────────── Metrics ─────────────── */
+/* ───────────────────────────── METRICS ───────────────────────────── */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:16px;
   margin-top:10px;
 }}
+
 .metric-slot {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.1);
@@ -268,59 +233,83 @@ div[data-testid="stRadio"] p {{
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
 }}
-.metric-slot .m-label {{ font-size:12px; opacity:.8; }}
-.metric-slot .m-value {{ font-size:22px; font-weight:800; }}
 
-/* ─────────────── Chart & Signals ─────────────── */
+.metric-slot .m-label {{
+  font-size:12px;
+  opacity:.8;
+}}
+
+.metric-slot .m-value {{
+  font-size:22px;
+  font-weight:800;
+}}
+
+
+/* ───────────────────────────── CHART ───────────────────────────── */
 .js-plotly-plot {{
   border-radius:14px !important;
   box-shadow:0 0 22px rgba(0,0,0,.4) !important;
 }}
 
-/* ─────────────── Signal Rows ─────────────── */
+
+/* ───────────────────────────── SIGNAL ROWS ───────────────────────────── */
 .sig-row {{
   display:flex;
-  align-items:center;
   justify-content:space-between;
   padding:8px 2px;
   border-bottom:1px solid rgba(255,255,255,0.08);
-  font-size:14px;
-  color:#E6F0FF;
-}}
-.sig-row:last-child {{ border-bottom:none; }}
-[data-testid="stProgress"] div[role="progressbar"] {{
-  background-color:#2E6CFF !important;
-  border-radius:10px !important;
-}}
-[data-testid="stProgress"] > div {{
-  background-color:rgba(255,255,255,0.15) !important;
-  border-radius:10px !important;
 }}
 
-/* ─────────────── Footer ─────────────── */
+[data-testid="stProgress"] div[role="progressbar"] {{
+  background-color:#2E6CFF !important;
+}}
+
+[data-testid="stProgress"] > div {{
+  background-color:rgba(255,255,255,0.15) !important;
+}}
+
+
+/* ───────────────────────────── FOOTER ───────────────────────────── */
 .statusbar {{
   background:{CARD};
   border:1px solid rgba(255,255,255,.06);
   border-radius:22px;
   box-shadow:0 10px 28px rgba(0,0,0,.35);
   display:flex;
-  align-items:center;
   padding:8px 0;
   margin-top:25px;
 }}
+
 .status-item {{
-  display:flex; align-items:center; gap:8px;
-  padding:8px 18px; font-size:13px; color:{MUTED};
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 18px;
+  font-size:13px;
+  color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
 }}
-.status-item:last-child{{border-right:0;}}
-.status-value{{color:{TEXT};font-weight:700;}}
-.dot{{width:9px;height:9px;border-radius:50%;background:{GREEN};
-box-shadow:0 0 0 2px rgba(92,242,184,.25);display:inline-block;}}
+
+.status-item:last-child {{
+  border-right:0;
+}}
+
+.status-value {{
+  color:{TEXT};
+  font-weight:700;
+}}
+
+.dot {{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:{GREEN};
+  box-shadow:0 0 0 2px rgba(92,242,184,.25);
+}}
+
 </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
+
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA

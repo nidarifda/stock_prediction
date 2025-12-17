@@ -189,42 +189,57 @@ div[role="listbox"] {{
   color:#FFFFFF !important;
 }}
 
-/* ─────────────── Forecast horizon radio styling ─────────────── */
+/* ─────────────── Forecast horizon radio styling (clean + fixed) ─────────────── */
 div[data-testid="stRadio"] {{
-  background-color:#0F1A2B !important;
-  border:1px solid rgba(255,255,255,0.18) !important;
-  border-radius:10px !important;
-  padding:4px 12px !important;
-  display:flex !important;
-  justify-content:center !important;
-  align-items:center !important;
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
-  height:42px !important;
+    background-color: #0F1A2B !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }}
 
+/* Hide default Streamlit label */
 div[data-testid="stRadio"] > label {{
-  display:none !important;  /* hide radio widget label */
+    display: none !important;
 }}
 
+/* Wrapper for all radio items */
 div[data-testid="stRadio"] > div {{
-  display:flex !important;
-  gap:12px !important;
-  justify-content:center !important;
-  align-items:center !important;
-  flex-wrap:nowrap !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;    /* PREVENT WRAPPING */
+    white-space: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 42px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 22px !important;
 }}
 
+/* Each label (circle + text) */
 div[data-testid="stRadio"] label {{
-  white-space:nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }}
 
+/* Text style inside radio labels */
 div[data-testid="stRadio"] p {{
-  color:#FFFFFF !important;
-  font-size:11px !important;
-  font-weight:500 !important;
-  margin:0 !important;
-  padding:0 4px !important;
+    color: #FFFFFF !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }}
+
 
 /* ─────────────── Align three selectors (stock / horizon / model) ─────────────── */
 .block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{

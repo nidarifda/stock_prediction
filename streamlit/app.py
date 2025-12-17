@@ -440,7 +440,7 @@ with col_mid:
 
     # ─────────────── Forecast Horizon ───────────────
     with col2:
-        options = ["1H", "6H", "12H", "1D", "1W", "1M"]
+        options = ["1H", "6H", "12H", "1D"]
         default_horizon = st.session_state.get("forecast_horizon", "1H")
         try:
             default_index = options.index(default_horizon)

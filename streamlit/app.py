@@ -400,45 +400,6 @@ def render_signals_card(title: str, tickers: list[str]) -> None:
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────────────────────
-# INTERPRETATION CARD (NEW BOX BELOW AFFILIATED SIGNALS)
-# ────────────────────────────────────────────────────────────────
-st.markdown(
-    f"""
-    <div class="watchlist-card" style="margin-top:16px;">
-        <div class="watchlist-title">How to Interpret Signals</div>
-
-        <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
-            <b>• Correlation</b> shows how closely a stock tends to move with NVDA.<br>
-            Higher correlation = stronger predictive power.
-        </div>
-
-        <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
-            <b>• 0.70 – 1.00</b>: Strong influence — moves often in the same direction.<br>
-            <span style="opacity:0.8;">→ If these are green, NVDA likely follows upward.</span>
-        </div>
-
-        <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
-            <b>• 0.50 – 0.69</b>: Moderate influence — still useful but less reliable.<br>
-            <span style="opacity:0.8;">→ Combine with NVDA trend and model output.</span>
-        </div>
-
-        <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
-            <b>• Under 0.50</b>: Weak influence — mostly noise.<br>
-            <span style="opacity:0.8;">→ Do not base decisions on these alone.</span>
-        </div>
-
-        <div style="padding:6px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
-            <b>Suggested Action:</b><br>
-            <span style="opacity:0.85;">
-            When 2 or more high-correlation stocks move the same direction,
-            treat it as a sector-wide signal strengthening the forecast.
-            </span>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -569,6 +530,44 @@ with col_mid:
 # RIGHT PANEL
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
+
+    # Interpretation Box (correct place)
+    st.markdown(
+        f"""
+        <div class="watchlist-card" style="margin-top:16px;">
+            <div class="watchlist-title">How to Interpret Signals</div>
+
+            <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
+                <b>• Correlation</b> shows how closely a stock tends to move with NVDA.<br>
+                Higher correlation = stronger predictive power.
+            </div>
+
+            <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
+                <b>• 0.70 – 1.00</b>: Strong influence — moves often in the same direction.<br>
+                <span style="opacity:0.8;">→ If these are green, NVDA likely follows upward.</span>
+            </div>
+
+            <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
+                <b>• 0.50 – 0.69</b>: Moderate influence — still useful but less reliable.<br>
+                <span style="opacity:0.8;">→ Combine with NVDA trend and model output.</span>
+            </div>
+
+            <div style="padding:4px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
+                <b>• Under 0.50</b>: Weak influence — mostly noise.<br>
+                <span style="opacity:0.8;">→ Do not base decisions on these alone.</span>
+            </div>
+
+            <div style="padding:6px 0; font-size:14px; line-height:1.45; color:{TEXT}; opacity:0.92;">
+                <b>Suggested Action:</b><br>
+                <span style="opacity:0.85;">
+                When 2 or more high-correlation stocks move the same direction,
+                treat it as a sector-wide signal strengthening the forecast.
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # FOOTER
 st.markdown(

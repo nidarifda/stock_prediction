@@ -531,54 +531,73 @@ with col_mid:
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Compact interpretation card
-    st.markdown(f"""
-    <div class="watchlist-card" style="margin-top:16px; padding-bottom:10px;">
-        <div class="watchlist-title">Signal Interpretation</div>
+    # --- Small Interpretation Card ---
+    st.markdown(
+        f"""
+        <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
+            <div class="watchlist-title">Signal Interpretation</div>
 
-        <div style="font-size:13px; line-height:1.45; opacity:0.9; color:{TEXT}; padding-top:2px;">
-            Understand how correlation affects the strength of the prediction.
+            <div style="font-size:13px; line-height:1.45; opacity:0.88; color:{TEXT}; margin-top:4px;">
+                Understand how correlation influences the prediction strength.
+            </div>
+
+            <div style="margin-top:8px;">
+                <span id="read_more_signal"
+                      style="color:#FF6B6B; font-size:13px; cursor:pointer;">
+                    Read more
+                </span>
+            </div>
         </div>
 
-        <div style="margin-top:6px;">
-            <span style="color:#FF6B6B; font-size:13px; cursor:pointer;"
-                  onClick="window.parent.document.querySelector('#open_signal_help').click();">
-                Read more
-            </span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {{
+                const btn = window.parent.document.querySelector('button[data-modal="signal-help"]');
+                const link = document.getElementById("read_more_signal");
+                if (btn && link) {{
+                    link.onclick = () => btn.click();
+                }}
+            }});
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Invisible button to trigger Streamlit modal
-    open_modal = st.button("⚠️ open modal", key="open_signal_help", help="hidden", label_visibility="hidden")
+    # --- Hidden button that opens modal ---
+    open_modal = st.button(
+        "open", 
+        key="signal_help", 
+        help="hidden", 
+        label_visibility="collapsed",
+        kwargs={"data-modal": "signal-help"}
+    )
 
+    # --- Modal content ---
     if open_modal:
-        with st.modal("Signal Interpretation Guide", key="signal_guide"):
+        with st.modal("Signal Interpretation Guide"):
             st.markdown(
-                f"""
+                """
                 ### 📘 Understanding Correlation Signals
 
-                **Correlation** tells you how closely another stock moves with NVDA.
+                **Correlation** explains how closely another stock moves relative to NVDA.
+                Stronger correlation = stronger predictive value.
 
                 **0.70 – 1.00 — Strong Influence**  
-                Moves frequently in the same direction.  
-                → If these are **green**, NVDA is likely to follow upward.
+                Moves consistently in the same direction.  
+                → If these are green, NVDA is more likely to rise.
 
                 **0.50 – 0.69 — Moderate Influence**  
-                Useful but not always reliable.  
-                → Combine with NVDA trend + model forecast.
+                Still useful but less reliable.  
+                → Combine with model forecast.
 
                 **Below 0.50 — Weak Influence**  
-                Mostly noise.  
-                → Should NOT be used alone to make decisions.
+                Mostly noise; **do not use alone**.
 
                 ---
 
-                ** Suggested Action**  
-                When **two or more highly correlated stocks move in the same direction**,  
-                treat it as a **sector-wide confirmation** that strengthens the prediction.
-                """,
-                unsafe_allow_html=True
+                **📌 Suggested Action**  
+                When multiple **high-correlation** stocks move similarly,  
+                this indicates **sector confirmation**, strengthening the forecast.
+                """
             )
 
 

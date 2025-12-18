@@ -531,40 +531,55 @@ with col_mid:
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # Interpretation Box (correct place)
+    # Compact interpretation card
     st.markdown(f"""
-<div class="watchlist-card" style="margin-top:16px;">
-    <div class="watchlist-title">How to Interpret Signals</div>
+    <div class="watchlist-card" style="margin-top:16px; padding-bottom:10px;">
+        <div class="watchlist-title">Signal Interpretation</div>
 
-    <div style="padding:6px 0; font-size:14px; line-height:1.45; color:#E6F0FF;">
-        <b>• Correlation</b> shows how closely a stock tends to move with NVDA.<br>
-        Higher correlation = stronger predictive power.
-    </div>
+        <div style="font-size:13px; line-height:1.45; opacity:0.9; color:{TEXT}; padding-top:2px;">
+            Understand how correlation affects the strength of the prediction.
+        </div>
 
-    <div style="padding:6px 0; font-size:14px; line-height:1.45; color:#E6F0FF;">
-        <b>• 0.70 – 1.00:</b> Strong influence — moves often in the same direction.<br>
-        <span style="opacity:0.8;">→ If these are green, NVDA likely follows upward.</span>
+        <div style="margin-top:6px;">
+            <span style="color:#FF6B6B; font-size:13px; cursor:pointer;"
+                  onClick="window.parent.document.querySelector('#open_signal_help').click();">
+                Read more
+            </span>
+        </div>
     </div>
+    """, unsafe_allow_html=True)
 
-    <div style="padding:6px 0; font-size:14px; line-height:1.45; color:#E6F0FF;">
-        <b>• 0.50 – 0.69:</b> Moderate influence — still useful but less reliable.<br>
-        <span style="opacity:0.8;">→ Combine with NVDA trend and model output.</span>
-    </div>
+    # Invisible button to trigger Streamlit modal
+    open_modal = st.button("⚠️ open modal", key="open_signal_help", help="hidden", label_visibility="hidden")
 
-    <div style="padding:6px 0; font-size:14px; line-height:1.45; color:#E6F0FF;">
-        <b>• Under 0.50:</b> Weak influence — mostly noise.<br>
-        <span style="opacity:0.8;">→ Do not base decisions on these alone.</span>
-    </div>
+    if open_modal:
+        with st.modal("Signal Interpretation Guide", key="signal_guide"):
+            st.markdown(
+                f"""
+                ### 📘 Understanding Correlation Signals
 
-    <div style="padding:8px 0; font-size:14px; line-height:1.45; color:#E6F0FF;">
-        <b>Suggested Action:</b><br>
-        <span style="opacity:0.85;">
-            When 2 or more high-correlation stocks move the same direction,
-            treat it as a sector-wide signal strengthening the forecast.
-        </span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+                **Correlation** tells you how closely another stock moves with NVDA.
+
+                **0.70 – 1.00 — Strong Influence**  
+                Moves frequently in the same direction.  
+                → If these are **green**, NVDA is likely to follow upward.
+
+                **0.50 – 0.69 — Moderate Influence**  
+                Useful but not always reliable.  
+                → Combine with NVDA trend + model forecast.
+
+                **Below 0.50 — Weak Influence**  
+                Mostly noise.  
+                → Should NOT be used alone to make decisions.
+
+                ---
+
+                ** Suggested Action**  
+                When **two or more highly correlated stocks move in the same direction**,  
+                treat it as a **sector-wide confirmation** that strengthens the prediction.
+                """,
+                unsafe_allow_html=True
+            )
 
 
 

@@ -550,36 +550,78 @@ with col_right:
         unsafe_allow_html=True
     )
 
-    # BUTTON TO OPEN MODAL
-    if st.button("Read more", key="read_more_signal"):
-        st.session_state["show_modal"] = True
+  # --- Small Interpretation Card ---
+read_more_clicked = st.button(
+    "___",  # invisible placeholder
+    key="hidden_trigger_signal",
+    help="",
+    label_visibility="collapsed",
+)
 
-    # MODAL
-    if st.session_state.get("show_modal", False):
-        with st.modal("📘 Signal Interpretation Guide"):
-            st.markdown(
-                """
-                ### 🔍 What is Correlation?
-                Correlation measures how closely another stock moves with NVDA.
+# Red clickable text
+clicked = st.markdown(
+    f"""
+    <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
+        <div class="watchlist-title">Signal Interpretation</div>
 
-                ### 📊 Interpretation Levels
-                **0.70 – 1.00 — Strong Influence**  
-                → Consistent direction. Strong signal.
+        <div style="font-size:13px; line-height:1.45; opacity:0.88; color:{TEXT}; margin-top:4px;">
+            Understand how correlation influences the prediction strength.
+        </div>
 
-                **0.50 – 0.69 — Moderate Influence**  
-                → Useful but needs confirmation.
+        <div style="margin-top:8px;">
+            <a href="#" id="open_modal_signal"
+               style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
+                👉 Read more below
+            </a>
+        </div>
+    </div>
 
-                **Below 0.50 — Weak Influence**  
-                → Mostly noise.
+    <script>
+        const link = window.parent.document.getElementById("open_modal_signal");
+        const hiddenBtn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
+        if (link && hiddenBtn) {{
+            link.onclick = () => hiddenBtn.click();
+        }}
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
 
-                ### 📌 Suggested Action
-                If 2+ high-correlation stocks move together,  
-                treat it as **sector confirmation** strengthening NVDA’s forecast.
-                """
-            )
+# When clicking the red text → hidden button is clicked
+if st.session_state.get("hidden_trigger_signal"):
+    st.session_state["show_signal_modal"] = True
 
-            if st.button("Close"):
-                st.session_state["show_modal"] = False
+# Reset hidden trigger
+st.session_state["hidden_trigger_signal"] = False
+
+# --- Modal ---
+if st.session_state.get("show_signal_modal", False):
+    with st.modal("📘 Signal Interpretation Guide"):
+        st.markdown(
+            """
+            ### 🔍 Understanding Correlation Signals
+
+            **Correlation** explains how closely another stock moves relative to NVDA.  
+            Stronger correlation = stronger predictive value.
+
+            ### 📊 Interpretation Levels
+            **0.70 – 1.00 — Strong Influence**  
+            Consistent direction → Strong supportive signal.
+
+            **0.50 – 0.69 — Moderate Influence**  
+            Useful but needs confirmation.
+
+            **Below 0.50 — Weak Influence**  
+            Mostly noise.
+
+            ### 📌 Suggested Insight
+            When multiple **high-correlation stocks** move together,  
+            treat it as **sector confirmation**, strengthening NVDA’s forecast.
+            """
+        )
+
+        if st.button("Close"):
+            st.session_state["show_signal_modal"] = False
 
 
 

@@ -20,7 +20,7 @@ ORANGE = "#F08A3C"
 GREEN = "#5CF2B8"
 
 # ────────────────────────────────────────────────────────────────
-# CSS STYLES
+# CSS
 # ────────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
@@ -36,23 +36,20 @@ st.markdown(f"""
   padding-bottom:0rem;
 }}
 
-
-/* ───────────────────────────── HEADER ───────────────────────────── */
+/* HEADER */
 .app-header {{
   display:flex;
   align-items:center;
   margin-top:50px;
   margin-bottom:30px;
 }}
-
 .app-header .title {{
   color:{TEXT};
   font-size:30px;
   font-weight:800;
 }}
 
-
-/* ───────────────────────────── WATCHLIST CARD ───────────────────────────── */
+/* WATCHLIST CARD */
 .watchlist-card {{
   width:100%;
   background:#0F1A2B !important;
@@ -61,258 +58,134 @@ st.markdown(f"""
   padding:16px 20px;
   margin-bottom:20px;
   box-shadow:0 6px 18px rgba(0,0,0,0.3);
-  transition:0.25s ease-in-out;
 }}
-
-.watchlist-card:hover {{
-  box-shadow:0 10px 24px rgba(0,0,0,0.5);
-}}
-
 .watchlist-title {{
   font-weight:800;
   font-size:18px;
-  color:#E6F0FF;
+  color:{TEXT};
   margin-bottom:10px;
 }}
-
 .watchlist-row {{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:8px 0;
   border-bottom:1px solid rgba(255,255,255,0.08);
 }}
-
 .watchlist-row:last-child {{
   border-bottom:none;
 }}
-
-.watchlist-left, .watchlist-right {{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}}
-
 .watchlist-symbol {{
   font-weight:700;
   font-size:15px;
 }}
-
 .watchlist-price {{
   font-weight:700;
-  color:#E6F0FF;
+  color:{TEXT};
   font-size:15px;
 }}
-
 .watchlist-sub {{
-  font-size:12.5px;
+  font-size:12px;
   opacity:.9;
 }}
 
-
-/* ───────────────────────────── TOGGLE SWITCHES ───────────────────────────── */
-[data-testid="stWidgetLabel"],
-.stToggle label {{
-  color:#FFFFFF !important;
-  font-weight:500 !important;
-}}
-
-.stToggle {{
-  margin-top:-4px !important;
-  margin-bottom:-2px !important;
-  padding-left:20px !important;
-}}
-
-[data-testid="stSwitch"] div[role="switch"][aria-checked="true"] {{
-  background-color:#496BFF !important;
-}}
-
-[data-testid="stSwitch"] div[role="switch"][aria-checked="false"] {{
-  background-color:rgba(255,255,255,0.2) !important;
-}}
-
-
-/* ───────────────────────────── CLEAN SELECTBOX (NO DOUBLE BOX) ───────────────────────────── */
-
-/* OUTER BOX */
+/* SELECTBOX FIX */
 [data-baseweb="select"] > div {{
   background-color:#0F1A2B !important;
   border:1px solid rgba(255,255,255,0.18) !important;
-  border-radius:12px !important;
   height:42px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
+  border-radius:12px !important;
   padding:0 !important;
 }}
-
-/* REMOVE inner duplicate box */
 [data-baseweb="select"] > div > div {{
   background:transparent !important;
   border:none !important;
-  box-shadow:none !important;
 }}
-
-/* Center text */
 [data-baseweb="select"] * {{
-  color:#FFFFFF !important;
+  color:{TEXT} !important;
   font-weight:600 !important;
   text-align:center !important;
 }}
-
-/* Dropdown menu */
 ul[role="listbox"] {{
   background:#0F1A2B !important;
-  border:1px solid rgba(255,255,255,0.18) !important;
   border-radius:10px !important;
 }}
 
-
-/* ───────────────────────────── HORIZON RADIO BAR (FULL FIXED) ───────────────────────────── */
+/* RADIO BAR */
 div[data-testid="stRadio"] {{
     background-color:#0F1A2B !important;
     border:1px solid rgba(255,255,255,0.18) !important;
     border-radius:10px !important;
     height:42px !important;
-    padding:0 !important;
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
-    box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }}
-
 div[data-testid="stRadio"] > label {{
     display:none !important;
 }}
-
 div[data-testid="stRadio"] > div {{
     display:flex !important;
-    flex-wrap:nowrap !important;
-    white-space:nowrap !important;
-    justify-content:center !important;
-    align-items:center !important;
-    height:42px !important;
     gap:26px !important;
-}}
-
-div[data-testid="stRadio"] label {{
-    display:flex !important;
+    height:42px !important;
     align-items:center !important;
-    gap:6px !important;
+    justify-content:center !important;
 }}
-
 div[data-testid="stRadio"] p {{
-    color:#FFFFFF !important;
+    color:#fff !important;
     font-size:11px !important;
     font-weight:500 !important;
-    margin:0 !important;
 }}
 
-
-/* ───────────────────────────── TOP SELECTORS ALIGNMENT ───────────────────────────── */
-.block-container .stColumn > div[data-testid="stVerticalBlock"] > div {{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-}}
-
-
-/* ───────────────────────────── METRICS ───────────────────────────── */
-/* ─────────────── Metrics ─────────────── */
+/* METRICS */
 .metric-row {{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:16px;
-  margin-top:10px;
-  margin-bottom:25px !important;   /* ← added spacing so chart does NOT touch */
+  margin-bottom:25px;
 }}
-
 .metric-slot {{
   background:{CARD};
-  border:1px solid rgba(255,255,255,.1);
   border-radius:12px;
   height:68px;
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.25);
 }}
-
 .metric-slot .m-label {{
   font-size:12px;
   opacity:.8;
 }}
-
 .metric-slot .m-value {{
   font-size:22px;
   font-weight:800;
 }}
 
-
-
-/* ───────────────────────────── CHART ───────────────────────────── */
-.js-plotly-plot {{
-  border-radius:14px !important;
-  box-shadow:0 0 22px rgba(0,0,0,.4) !important;
-}}
-
-
-/* ───────────────────────────── SIGNAL ROWS ───────────────────────────── */
-.sig-row {{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 2px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}}
-
-[data-testid="stProgress"] div[role="progressbar"] {{
-  background-color:#2E6CFF !important;
-}}
-
-[data-testid="stProgress"] > div {{
-  background-color:rgba(255,255,255,0.15) !important;
-}}
-
-
-/* ───────────────────────────── FOOTER ───────────────────────────── */
+/* FOOTER */
 .statusbar {{
   background:{CARD};
-  border:1px solid rgba(255,255,255,.06);
   border-radius:22px;
-  box-shadow:0 10px 28px rgba(0,0,0,.35);
   display:flex;
   padding:8px 0;
   margin-top:25px;
 }}
-
 .status-item {{
-  display:flex;
-  align-items:center;
-  gap:8px;
   padding:8px 18px;
-  font-size:13px;
   color:{MUTED};
   border-right:1px solid rgba(255,255,255,.08);
 }}
-
 .status-item:last-child {{
   border-right:0;
 }}
-
 .status-value {{
   color:{TEXT};
   font-weight:700;
 }}
-
 .dot {{
-  width:9px;
-  height:9px;
-  border-radius:50%;
+  width:9px;height:9px;border-radius:50%;
   background:{GREEN};
-  box-shadow:0 0 0 2px rgba(92,242,184,.25);
 }}
 
 </style>
 """, unsafe_allow_html=True)
-
 
 # ────────────────────────────────────────────────────────────────
 # DEMO DATA
@@ -320,86 +193,80 @@ div[data-testid="stRadio"] p {{
 dates = pd.date_range("2024-01-01", periods=200)
 price = np.cumsum(np.random.normal(0.5, 2, len(dates))) + 300
 prices = (
-    pd.DataFrame(
-        {
-            "Date": dates,
-            "NVDA": price,
-            "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
-            "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
-            "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
-            "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
-        }
-    )
+    pd.DataFrame({
+        "Date": dates,
+        "NVDA": price,
+        "TSMC": price * 0.95 + np.random.normal(0, 3, len(dates)),
+        "ASML": price * 1.02 + np.random.normal(0, 2, len(dates)),
+        "CDNS": price * 0.85 + np.random.normal(0, 4, len(dates)),
+        "SNPS": price * 0.88 + np.random.normal(0, 2, len(dates)),
+    })
     .set_index("Date")
 )
 
 # ────────────────────────────────────────────────────────────────
-# WATCHLIST COMPONENT
+# WATCHLIST
 # ────────────────────────────────────────────────────────────────
-def render_watchlist(
-    prices_df: pd.DataFrame, tickers: list[str], title: str = "Watchlist"
-) -> None:
+def render_watchlist(prices_df, tickers, title="Watchlist"):
     rows = []
     for t in tickers:
-        s = prices_df[t].dropna()
-        if s.empty:
-            continue
-        last = s.iloc[-1]
-        chg1 = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100 if len(s) > 1 else 0
+        s = prices_df[t]
+        chg1 = (s.iloc[-1] - s.iloc[-2]) / s.iloc[-2] * 100
         chg2 = np.random.uniform(-0.5, 0.5)
         color1 = GREEN if chg1 >= 0 else ORANGE
         color2 = GREEN if chg2 >= 0 else ORANGE
         icon = "↗" if chg1 >= 0 else "↘"
+
         rows.append(
             f"""
-        <div class="watchlist-row">
-            <div class="watchlist-left">
-                <div class="watchlist-symbol">{t}</div>
-                <div class="watchlist-sub" style="color:{color1};">{icon} {chg1:+.2f}%</div>
+            <div class='watchlist-row'>
+                <div>
+                    <div class='watchlist-symbol'>{t}</div>
+                    <div class='watchlist-sub' style='color:{color1};'>{icon} {chg1:+.2f}%</div>
+                </div>
+                <div style='text-align:right;'>
+                    <div class='watchlist-price'>{s.iloc[-1]:.2f}</div>
+                    <div class='watchlist-sub' style='color:{color2};'>{chg2:+.2f}%</div>
+                </div>
             </div>
-            <div class="watchlist-right">
-                <div class="watchlist-price">{last:,.2f}</div>
-                <div class="watchlist-sub" style="color:{color2};">{chg2:+.2f}%</div>
-            </div>
-        </div>
-        """
+            """
         )
+
     st.markdown(
         f"""
-        <div style="width:100%;">
-          <div class="watchlist-card">
+        <div class="watchlist-card">
             <div class="watchlist-title">{title}</div>
             {''.join(rows)}
-          </div>
         </div>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
 # ────────────────────────────────────────────────────────────────
-# SIGNALS CARD COMPONENT
+# SIGNALS
 # ────────────────────────────────────────────────────────────────
-def render_signals_card(title: str, tickers: list[str]) -> None:
+def render_signals_card(title, tickers):
     html = f'<div class="watchlist-card"><div class="watchlist-title">{title}</div>'
     for t in tickers:
         chg = np.random.uniform(-1, 1)
         corr = np.random.uniform(0.6, 0.9)
         color = GREEN if chg > 0 else ORANGE
         bar_width = int(corr * 100)
-        html += (
-            f'<div class="watchlist-row" style="flex-direction:column;align-items:flex-start;padding:6px 0;">'
-            f'<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
-            f'<div class="watchlist-symbol" style="color:{color};">{t}</div>'
-            f'<div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>'
-            f"</div>"
-            f'<div class="watchlist-sub" style="color:{TEXT};opacity:.9;margin-top:2px;">Correlation {corr:.2f}</div>'
-            f'<div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;margin-top:4px;">'
-            f'<div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;transition:width 0.4s ease-in-out;"></div>'
-            f"</div></div>"
-        )
+
+        html += f"""
+        <div class="watchlist-row" style="flex-direction:column;align-items:flex-start;">
+            <div style="display:flex;justify-content:space-between;width:100%;">
+                <div class="watchlist-symbol" style="color:{color};">{t}</div>
+                <div class="watchlist-price" style="color:{color};">{chg:+.2f}%</div>
+            </div>
+            <div class="watchlist-sub">Correlation {corr:.2f}</div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:6px;height:6px;width:100%;">
+                <div style="background:linear-gradient(90deg,#2E6CFF,#31D0FF);width:{bar_width}%;height:100%;border-radius:6px;"></div>
+            </div>
+        </div>
+        """
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
-
 
 # ────────────────────────────────────────────────────────────────
 # HEADER
@@ -410,70 +277,54 @@ st.markdown(
 )
 
 # ────────────────────────────────────────────────────────────────
-# LAYOUT (3 columns)
+# LAYOUT
 # ────────────────────────────────────────────────────────────────
 col_left, col_mid, col_right = st.columns([0.8, 3, 0.8], gap="small")
 
 # LEFT PANEL
 with col_left:
     render_watchlist(prices, ["TSMC", "ASML", "CDNS", "SNPS"])
-    st.markdown("<div style='margin-top:-2px;'></div>", unsafe_allow_html=True)
     st.toggle("Affiliated Signals", True)
     st.toggle("Macro layer", True)
     st.toggle("News Sentiment", True)
     st.toggle("Options flow", True)
 
+# ────────────────────────────────────────────────────────────────
 # MIDDLE PANEL
+# ────────────────────────────────────────────────────────────────
 with col_mid:
-    col1, col2, col3 = st.columns([0.8, 1.6, 0.8], gap="small")
+    col1, col2, col3 = st.columns([0.8, 1.6, 0.8])
 
-    # ─────────────── Dropdown: Stock ───────────────
     with col1:
         st.selectbox("", ["NVDA"], label_visibility="collapsed")
 
-    # ─────────────── Forecast Horizon ───────────────
     with col2:
         options = ["1H", "6H", "12H", "1D"]
-        default_horizon = st.session_state.get("forecast_horizon", "1H")
-        try:
-            default_index = options.index(default_horizon)
-        except ValueError:
-            default_index = 0
+        horizon = st.radio("", options, horizontal=True)
 
-        horizon = st.radio(
-            "",
-            options,
-            index=default_index,
-            key="forecast_horizon",
-            horizontal=True,
-        )
-
-    # ─────────────── Dropdown: Model ───────────────
     with col3:
         st.selectbox("", ["LightGBM"], label_visibility="collapsed")
 
-    # ─────────────── Metrics Row ───────────────
+    # METRICS
     st.markdown(
         """
-    <div class="metric-row">
-      <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
-      <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">415 – 434</div></div>
-      <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">0.78</div></div>
-    </div>
-    """,
-        unsafe_allow_html=True,
+        <div class="metric-row">
+          <div class="metric-slot"><div class="m-label">Predicted Close</div><div class="m-value">424.58</div></div>
+          <div class="metric-slot"><div class="m-label">80% interval</div><div class="m-value">415 – 434</div></div>
+          <div class="metric-slot"><div class="m-label">Confidence</div><div class="m-value">0.78</div></div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    # ─────────────── Dynamic Chart ───────────────
+    # CHART
     s = prices["NVDA"]
     fig = go.Figure()
+
     fig.add_trace(
         go.Scatter(
-            x=s.index,
-            y=s.values,
-            mode="lines",
-            line=dict(width=2, color="#70B3FF"),
-            name="Historical",
+            x=s.index, y=s.values, mode="lines",
+            line=dict(width=2, color="#70B3FF")
         )
     )
 
@@ -481,38 +332,13 @@ with col_mid:
     last = s.iloc[-1]
     proj_x = pd.bdate_range(start=now_x, periods=12)
 
-    if horizon == "1H":
-        proj_y = np.linspace(last, last * 1.002, len(proj_x))
-    elif horizon == "6H":
-        proj_y = np.linspace(last, last * 1.005, len(proj_x))
-    elif horizon == "12H":
-        proj_y = np.linspace(last, last * 1.008, len(proj_x))
-    elif horizon == "1D":
-        proj_y = np.linspace(last, last * 1.01, len(proj_x))
-    elif horizon == "1W":
-        proj_y = np.linspace(last, last * 1.05, len(proj_x))
-    elif horizon == "1M":
-        proj_y = np.linspace(last, last * 1.12, len(proj_x))
-    else:
-        proj_y = np.linspace(last, last * 1.03, len(proj_x))
-
     fig.add_trace(
         go.Scatter(
             x=proj_x,
-            y=proj_y,
+            y=np.linspace(last, last * 1.01, len(proj_x)),
             mode="lines",
-            line=dict(width=2, dash="dot", color="#F08A3C"),
-            name="Forecast",
+            line=dict(width=2, dash="dot", color="#F08A3C")
         )
-    )
-
-    fig.add_vline(x=now_x, line_dash="dot", line_color="#9BA4B5")
-    fig.add_vrect(
-        x0=now_x,
-        x1=proj_x[-1],
-        fillcolor="#2A2F3F",
-        opacity=0.35,
-        line_width=0,
     )
 
     fig.update_layout(
@@ -522,98 +348,78 @@ with col_mid:
         plot_bgcolor=CARD,
         font=dict(color=TEXT),
         showlegend=False,
-        transition=dict(duration=500, easing="cubic-in-out"),
     )
 
-    st.plotly_chart(fig, use_container_width=True, theme=None)
+    st.plotly_chart(fig, use_container_width=True)
 
-# RIGHT PANEL
+# ────────────────────────────────────────────────────────────────
+# RIGHT PANEL + INTERPRETATION BOX
+# ────────────────────────────────────────────────────────────────
 with col_right:
+
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # --- Small Interpretation Card ---
+    # SMALL CARD WITH READ MORE
     st.markdown(
         f"""
-        <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
+        <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
             <div class="watchlist-title">Signal Interpretation</div>
-
-            <div style="font-size:13px; line-height:1.45; opacity:0.88; color:{TEXT}; margin-top:4px;">
-                Understand how correlation influences the prediction strength.
+            <div style="font-size:13px; opacity:.88; margin-top:4px;">
+                Understand how correlation influences prediction.
             </div>
-
-            <div style="margin-top:8px;">
-                <span id="read_more_signal"
-                      style="color:#FF6B6B; font-size:13px; cursor:pointer;">
-                    Read more
+            <div style="margin-top:10px;">
+                <span style="color:#FF6B6B; font-size:13px; font-weight:600;">
+                    👉 Read more below
                 </span>
             </div>
         </div>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {{
-                const btn = window.parent.document.querySelector('button[data-modal="signal-help"]');
-                const link = document.getElementById("read_more_signal");
-                if (btn && link) {{
-                    link.onclick = () => btn.click();
-                }}
-            }});
-        </script>
         """,
         unsafe_allow_html=True
     )
 
-    # --- Hidden button that opens modal ---
-    open_modal = st.button(
-        "open", 
-        key="signal_help", 
-        help="hidden", 
-        label_visibility="collapsed",
-        kwargs={"data-modal": "signal-help"}
-    )
+    # BUTTON TO OPEN MODAL
+    if st.button("Read more", key="read_more_signal"):
+        st.session_state["show_modal"] = True
 
-    # --- Modal content ---
-    if open_modal:
-        with st.modal("Signal Interpretation Guide"):
+    # MODAL
+    if st.session_state.get("show_modal", False):
+        with st.modal("📘 Signal Interpretation Guide"):
             st.markdown(
                 """
-                ### 📘 Understanding Correlation Signals
+                ### 🔍 What is Correlation?
+                Correlation measures how closely another stock moves with NVDA.
 
-                **Correlation** explains how closely another stock moves relative to NVDA.
-                Stronger correlation = stronger predictive value.
-
+                ### 📊 Interpretation Levels
                 **0.70 – 1.00 — Strong Influence**  
-                Moves consistently in the same direction.  
-                → If these are green, NVDA is more likely to rise.
+                → Consistent direction. Strong signal.
 
                 **0.50 – 0.69 — Moderate Influence**  
-                Still useful but less reliable.  
-                → Combine with model forecast.
+                → Useful but needs confirmation.
 
                 **Below 0.50 — Weak Influence**  
-                Mostly noise; **do not use alone**.
+                → Mostly noise.
 
-                ---
-
-                **📌 Suggested Action**  
-                When multiple **high-correlation** stocks move similarly,  
-                this indicates **sector confirmation**, strengthening the forecast.
+                ### 📌 Suggested Action
+                If 2+ high-correlation stocks move together,  
+                treat it as **sector confirmation** strengthening NVDA’s forecast.
                 """
             )
 
+            if st.button("Close"):
+                st.session_state["show_modal"] = False
 
-
+# ────────────────────────────────────────────────────────────────
 # FOOTER
+# ────────────────────────────────────────────────────────────────
 st.markdown(
     f"""
-<div class="footer-wrap">
-  <div class="statusbar">
-    <div class="status-item">Model version <span class="status-value">v1.2</span></div>
-    <div class="status-item">Training window <span class="status-value">1 year</span></div>
-    <div class="status-item">Data last updated <span class="status-value">30 min</span></div>
-    <div class="status-item">Latency <span class="status-value">~140 ms</span></div>
-    <div class="status-item">API status <span class="dot"></span> All systems operational</div>
-  </div>
-</div>
-""",
-    unsafe_allow_html=True,
+    <div class="statusbar">
+        <div class="status-item">Model version <span class="status-value">v1.2</span></div>
+        <div class="status-item">Training window <span class="status-value">1 year</span></div>
+        <div class="status-item">Last updated <span class="status-value">30 min</span></div>
+        <div class="status-item">Latency <span class="status-value">140 ms</span></div>
+        <div class="status-item">API <span class="dot"></span></div>
+    </div>
+    """,
+    unsafe_allow_html=True
 )

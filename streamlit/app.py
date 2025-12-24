@@ -527,7 +527,7 @@ with col_mid:
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
-with col_right:
+with col_rightwith col_right:
 
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
@@ -573,7 +573,7 @@ with col_right:
     )
 
     # -------------------------------
-    # Modal popup
+    # Show modal when triggered
     # -------------------------------
     if hidden_click:
         st.session_state["show_signal_modal"] = True
@@ -605,6 +605,7 @@ with col_right:
 
             if st.button("Close"):
                 st.session_state["show_signal_modal"] = False
+
 
 
 

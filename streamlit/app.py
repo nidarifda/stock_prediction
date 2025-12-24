@@ -535,7 +535,7 @@ with col_right:
     # SMALL CARD WITH READ MORE
     st.markdown(
         f"""
-        <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
+        <div class="watchlist-card" style="margin-top:5px; padding:16px 20px;">
             <div class="watchlist-title">Signal Interpretation</div>
             <div style="font-size:13px; opacity:.88; margin-top:4px;">
                 Understand how correlation influences prediction.

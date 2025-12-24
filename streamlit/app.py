@@ -531,7 +531,7 @@ with col_mid:
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # ---- Invisible button for triggering modal ----
+    # Invisible trigger button
     trigger = st.button(
         "___",
         key="signal_trigger",
@@ -539,19 +539,20 @@ with col_right:
         label_visibility="collapsed"
     )
 
-    # ---- Signal Interpretation small card ----
+    # --- Your original stylish card restored ---
     st.markdown(
         f"""
-        <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
-            <div class="watchlist-title">Signal Interpretation</div>
+        <div class="watchlist-card" style="margin-top:16px; padding:20px 20px; border-radius:18px;">
+            <div class="watchlist-title">Signal<br>Interpretation</div>
 
-            <div style="font-size:13px; opacity:.88; margin-top:4px;">
-                Understand how correlation influences the prediction.
+            <div style="font-size:13px; opacity:.88; margin-top:6px;">
+                Understand how correlation<br>
+                influences prediction.
             </div>
 
-            <div style="margin-top:10px;">
+            <div style="margin-top:12px;">
                 <a href="#" id="open_signal_modal"
-                   style="color:#FF6B6B; font-size:13px; font-weight:600; cursor:pointer;">
+                   style="color:#FF6B6B; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none;">
                     👉 Read more below
                 </a>
             </div>
@@ -559,20 +560,20 @@ with col_right:
 
         <script>
             const link = window.parent.document.getElementById("open_signal_modal");
-            const btn = window.parent.document.querySelector('button[aria-label="signal_trigger"]');
-            if (link && btn) {{
-                link.onclick = () => btn.click();
+            const hiddenBtn = window.parent.document.querySelector('button[aria-label="signal_trigger"]');
+            if (link && hiddenBtn) {{
+                link.onclick = () => hiddenBtn.click();
             }}
         </script>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-    # ---- Trigger modal ----
+    # When clicked, open modal
     if trigger:
         st.session_state["show_signal_modal"] = True
 
-    # ---- Render Modal ----
+    # Modal content
     if st.session_state.get("show_signal_modal", False):
         with st.modal("📘 Signal Interpretation Guide"):
             st.markdown(
@@ -584,24 +585,21 @@ with col_right:
 
                 ### 📊 Influence Levels
                 **0.70 – 1.00 — Strong**  
-                Moves consistently together → high predictive value.
+                Consistent movement → high predictive value.
 
                 **0.50 – 0.69 — Moderate**  
-                Useful but should be combined with other indicators.
+                Helpful but weaker reliability.
 
                 **Below 0.50 — Weak**  
                 Mostly noise.
 
-                ### 📌 Practical Insight
-                If multiple **high-correlation stocks** move the same direction,  
-                treat it as **sector confirmation**.
+                ### 📌 Practical Guidance
+                When multiple **high-correlation stocks** show the same trend,  
+                treat it as **sector confirmation** for NVDA.
                 """
             )
-
             if st.button("Close"):
                 st.session_state["show_signal_modal"] = False
-
-
 
 
 # FOOTER

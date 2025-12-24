@@ -531,37 +531,7 @@ with col_mid:
 with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # --- Small Interpretation Card ---
-    st.markdown(
-        f"""
-        <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
-            <div class="watchlist-title">Signal Interpretation</div>
-
-            <div style="font-size:13px; line-height:1.45; opacity:0.88; color:{TEXT}; margin-top:4px;">
-                Understand how correlation influences the prediction strength.
-            </div>
-
-            <div style="margin-top:8px;">
-                <span id="read_more_signal"
-                      style="color:#FF6B6B; font-size:13px; cursor:pointer;">
-                    Read more
-                </span>
-            </div>
-        </div>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {{
-                const btn = window.parent.document.querySelector('button[data-modal="signal-help"]');
-                const link = document.getElementById("read_more_signal");
-                if (btn && link) {{
-                    link.onclick = () => btn.click();
-                }}
-            }});
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
+    
     # SMALL CARD WITH READ MORE
     st.markdown(
         f"""

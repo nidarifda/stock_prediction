@@ -532,17 +532,7 @@ with col_right:
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
     # -------------------------------
-    # 🔹 Hidden button (invisible)
-    # -------------------------------
-    hidden_click = st.button(
-        "___",
-        key="hidden_trigger_signal",
-        help="",
-        label_visibility="collapsed",
-    )
-
-    # -------------------------------
-    # 🔹 Signal Interpretation small card
+    # Small Signal Interpretation Card
     # -------------------------------
     st.markdown(
         f"""
@@ -573,14 +563,21 @@ with col_right:
     )
 
     # -------------------------------
-    # Trigger modal when hidden button clicked
+    # Hidden button (single, unique key)
     # -------------------------------
-    if hidden_click:
-        st.session_state["show_signal_modal"] = True
+    hidden_click = st.button(
+        "___",
+        key="hidden_trigger_signal",
+        label_visibility="collapsed",
+        help=""
+    )
 
     # -------------------------------
     # Modal popup
     # -------------------------------
+    if hidden_click:
+        st.session_state["show_signal_modal"] = True
+
     if st.session_state.get("show_signal_modal", False):
         with st.modal("📘 Signal Interpretation Guide"):
             st.markdown(

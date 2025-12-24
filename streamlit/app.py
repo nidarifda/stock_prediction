@@ -602,6 +602,7 @@ with col_right:
                 st.session_state["show_signal_modal"] = False
 
 
+
 # FOOTER
 st.markdown(
     f"""

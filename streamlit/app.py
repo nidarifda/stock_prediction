@@ -527,101 +527,89 @@ with col_mid:
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
-# RIGHT PANEL
 with col_right:
+
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    
-    # SMALL CARD WITH READ MORE
+    # -------------------------------
+    # 🔹 Hidden button (invisible)
+    # -------------------------------
+    hidden_click = st.button(
+        "___",
+        key="hidden_trigger_signal",
+        help="",
+        label_visibility="collapsed",
+    )
+
+    # -------------------------------
+    # 🔹 Signal Interpretation small card
+    # -------------------------------
     st.markdown(
         f"""
-        <div class="watchlist-card" style="margin-top:5px; padding:16px 20px;">
+        <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
             <div class="watchlist-title">Signal Interpretation</div>
+
             <div style="font-size:13px; opacity:.88; margin-top:4px;">
                 Understand how correlation influences prediction.
             </div>
+
             <div style="margin-top:10px;">
-                <span style="color:#FF6B6B; font-size:13px; font-weight:600;">
+                <a href="#" id="open_modal_signal"
+                   style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
                     👉 Read more below
-                </span>
+                </a>
             </div>
         </div>
+
+        <script>
+            const link = window.parent.document.getElementById("open_modal_signal");
+            const btn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
+            if (link && btn) {{
+                link.onclick = () => btn.click();
+            }}
+        </script>
         """,
         unsafe_allow_html=True
     )
 
-  # --- Small Interpretation Card ---
-read_more_clicked = st.button(
-    "___",  # invisible placeholder
-    key="hidden_trigger_signal",
-    help="",
-    label_visibility="collapsed",
-)
+    # -------------------------------
+    # Trigger modal when hidden button clicked
+    # -------------------------------
+    if hidden_click:
+        st.session_state["show_signal_modal"] = True
 
-# Red clickable text
-clicked = st.markdown(
-    f"""
-    <div class="watchlist-card" style="margin-top:16px; padding:14px 20px;">
-        <div class="watchlist-title">Signal Interpretation</div>
+    # -------------------------------
+    # Modal popup
+    # -------------------------------
+    if st.session_state.get("show_signal_modal", False):
+        with st.modal("📘 Signal Interpretation Guide"):
+            st.markdown(
+                """
+                ### 🔍 Understanding Correlation Signals
 
-        <div style="font-size:13px; line-height:1.45; opacity:0.88; color:{TEXT}; margin-top:4px;">
-            Understand how correlation influences the prediction strength.
-        </div>
+                **Correlation** describes how strongly another stock moves with NVDA.  
+                Higher correlation = stronger predictive value.
 
-        <div style="margin-top:8px;">
-            <a href="#" id="open_modal_signal"
-               style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
-                👉 Read more below
-            </a>
-        </div>
-    </div>
+                ### 📊 Interpretation Levels
+                **0.70 – 1.00 — Strong Influence**  
+                Highly aligned movements → strong confirmation.
 
-    <script>
-        const link = window.parent.document.getElementById("open_modal_signal");
-        const hiddenBtn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
-        if (link && hiddenBtn) {{
-            link.onclick = () => hiddenBtn.click();
-        }}
-    </script>
-    """,
-    unsafe_allow_html=True,
-)
+                **0.50 – 0.69 — Moderate Influence**  
+                Useful but requires supporting evidence.
 
-# When clicking the red text → hidden button is clicked
-if st.session_state.get("hidden_trigger_signal"):
-    st.session_state["show_signal_modal"] = True
+                **Below 0.50 — Weak Influence**  
+                Mostly noise; ignore standalone signals.
 
-# Reset hidden trigger
-st.session_state["hidden_trigger_signal"] = False
+                ### 📌 Suggested Action
+                When **multiple high-correlation stocks** move together,  
+                treat it as **sector confirmation**, increasing reliability.
+                """
+            )
 
-# --- Modal ---
-if st.session_state.get("show_signal_modal", False):
-    with st.modal("📘 Signal Interpretation Guide"):
-        st.markdown(
-            """
-            ### 🔍 Understanding Correlation Signals
+            if st.button("Close"):
+                st.session_state["show_signal_modal"] = False
 
-            **Correlation** explains how closely another stock moves relative to NVDA.  
-            Stronger correlation = stronger predictive value.
 
-            ### 📊 Interpretation Levels
-            **0.70 – 1.00 — Strong Influence**  
-            Consistent direction → Strong supportive signal.
-
-            **0.50 – 0.69 — Moderate Influence**  
-            Useful but needs confirmation.
-
-            **Below 0.50 — Weak Influence**  
-            Mostly noise.
-
-            ### 📌 Suggested Insight
-            When multiple **high-correlation stocks** move together,  
-            treat it as **sector confirmation**, strengthening NVDA’s forecast.
-            """
-        )
-
-        if st.button("Close"):
-            st.session_state["show_signal_modal"] = False
 
 
 

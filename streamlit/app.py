@@ -536,32 +536,32 @@ with col_right:
     # Small Signal Interpretation Card
     # -------------------------------
     st.markdown(
-        f"""
-        <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
-            <div class="watchlist-title">Signal Interpretation</div>
+    f"""
+    <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
+        <div class="watchlist-title">Signal Interpretation</div>
 
-            <div style="font-size:13px; opacity:.88; margin-top:4px;">
-                Understand how correlation influences prediction.
-            </div>
-
-            <div style="margin-top:10px;">
-                <a href="#" id="open_modal_signal"
-                   style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
-                    👉 Read more below
-                </a>
-            </div>
+        <div style="font-size:13px; opacity:.88; margin-top:4px;">
+            Understand how correlation influences prediction.
         </div>
 
-        <script>
-            const link = window.parent.document.getElementById("open_modal_signal");
-            const btn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
-            if (link && btn) {{
-                link.onclick = () => btn.click();
-            }}
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
+        <div style="margin-top:10px;">
+            <a href="#" id="signal_readmore"
+               style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
+                👉 Read more below
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const link = window.parent.document.getElementById("signal_readmore");
+        const btn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
+        if (link && btn) {{
+            link.onclick = () => btn.click();
+        }}
+    </script>
+    """,
+    unsafe_allow_html=True
+)
 
     # -------------------------------
     # Hidden button

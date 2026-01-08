@@ -271,6 +271,16 @@ div[data-testid="stRadio"] p {{
   background-color:rgba(255,255,255,0.15) !important;
 }}
 
+/* ───────────────────────────── SIGNAL ROWS ───────────────────────────── */
+.stButton > button {{
+    background: none !important;
+    border: none !important;
+    color: #FF6B6B !important;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 0 !important;
+    text-align: left;
+}}
 
 /* ───────────────────────────── FOOTER ───────────────────────────── */
 .statusbar {{
@@ -527,86 +537,67 @@ with col_mid:
 
     st.plotly_chart(fig, use_container_width=True, theme=None)
 
-# RIGHT PANEL
 with col_right:
 
     render_signals_card("Affiliated Signals", ["TSMC", "ASML", "CDNS", "SNPS"])
 
-    # -------------------------------
-    # Small Signal Interpretation Card
-    # -------------------------------
     st.markdown(
-    f"""
-    <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
-        <div class="watchlist-title">Signal Interpretation</div>
-
-        <div style="font-size:13px; opacity:.88; margin-top:4px;">
-            Understand how correlation influences prediction.
+        """
+        <div class="watchlist-card" style="margin-top:16px; padding:16px 20px;">
+            <div class="watchlist-title">Signal Interpretation</div>
+            <div style="font-size:13px; opacity:.88; margin-top:4px;">
+                Understand how correlation influences prediction.
+            </div>
         </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-        <div style="margin-top:10px;">
-            <a href="#" id="signal_readmore"
-               style="color:#FF6B6B; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none;">
-                👉 Read more below
-            </a>
-        </div>
-    </div>
+    if st.button("👉 Read more"):
+        st.session_state["show_signal_modal"] = True
 
-    <script>
-        const link = window.parent.document.getElementById("signal_readmore");
-        const btn = window.parent.document.querySelector('button[aria-label="hidden_trigger_signal"]');
-        if (link && btn) {{
-            link.onclick = () => btn.click();
-        }}
-    </script>
-    """,
-    unsafe_allow_html=True
-)
+
+# ─────────────────────────────────────────────
+# MODAL (OUTSIDE the column block is OK)
+# ─────────────────────────────────────────────
+if st.session_state.get("show_signal_modal", False):
+    with st.modal("📘 Signal Interpretation Guide"):
+        st.markdown(
+            """
+            ### 🔍 Understanding Correlation Signals
+
+            **Correlation** describes how strongly another stock moves with NVDA.  
+            Higher correlation = stronger predictive value.
+
+            ### 📊 Interpretation Levels
+            **0.70 – 1.00 — Strong Influence**  
+            Highly aligned movements → strong confirmation.
+
+            **0.50 – 0.69 — Moderate Influence**  
+            Useful but requires supporting evidence.
+
+            **Below 0.50 — Weak Influence**  
+            Mostly noise; ignore standalone signals.
+
+            ### 📌 Suggested Action
+            When **multiple high-correlation stocks** move together,  
+            treat it as **sector confirmation**, increasing reliability.
+            """
+        )
+
+        if st.button("Close"):
+            st.session_state["show_signal_modal"] = False
+
 
     # -------------------------------
     # Hidden button
     # -------------------------------
-    hidden_click = st.button(
-        "___",
-        key="hidden_trigger_signal",
-        label_visibility="collapsed",
-        help=""
-    )
-
-    # -------------------------------
-    # Show modal when triggered
-    # -------------------------------
-    if hidden_click:
-        st.session_state["show_signal_modal"] = True
-
-    if st.session_state.get("show_signal_modal", False):
-        with st.modal("📘 Signal Interpretation Guide"):
-            st.markdown(
-                """
-                ### 🔍 Understanding Correlation Signals
-
-                **Correlation** describes how strongly another stock moves with NVDA.  
-                Higher correlation = stronger predictive value.
-
-                ### 📊 Interpretation Levels
-                **0.70 – 1.00 — Strong Influence**  
-                Highly aligned movements → strong confirmation.
-
-                **0.50 – 0.69 — Moderate Influence**  
-                Useful but requires supporting evidence.
-
-                **Below 0.50 — Weak Influence**  
-                Mostly noise; ignore standalone signals.
-
-                ### 📌 Suggested Action
-                When **multiple high-correlation stocks** move together,  
-                treat it as **sector confirmation**, increasing reliability.
-                """
-            )
-
-            if st.button("Close"):
-                st.session_state["show_signal_modal"] = False
-
+    # hidden_click = st.button(
+    #    "___",
+    #    key="hidden_trigger_signal",
+    #    label_visibility="collapsed",
+    #    help=""
+    #)
 
 
 # FOOTER
